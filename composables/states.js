@@ -1,0 +1,1 @@
+// Add states ( export const use{var} = () => useState('var', () => value); )
