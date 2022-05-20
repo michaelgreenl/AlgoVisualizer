@@ -1,7 +1,7 @@
 // Futura 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinl.otf');
+  src: url('~/assets/fonts/futura/futurawinl.otf') format('opentype');
   font-weight: lighter;
   font-weight: 100;
   font-style: normal;
@@ -9,7 +9,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinli.otf');
+  src: url('~/assets/fonts/futura/futurawinli.otf') format('opentype');
   font-weight: lighter;
   font-weight: 100;
   font-style: italic;
@@ -17,7 +17,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawin.otf');
+  src: url('~/assets/fonts/futura/futurawin.ttf') format('truetype');
   font-weight: normal;
   font-weight: 300;
   font-style: normal;
@@ -25,7 +25,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinit.otf');
+  src: url('~/assets/fonts/futura/futurawinit.otf') format('opentype');
   font-weight: normal;
   font-weight: 300;
   font-style: italic;
@@ -33,7 +33,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinsb.otf');
+  src: url('~/assets/fonts/futura/futurawinsb.otf') format('opentype');
   font-weight: normal;
   font-weight: 500;
   font-style: normal;
@@ -41,7 +41,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinsbi.otf');
+  src: url('~/assets/fonts/futura/futurawinsbi.otf') format('opentype');
   font-weight: normal;
   font-weight: 500;
   font-style: italic;
@@ -49,7 +49,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinb.otf');
+  src: url('~/assets/fonts/futura/futurawinb.otf') format('opentype');
   font-weight: bold;
   font-weight: 700;
   font-style: normal;
@@ -57,7 +57,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinbi.otf');
+  src: url('~/assets/fonts/futura/futurawinbi.otf') format('opentype');
   font-weight: bold;
   font-weight: 700;
   font-style: italic;
@@ -65,7 +65,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinebl.otf');
+  src: url('~/assets/fonts/futura/futurawinebl.otf') format('opentype');
   font-weight: bolder;
   font-weight: 900;
   font-style: normal;
@@ -73,7 +73,7 @@
 
 @font-face {
   font-family: 'Futura';
-  src: url('../fonts/futura/futurawinexbli.otf');
+  src: url('~/assets/fonts/futura/futurawinexbli.otf') format('opentype');
   font-weight: bolder;
   font-weight: 900;
   font-style: italic;
@@ -82,112 +82,112 @@
 // Poppins 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Thin.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Thin.ttf') format('truetype');
   font-weight: 100;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-ThinItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-ThinItalic.ttf') format('truetype');
   font-weight: 100;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-ExtraLight.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-ExtraLight.ttf') format('truetype');
   font-weight: 200;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-ExtraLightItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-ExtraLightItalic.ttf') format('truetype');
   font-weight: 200;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Light.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Light.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-LightItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-LightItalic.ttf') format('truetype');
   font-weight: 300;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Regular.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Italic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Italic.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Medium.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-MediumItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-MediumItalic.ttf') format('truetype');
   font-weight: 500;
-  font-style: normal;
+  font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-SemiBold.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-SemiBoldItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-SemiBoldItalic.ttf') format('truetype');
   font-weight: 600;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Bold.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-BoldItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-BoldItalic.ttf') format('truetype');
   font-weight: 700;
   font-style: italic;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-Black.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-Black.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Poppins';
-  src: url('../fonts/poppins/Poppins-BlackItalic.ttf');
+  src: url('~/assets/fonts/poppins/Poppins-BlackItalic.ttf') format('truetype');
   font-weight: 800;
   font-style: italic;
 }
