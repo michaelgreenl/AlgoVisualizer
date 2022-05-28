@@ -1,24 +1,41 @@
 <template>
   <div ref="index" class="index" @click="sidebarOpen ? closeSidebar($event) : null">
     <Sidebar ref="sidebar" @sidebarToggled="sidebarToggled" />
+    <component v-if="selectedVisualizer" :is="visualizerComp" />
+    <div v-else class="landing"></div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { shallowRef } from '@vue/reactivity';
+import { ref, defineAsyncComponent, watch } from 'vue';
 
+const selectedVisualizer = useSelectedVisualizer();
+const visualizerComp = shallowRef();
 const sidebar = ref(null);
-let sidebarOpen = ref(false);
-let openedSidebar = ref();
+const sidebarOpen = ref(false);
+const openedSidebar = ref();
 
-function closeSidebar($event) {
-  if (!sidebar.value.sidebar.contains($event.target)) {
+watch(selectedVisualizer, (currVal, oldVal) => {
+  visualizerComp.value = defineAsyncComponent(() =>
+    import(`../components/${openedSidebar.value}/${currVal.replaceAll(/[\s\-*\']/g, '')}.vue`),
+  );
+  closeSidebar(true);
+});
+
+// Closing Sidebar if click event was fired on the index element.
+function closeSidebar($event, forceClose) {
+  if (!sidebar.value.sidebar.contains($event.target) || forceClose) {
     sidebar.value.openSidebars[openedSidebar.value] = false;
     sidebar.value.opened = false;
     sidebarOpen.value = false;
   }
 }
 
+/*
+  Emitted function when NavItem is clicked in Sidebar. Enabling the click el if the sidebar is open, disabling it if
+  it was closed by the user clicking a NavItem.
+*/
 function sidebarToggled(currSidebar) {
   if (sidebar.value.opened) {
     sidebarOpen.value = true;

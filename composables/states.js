@@ -1,1 +1,1 @@
-export const use = () => useState('var', () => value);
+export const useSelectedVisualizer = () => useState('selectedVisualizer', () => null);

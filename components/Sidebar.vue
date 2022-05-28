@@ -15,15 +15,15 @@
         </template>
       </NavItem>
       <NavItem
-        ref="optionsNavItem"
+        ref="dataNavItem"
         class="nav-item"
-        tooltip="Options"
+        tooltip="Data Structures"
         :sidebarOpened="opened"
-        :itemToggled="openSidebars.options"
-        @click="toggleSidebar('options')"
+        :itemToggled="openSidebars.dataStructures"
+        @click="toggleSidebar('dataStructures')"
       >
         <template #icon>
-          <OptionsIcon class="icon" />
+          <DataStructuresIcon class="icon" />
         </template>
       </NavItem>
       <NavItem class="nav-item" tooltip="Contact" :sidebarOpened="opened">
@@ -32,23 +32,99 @@
         </template>
       </NavItem>
     </div>
-    <AlgorithmsSidebar ref="algoSidebar" :open="openSidebars.algorithms" class="sidebar-open" />
-    <OptionsSidebar ref="optionsSidebar" :open="openSidebars.options" class="sidebar-open" />
+    <VisualizerSidebar
+      ref="algoSidebar"
+      class="sidebar-open"
+      :dropdownContent="algorithms"
+      :open="openSidebars.algorithms"
+      title="Algorithms"
+    />
+    <VisualizerSidebar
+      ref="dataSidebar"
+      class="sidebar-open"
+      :dropdownContent="dataStructures"
+      :open="openSidebars.dataStructures"
+      title="Data Structures"
+    />
   </div>
 </template>
 
 <script setup>
 import LogoIcon from '../assets/svgs/logo.svg';
 import AlgorithmsIcon from '../assets/svgs/algorithms.svg';
-import OptionsIcon from '../assets/svgs/options.svg';
+import DataStructuresIcon from '../assets/svgs/dataStructures.svg';
 import ContactIcon from '../assets/svgs/contact.svg';
 
 import { ref, reactive } from 'vue';
 
+const selectedVisualizer = useSelectedVisualizer();
+
 const emit = defineEmits(['sidebarToggled']);
 
 const sidebar = ref(null);
+const algoSidebar = ref(null);
+const dataSidebar = ref(null);
+
 let opened = ref(false);
+
+const algorithms = reactive({
+  backtracking: new Set(['Hamiltonian', 'Knights Tour', 'N Queen', 'Sudoku']),
+  patternSearching: new Set([
+    'Aho-Corasick',
+    'Boyer-Moore',
+    'Horspool',
+    'KMP',
+    'Levenshtein Distance',
+    'Mataphone',
+    'NYSIIS',
+    'Rabin-Karp',
+    'Soundex',
+  ]),
+  pathfinding: new Set([
+    'A* Tree Search',
+    'Bellman-Ford',
+    "Dial's",
+    "Dijkstra's",
+    'Floyd-Warshall',
+    'Johnson',
+    "Prim's",
+  ]),
+  searching: new Set(['Binary Search', 'Breadth-first Search', 'Best-first Search', 'Depth-first Search']),
+  sorting: new Set([
+    'Bubble Sort',
+    'Counting Sort',
+    'Heap Sort',
+    'Insertion Sort',
+    'Merge Sort',
+    'Quick Sort',
+    'Radix Sort',
+    'Selection Sort',
+  ]),
+});
+
+const dataStructures = reactive({
+  abstract: new Set(['Map', 'Set', 'Stack', 'Tuple', 'Queue']),
+  graphs: new Set(['Adjacency List', 'Adjacency Matrix', 'Graph', 'Graph-Structured Stack']),
+  hashBased: new Set(['Dynamic Perfect Hash Table', 'Hash List', 'Hash Map', 'Hash Table', 'Hash Tree']),
+  lists: new Set(['Array List', 'Doubly Linked List', 'Linked List', 'Self Organizing List', 'Skip List']),
+  trees: new Set([
+    '2-3 Heap',
+    '2-3 Tree',
+    '2-3-4 Tree',
+    'And-or Tree',
+    'AVL Tree',
+    'B-Heap',
+    'B-Tree',
+    'Binary Heap',
+    'Binary Search Tree',
+    'Binary Tree',
+    'Fibonacci Heap',
+    'Heap',
+    'K-ary Tree',
+    'Red-Black Tree',
+    'Ternary Tree',
+  ]),
+});
 
 /*
   Object with booleans to know if an sidebar component is open. These values are used as props to open and close 
@@ -56,7 +132,7 @@ let opened = ref(false);
 */
 let openSidebars = reactive({
   algorithms: false,
-  options: false,
+  dataStructures: false,
 });
 
 const toggleSidebar = (sidebar) => {
@@ -67,6 +143,8 @@ const toggleSidebar = (sidebar) => {
   });
   openSidebars[sidebar] = !openSidebars[sidebar];
   opened.value = openSidebars[sidebar];
+  algoSidebar.value.openDropdowns.clear();
+  dataSidebar.value.openDropdowns.clear();
   emit('sidebarToggled', { sidebar });
 };
 
@@ -92,7 +170,8 @@ defineExpose({ sidebar, opened, openSidebars });
     width: 5.33em;
     padding: 1.75em 0;
     background: $secondary-white;
-    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid $primary-light-grey;
+    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.1);
 
     .nav-item:last-child {
       margin-top: auto;
@@ -104,7 +183,7 @@ defineExpose({ sidebar, opened, openSidebars });
     z-index: 999;
     height: 100%;
     background-color: $primary-white;
-    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.1);
   }
 }
 </style>
