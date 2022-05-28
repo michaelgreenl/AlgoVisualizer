@@ -1,5 +1,5 @@
 <template>
-  <button class="nav-item" :class="{ greyscale: sidebarOpened && !itemToggled }" :disabled="disabled">
+  <button class="nav-item" :class="{ greyscale: sidebarOpened && !itemToggled }">
     <slot name="icon" class="nav-icon"></slot>
     <div class="tooltip" :class="{ hidden: itemToggled }">
       <PolygonTT class="polygon" />
@@ -12,8 +12,6 @@
 
 <script setup>
 import PolygonTT from '../assets/svgs/polygon.svg';
-
-import { ref } from 'vue';
 
 const props = defineProps({
   tooltip: {
@@ -29,10 +27,6 @@ const props = defineProps({
     default: false,
   }
 });
-
-let disabled = ref(false);
-
-defineExpose({ disabled });
 </script>
 
 <style lang="scss" scoped>
@@ -46,21 +40,20 @@ defineExpose({ disabled });
   justify-content: center;
   width: 100%;
 
-  &:disabled,
   &.greyscale { 
-      filter: grayscale(0.8);
+    filter: grayscale(0.8);
   }
 
   .tooltip {
-    display: none;
-    align-items: center;
     position: absolute;
-    background: $primary-black;
-    border-radius: 7px;
-    height: 24px;
-    padding: 12px;
     top: 2px;
     left: 64px;
+    display: none;
+    align-items: center;
+    height: 24px;
+    padding: 12px;
+    border-radius: 7px;
+    background: $primary-black;
 
     &.hidden {
       visibility: hidden;
@@ -73,10 +66,11 @@ defineExpose({ disabled });
     }
 
     .tooltip-text {
-      color: $primary-white;
+      font-size: 14px;
       font-family: $secondary-font-stack;
       font-weight: 400;
-      font-size: 14px;
+      color: $primary-white;
+      white-space: nowrap;
     }
   }
 

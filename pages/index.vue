@@ -16,6 +16,7 @@ const sidebar = ref(null);
 const sidebarOpen = ref(false);
 const openedSidebar = ref();
 
+// Setting the Visualizer component and closing the sidebar every time a new Visualizer is selected
 watch(selectedVisualizer, (currVal, oldVal) => {
   visualizerComp.value = defineAsyncComponent(() =>
     import(`../components/${openedSidebar.value}/${currVal.replaceAll(/[\s\-*\']/g, '')}.vue`),

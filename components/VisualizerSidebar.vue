@@ -87,43 +87,43 @@ defineExpose({ openDropdowns });
 <style lang="scss" scoped>
 .visualizer-sidebar {
   font-size: inherit;
-  display: flex;
-  flex-direction: column;
-  gap: 1.66em;
   position: absolute;
   top: 0;
   left: -20em;
+  display: flex;
+  flex-direction: column;
+  gap: 1.66em;
   width: 24.42em;
   padding: 0.66em 1.33em;
-  transition: transform 150ms ease-in-out;
   color: $primary-black;
+  transition: transform 150ms ease-in-out;
 
   &.open {
     transform: translateX(25.42em);
   }
 
   .header {
+    font-size: 20px;
     font-family: $primary-font-stack;
     font-weight: 300;
-    font-size: 20px;
     margin-bottom: 0;
   }
 
   .search {
     min-height: 2.5em;
     width: 100%;
-    background-color: $primary-bright;
     border-radius: 8px;
+    background-color: $primary-bright;
   }
 
   .categories {
     list-style: none;
     text-decoration: none;
+    flex-direction: column;
+    padding: 0;
     margin: 0;
     margin-right: -1.33em;
-    padding: 0;
     display: flex;
-    flex-direction: column;
     gap: 0.7em;
     height: 100%;
     overflow-y: auto;
@@ -136,9 +136,9 @@ defineExpose({ openDropdowns });
         display: flex;
         align-items: center;
         gap: 0.33em;
+        font-size: 14px;
         font-family: $secondary-font-stack;
         font-weight: 400;
-        font-size: 14px;
         letter-spacing: 0.09ch;
         color: $primary-black;
         transition: color 100ms ease;
@@ -175,8 +175,8 @@ defineExpose({ openDropdowns });
       height: auto;
       max-height: 0;
       margin-left: 0.625rem;
-      transition: max-height 250ms ease-in-out, margin 0ms 250ms;
       border-left: 2px solid $primary-light;
+      transition: max-height 250ms ease-in-out, margin 0ms 250ms;
 
       &.selected {
         transition: max-height 250ms ease-in-out, margin 0ms;
@@ -186,31 +186,27 @@ defineExpose({ openDropdowns });
 
       .item-button {
         font-size: inherit;
-        border: 0;
         background: transparent;
+        border: 0;
         display: flex;
         align-items: center;
         gap: 0.5em;
-        font-family: $secondary-font-stack;
-        font-weight: 400;
         padding: 0.35em 0;
         padding-left: 1em;
         width: 100%;
+        font-family: $secondary-font-stack;
+        font-weight: 400;
         transition: all 100ms ease;
-
-        .arrow-icon {
-          opacity: 0;
-        }
 
         &:hover {
           background: $primary-light-grey;
         }
 
         .content {
-          color: $primary-black;
-          white-space: nowrap;
-          letter-spacing: 0.09ch;
           font-size: 14px;
+          letter-spacing: 0.09ch;
+          white-space: nowrap;
+          color: $primary-black;
         }
 
         &:disabled {
