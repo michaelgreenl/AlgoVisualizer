@@ -176,10 +176,10 @@ defineExpose({ openDropdowns });
       max-height: 0;
       margin-left: 0.625rem;
       border-left: 2px solid $primary-light;
-      transition: max-height 250ms ease-in-out, margin 0ms 250ms;
+      transition: max-height 200ms ease-out, margin 0ms 200ms;
 
       &.selected {
-        transition: max-height 250ms ease-in-out, margin 0ms;
+        transition: max-height 200ms ease-out, margin 0ms;
         margin: 0.4em 0 0.4em 0.75em;
         margin-bottom: -4px;
       }

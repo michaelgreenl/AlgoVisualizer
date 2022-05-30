@@ -135,7 +135,6 @@ let openSidebars = reactive({
   dataStructures: false,
 });
 
-
 /*
   Toggles activated sidebar, sets the opened value (Bool) for this Sidebar component to what the activated sidebar
   value is in the openSidebars object. Emits sidebarToggled in index.vue. Also clears their open dropdowns in both sidebars. 
@@ -148,12 +147,16 @@ const toggleSidebar = (sidebar) => {
   });
   openSidebars[sidebar] = !openSidebars[sidebar];
   opened.value = openSidebars[sidebar];
-  algoSidebar.value.openDropdowns.clear();
-  dataSidebar.value.openDropdowns.clear();
+
+  // closing the open dropdowns if the sidebar is closed
+  if (!opened.value) {
+    algoSidebar.value.openDropdowns.clear();
+    dataSidebar.value.openDropdowns.clear();
+  }
   emit('sidebarToggled', { sidebar });
 };
 
-defineExpose({ sidebar, opened, openSidebars });
+defineExpose({ sidebar, opened, toggleSidebar });
 </script>
 
 <style lang="scss" scoped>
@@ -173,8 +176,7 @@ defineExpose({ sidebar, opened, openSidebars });
     height: 100%;
     width: 5.33em;
     padding: 1.75em 0;
-    border-right: 1px solid $primary-light-grey;
-    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 0 1px rgba(153, 153, 153, 0.2);
     background: $secondary-white;
 
     .nav-item:last-child {
@@ -187,7 +189,7 @@ defineExpose({ sidebar, opened, openSidebars });
     z-index: 999;
     height: 100%;
     background-color: $primary-white;
-    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 0 1px rgba(153, 153, 153, 0.2);
   }
 }
 </style>
