@@ -27,9 +27,7 @@ watch(selectedVisualizer, (currVal, oldVal) => {
 // Closing Sidebar if click event was fired on the index element.
 function closeSidebar($event, forceClose) {
   if (!sidebar.value.sidebar.contains($event.target) || forceClose) {
-    sidebar.value.openSidebars[openedSidebar.value] = false;
-    sidebar.value.opened = false;
-    sidebarOpen.value = false;
+    sidebar.value.toggleSidebar(openedSidebar.value);
   }
 }
 
