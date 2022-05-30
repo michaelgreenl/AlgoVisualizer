@@ -75,7 +75,7 @@ const algorithms = reactive({
     'Horspool',
     'KMP',
     'Levenshtein Distance',
-    'Mataphone',
+    'Metaphone',
     'NYSIIS',
     'Rabin-Karp',
     'Soundex',
