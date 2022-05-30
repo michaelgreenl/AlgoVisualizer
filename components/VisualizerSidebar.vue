@@ -2,8 +2,10 @@
   <div class="visualizer-sidebar" :class="{ open: open }">
     <h1 class="header">{{ title }}</h1>
 
-    <!-- temp placeholder for search bar -->
-    <div class="search"></div>
+    <div class="search">
+      <SearchIcon />
+      <input class="search-input" :placeholder="`Search ${title}`" v-model="searchModel" />
+    </div>
 
     <ul class="categories">
       <li class="category" v-for="category in Object.keys(dropdownContent)" :key="category">
@@ -51,6 +53,7 @@
 
 <script setup>
 import ArrowDownIcon from '../assets/svgs/arrowDown.svg';
+import SearchIcon from '../assets/svgs/search.svg';
 
 import { reactive } from 'vue';
 
@@ -70,6 +73,7 @@ const props = defineProps({
 });
 
 const selectedVisualizer = useSelectedVisualizer();
+const searchModel = ref();
 
 const openDropdowns = reactive(new Set());
 
@@ -110,10 +114,33 @@ defineExpose({ openDropdowns });
   }
 
   .search {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
     min-height: 2.5em;
     width: 100%;
+    padding: 0 1em;
     border-radius: 8px;
     background-color: $primary-bright;
+    color: $primary-black;
+
+    .search-input {
+      border: 0;
+      background: transparent;
+      flex: 1;
+      height: 100%;
+      font-family: $secondary-font-stack;
+      color: $primary-black;
+
+      &::placeholder {
+        color: $primary-black;
+      }
+
+      &:focus {
+        border: 0;
+        outline: none;
+      }
+    }
   }
 
   .categories {
@@ -199,7 +226,7 @@ defineExpose({ openDropdowns });
         transition: all 100ms ease;
 
         &:hover {
-          background: $primary-light-grey;
+          background: #f3f3f3;
         }
 
         .content {
