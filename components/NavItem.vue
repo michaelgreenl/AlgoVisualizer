@@ -1,17 +1,26 @@
 <template>
-  <button class="nav-item" :class="{ greyscale: sidebarOpened && !itemToggled }">
+  <button
+    class="nav-item"
+    :class="{ greyscale: sidebarOpened && !itemToggled }"
+    @mouseenter="mouseEntered = true"
+    @mouseleave="mouseEntered = false"
+  >
     <slot name="icon" class="nav-icon"></slot>
-    <div class="tooltip" :class="{ hidden: itemToggled }">
-      <PolygonTT class="polygon" />
-      <span class="tooltip-text">
-        {{ tooltip }}
-      </span>
-    </div>
+    <transition name="fade" appear>
+      <div class="tooltip" :class="{ hidden: itemToggled }" @mouseenter="mouseEntered = false" v-if="mouseEntered && !itemToggled">
+        <PolygonTT class="polygon" />
+        <span class="tooltip-text">
+          {{ tooltip }}
+        </span>
+      </div>
+    </transition>
   </button>
 </template>
 
 <script setup>
 import PolygonTT from '../assets/svgs/polygon.svg';
+
+import { ref } from 'vue';
 
 const props = defineProps({
   tooltip: {
@@ -25,8 +34,10 @@ const props = defineProps({
   itemToggled: {
     type: Boolean,
     default: false,
-  }
+  },
 });
+
+const mouseEntered = ref(false);
 </script>
 
 <style lang="scss" scoped>
@@ -40,8 +51,17 @@ const props = defineProps({
   justify-content: center;
   width: 100%;
 
-  &.greyscale { 
+  &.greyscale {
     filter: grayscale(0.8);
+  }
+
+  .fade-enter-active {
+    transition: all 100ms ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
   }
 
   .tooltip {
@@ -49,20 +69,14 @@ const props = defineProps({
     top: 2px;
     left: 64px;
     display: flex;
-    opacity: 0;
     align-items: center;
     height: 24px;
     padding: 12px;
     border-radius: 7px;
     background: $primary-black;
-    transition: opacity 50ms ease-out;
 
     &.hidden {
       visibility: hidden;
-    }
-
-    &:hover {
-      display: none;
     }
 
     .polygon {
@@ -80,10 +94,10 @@ const props = defineProps({
     }
   }
 
-  &:hover {
-    .tooltip {
-      opacity: 1;
-    }
-  }
+  // &:hover {
+  //   .tooltip {
+  //     opacity: 1;
+  //   }
+  // }
 }
 </style>
