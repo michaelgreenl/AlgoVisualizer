@@ -48,12 +48,14 @@ const props = defineProps({
     position: absolute;
     top: 2px;
     left: 64px;
-    display: none;
+    display: flex;
+    opacity: 0;
     align-items: center;
     height: 24px;
     padding: 12px;
     border-radius: 7px;
     background: $primary-black;
+    transition: opacity 50ms ease-out;
 
     &.hidden {
       visibility: hidden;
@@ -76,7 +78,7 @@ const props = defineProps({
 
   &:hover {
     .tooltip {
-      display: flex;
+      opacity: 1;
     }
   }
 }
