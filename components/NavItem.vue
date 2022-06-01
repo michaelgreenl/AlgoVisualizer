@@ -61,6 +61,10 @@ const props = defineProps({
       visibility: hidden;
     }
 
+    &:hover {
+      display: none;
+    }
+
     .polygon {
       position: absolute;
       top: 6px;
