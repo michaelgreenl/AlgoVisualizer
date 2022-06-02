@@ -68,8 +68,8 @@ const dataSidebar = ref(null);
 let opened = ref(false);
 
 const algorithms = reactive({
-  backtracking: new Set(['Hamiltonian', 'Knights Tour', 'N Queen', 'Sudoku']),
-  patternSearching: new Set([
+  backtracking: ['Hamiltonian', 'Knights Tour', 'N Queen', 'Sudoku'],
+  patternSearching: [
     'Aho-Corasick',
     'Boyer-Moore',
     'Horspool',
@@ -79,8 +79,8 @@ const algorithms = reactive({
     'NYSIIS',
     'Rabin-Karp',
     'Soundex',
-  ]),
-  pathfinding: new Set([
+  ],
+  pathfinding: [
     'A* Tree Search',
     'Bellman-Ford',
     "Dial's",
@@ -88,9 +88,9 @@ const algorithms = reactive({
     'Floyd-Warshall',
     'Johnson',
     "Prim's",
-  ]),
-  searching: new Set(['Binary Search', 'Breadth-first Search', 'Best-first Search', 'Depth-first Search']),
-  sorting: new Set([
+  ],
+  searching: ['Binary Search', 'Breadth-First Search', 'Best-First Search', 'Depth-First Search'],
+  sorting: [
     'Bubble Sort',
     'Counting Sort',
     'Heap Sort',
@@ -99,19 +99,19 @@ const algorithms = reactive({
     'Quick Sort',
     'Radix Sort',
     'Selection Sort',
-  ]),
+  ],
 });
 
 const dataStructures = reactive({
-  abstract: new Set(['Map', 'Set', 'Stack', 'Tuple', 'Queue']),
-  graphs: new Set(['Adjacency List', 'Adjacency Matrix', 'Graph', 'Graph-Structured Stack']),
-  hashBased: new Set(['Dynamic Perfect Hash Table', 'Hash List', 'Hash Map', 'Hash Table', 'Hash Tree']),
-  lists: new Set(['Array List', 'Doubly Linked List', 'Linked List', 'Self Organizing List', 'Skip List']),
-  trees: new Set([
+  abstract: ['Map', 'Set', 'Stack', 'Tuple', 'Queue'],
+  graphs: ['Adjacency List', 'Adjacency Matrix', 'Graph', 'Graph-Structured Stack'],
+  hashBased: ['Dynamic Perfect Hash Table', 'Hash List', 'Hash Map', 'Hash Table', 'Hash Tree'],
+  lists: ['Array List', 'Doubly Linked List', 'Linked List', 'Self Organizing List', 'Skip List'],
+  trees: [
     '2-3 Heap',
     '2-3 Tree',
     '2-3-4 Tree',
-    'And-or Tree',
+    'And-Or Tree',
     'AVL Tree',
     'B-Heap',
     'B-Tree',
@@ -120,10 +120,10 @@ const dataStructures = reactive({
     'Binary Tree',
     'Fibonacci Heap',
     'Heap',
-    'K-ary Tree',
+    'K-Ary Tree',
     'Red-Black Tree',
     'Ternary Tree',
-  ]),
+  ],
 });
 
 /*
@@ -152,6 +152,8 @@ const toggleSidebar = (sidebar) => {
   if (!opened.value) {
     algoSidebar.value.openDropdowns.clear();
     dataSidebar.value.openDropdowns.clear();
+    algoSidebar.value.userInput = '';
+    dataSidebar.value.userInput = '';
   }
   emit('sidebarToggled', { sidebar });
 };
