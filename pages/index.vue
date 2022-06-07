@@ -1,9 +1,8 @@
 <template>
-  <div ref="index" class="index" @click="sidebarOpen ? closeSidebar($event) : null">
+  <main ref="index" class="index" @click="sidebarOpen ? closeSidebar($event) : null">
     <Sidebar ref="sidebar" @sidebarToggled="sidebarToggled" />
     <component v-if="selectedVisualizer" :is="visualizerComp" />
-    <div v-else class="landing"></div>
-  </div>
+  </main>
 </template>
 
 <script setup>
@@ -17,7 +16,7 @@ const sidebarOpen = ref(false);
 const openedSidebar = ref();
 
 // Setting the Visualizer component and closing the sidebar every time a new Visualizer is selected
-watch(selectedVisualizer, (currVal, oldVal) => {
+watch(selectedVisualizer, (currVal) => {
   visualizerComp.value = defineAsyncComponent(() =>
     import(`../components/${openedSidebar.value}/${currVal.replaceAll(/[\s\-*\']/g, '')}.vue`),
   );
@@ -32,7 +31,7 @@ function closeSidebar($event, forceClose) {
 }
 
 /*
-  Emitted function when NavItem is clicked in Sidebar. Enabling the click el if the sidebar is open, disabling it if
+  Emitted function when NavItem is clicked in Sidebar. Enabling the click event listener if the sidebar is open, disabling it if
   it was closed by the user clicking a NavItem.
 */
 function sidebarToggled(currSidebar) {

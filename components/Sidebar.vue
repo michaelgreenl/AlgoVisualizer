@@ -1,6 +1,6 @@
 <template>
   <div ref="sidebar" class="sidebar">
-    <div class="sidebar-nav">
+    <nav class="sidebar-nav">
       <LogoIcon />
       <NavItem
         ref="algoNavItem"
@@ -31,7 +31,7 @@
           <ContactIcon class="icon" />
         </template>
       </NavItem>
-    </div>
+    </nav>
     <VisualizerSidebar
       ref="algoSidebar"
       class="sidebar-open"
@@ -164,7 +164,6 @@ defineExpose({ sidebar, opened, toggleSidebar });
 <style lang="scss" scoped>
 .sidebar {
   font-size: 12px;
-  position: absolute;
   left: 0;
   height: 100%;
 

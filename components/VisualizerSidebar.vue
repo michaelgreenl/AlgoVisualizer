@@ -4,7 +4,7 @@
 
     <div class="search">
       <SearchIcon />
-      <input class="search-input" :placeholder="`Search ${title}`" v-model="userInput" @input="filterSearch" />
+      <input class="search-input" :placeholder="`Search ${title}`" spellcheck="false" v-model="userInput" @input="filterSearch" />
     </div>
 
     <div class="search-results" v-if="userInput">
@@ -137,7 +137,6 @@ function filterSearch() {
         }
       }
     });
-    console.log(searchResults);
   }
 }
 
@@ -167,7 +166,7 @@ defineExpose({ openDropdowns, userInput });
   transition: transform 150ms ease-in-out;
 
   &.open {
-    transform: translateX(29.42em);
+    transform: translateX(29.32em);
   }
 
   .header {
