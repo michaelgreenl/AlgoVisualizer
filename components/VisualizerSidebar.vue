@@ -4,7 +4,13 @@
 
     <div class="search">
       <SearchIcon />
-      <input class="search-input" :placeholder="`Search ${title}`" spellcheck="false" v-model="userInput" @input="filterSearch" />
+      <input
+        class="search-input"
+        :placeholder="`Search ${title}`"
+        spellcheck="false"
+        v-model="userInput"
+        @input="filterSearch"
+      />
     </div>
 
     <div class="search-results" v-if="userInput">
@@ -12,34 +18,26 @@
         <li v-for="item in Object.keys(searchResults)" :key="item">
           <button class="result" :disabled="selectedVisualizer === item" @click="selectedVisualizer = item">
             <div class="item">
-              <span v-for="(index, i) in searchResults[item].indices" :key="index">
-                <!-- FIXME: Switch this to just a class binding with and a v-if="!i" -->
-                <!-- FIXME: Refactor -->
-                <span
-                  v-if="!i && item.toLowerCase().startsWith(userInput.toLowerCase())"
-                  :style="{ backgroundColor: '#E4E8E9' }"
-                >
-                  {{ item.substring(0, userInput.length) }}
-                </span>
-                <span v-else-if="!i && !item.toLowerCase().startsWith(userInput.toLowerCase())">
-                  <span>{{ item.substring(0, index) }}</span>
-                  <span :style="{ backgroundColor: '#E4E8E9' }">
-                    {{ item.substring(index, index + userInput.length) }}
+              <span class="item-text" v-for="(itemIndex, i) in searchResults[item].indices" :key="itemIndex">
+                <span v-if="!i">
+                  <mark class="highlight" v-if="item.toLowerCase().startsWith(userInput.toLowerCase())">
+                    {{ item.substring(0, userInput.length) }}
+                  </mark>
+                  <span v-else>
+                    {{ item.substring(0, itemIndex) }}
                   </span>
                 </span>
-
-                <span v-else :style="{ backgroundColor: '#E4E8E9' }">
-                  {{ item.substring(index, index + userInput.length) }}
-                </span>
+                <mark class="highlight" v-if="i || !item.toLowerCase().startsWith(userInput.toLowerCase())">
+                  {{ item.substring(itemIndex, itemIndex + userInput.length) }}
+                </mark>
                 <span v-if="searchResults[item].indices.length - 1 === i" class="item">
-                  {{ item.substring(index + userInput.length) }}
+                  {{ item.substring(itemIndex + userInput.length) }}
                 </span>
                 <span v-else>
-                  {{ item.substring(index + userInput.length, searchResults[item].indices[i + 1]) }}
+                  {{ item.substring(itemIndex + userInput.length, searchResults[item].indices[i + 1]) }}
                 </span>
               </span>
             </div>
-
             <span class="category">{{
               `${searchResults[item].category.charAt(0).toUpperCase()}${searchResults[item].category.substring(1)}`
             }}</span>
@@ -248,6 +246,11 @@ defineExpose({ openDropdowns, userInput });
         .item {
           font-size: 14px;
           color: $primary-black;
+
+          .highlight {
+            color: $primary-black;
+            background-color: #dfe3e3;
+          }
         }
 
         .category {
