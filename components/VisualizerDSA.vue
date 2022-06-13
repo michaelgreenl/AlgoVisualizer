@@ -1,16 +1,10 @@
 <template>
   <section class="visualizer">
-    <!-- Check if v-binding an attribute that is undefined causes an error  -->
-    <!-- (like setting max on a number input when max isn't there in the input for loop) -->
     <header class="header">
       <h1 class="title">{{ title }}</h1>
       <nav class="sidebar-nav">
         <transition name="close-button" appear :duration="300">
-          <button
-            class="close-button"
-            @click="closeSidebar"
-            v-if="Object.values(sidebarTabs).includes(true)"
-          >
+          <button class="close-button" @click="closeSidebar" v-if="Object.values(sidebarTabs).includes(true)">
             <svg class="close-icon" width="12" height="12" viewBox="0 0 12 11" xmlns="http://www.w3.org/2000/svg">
               <line
                 class="line-one"
@@ -57,7 +51,7 @@
       </nav>
     </header>
     <div class="main">
-      <div class="visual">
+      <div class="visual" :class="{ center: !sidebarOpen }">
         <slot name="visual"></slot>
       </div>
       <div class="sidebar" :class="{ open: sidebarOpen }">
@@ -66,20 +60,9 @@
           :class="{ one: sidebarTabs.settings, two: sidebarTabs.explanation, three: sidebarTabs.description }"
         >
           <div class="tab" :class="{ open: sidebarTabs.settings }">
-            <ul class="settings">
-              <li class="input" v-for="input in settings" :key="input">
-                <label class="label" :for="input.label">{{ input.label }}:</label>
-                <input
-                  :class="input.type"
-                  :type="input.type"
-                  :name="input.label"
-                  v-model="input.value"
-                  :min="input.min"
-                  :max="input.max"
-                />
-                <output>{{ input.value }}</output>
-              </li>
-            </ul>
+            <slot name="settings">
+              <VisualizerSettings :settings="settings" />
+            </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
             <slot name="explanation">explanation</slot>
@@ -116,8 +99,8 @@ const sidebarTabs = reactive({
 const sidebarOpen = ref(true);
 
 function tabButtonClick(tab) {
-  Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = false));
   sidebarTabs[tab] = true;
+  Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = key === tab ? true : false));
   sidebarOpen.value = true;
 }
 
@@ -165,7 +148,7 @@ $sidebar-width: 43.2em;
 
       .close-button-enter-active .close-icon .line-one,
       .close-button-leave-active .close-icon .line-one {
-        transition: transform 200ms ease;
+        transition: transform 100ms ease-out;
       }
 
       .close-button-enter-from .close-icon .line-one,
@@ -175,7 +158,7 @@ $sidebar-width: 43.2em;
 
       .close-button-enter-active .close-icon .line-two,
       .close-button-leave-active .close-icon .line-two {
-        transition: transform 200ms ease 50ms;
+        transition: transform 100ms ease-out 75ms;
       }
 
       .close-button-enter-from .close-icon .line-two,
@@ -192,7 +175,7 @@ $sidebar-width: 43.2em;
         padding: 0;
         height: 1.75em;
         width: 1.75em;
-        border-radius: 10px;
+        border-radius: 7px;
 
         &:hover {
           background: $primary-bright;
@@ -236,27 +219,42 @@ $sidebar-width: 43.2em;
   .main {
     flex: 1;
     display: flex;
+    justify-content: space-around;
 
     .visual {
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-left: auto;
+
+      // better than this
+      width: 57%;
+      transition: width 200ms ease-out;
+
+      &.center {
+        margin-right: 5.33em;
+        width: 100%;
+      }
     }
 
     .sidebar {
       position: relative;
       display: flex;
       overflow: hidden;
-      width: $sidebar-width;
-      transform: translateX($sidebar-width);
-      transition: transform 200ms ease;
+      margin-right: 0;
+      margin-left: auto;
+      width: 0;
+      transition: width 200ms ease-out;
 
       &.open {
-        transform: translateX(0);
+        width: $sidebar-width;
       }
 
       .tabs {
         display: flex;
         width: calc($sidebar-width * 3);
-        transition: transform 200ms ease-in-out;
+        transition: transform 200ms ease-out;
 
         &.one {
           // Default tab with translateX(0)
@@ -272,31 +270,24 @@ $sidebar-width: 43.2em;
         }
 
         .tab {
-          visibility: hidden;
-          padding: 0 1.5em;
           width: $sidebar-width;
+          padding: 0 1.5em;
+          visibility: hidden;
+          transition: visibility 200ms;
+
+          /* 
+            Have at width 0 when tab is closed to prevent situation where switching from tab 1 to tab 3 has large space between.
+            This causes the animation to be faster and look worse, and in the future if there were more tabs the situation would 
+            become worse.
+          */
+          // width: 0;
 
           &.open {
             visibility: visible;
-          }
 
-          .settings {
-            list-style: none;
-            text-decoration: none;
-            padding: 0;
-            margin: 0;
-
-            .input {
-              display: flex;
-              align-items: center;
-
-              .label {
-                font-family: $secondary-font-stack;
-                font-weight: 400;
-                font-size: 15px;
-                color: $primary-black;
-              }
-            }
+            // Make the open width $sidebar-width for the issue stated above
+            // Something also needs to be done about the .tabs width and the translate animations, along with the logic for it
+            // width: $sidebar-width;
           }
         }
       }
