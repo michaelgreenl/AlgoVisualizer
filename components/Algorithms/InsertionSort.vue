@@ -27,7 +27,12 @@
           </div>
           <div class="indices">
             <transition-group name="elements">
-              <div v-for="index in settings.arraySize.value" :key="index" class="index" :style="{ fontSize: `clamp(12px, ${arrayWidth / (5 * settings.arraySize.value)}px, 16px)` }">
+              <div
+                v-for="index in settings.arraySize.value"
+                :key="index"
+                class="index"
+                :style="{ fontSize: `clamp(12px, ${arrayWidth / (5 * settings.arraySize.value)}px, 16px)` }"
+              >
                 <span class="value">{{ index - 1 }}</span>
               </div>
             </transition-group>
@@ -66,7 +71,7 @@ const settings = reactive({
     value: 8,
   },
   elementType: { label: 'Element Type', type: 'radio', options: ['Range', 'Random'], value: 'Range' },
-  instructions: { label: 'Instructions', type: 'checkbox', value: true },
+  explanation: { label: 'Show Explanation', type: 'checkbox', value: true },
 });
 </script>
 
@@ -77,13 +82,20 @@ const settings = reactive({
   width: 100%;
 
   .array {
+    margin: auto 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    // Remove when step buttons are added
-    margin-bottom: 18em;
     width: 90%;
-    max-width: 80em;
+    max-width: 90em;
+
+    @include bp-xxl-desktop-large {
+      max-width: 80em;
+    }
+
+    @include bp-xl-desktop {
+      max-width: 75em;
+    }
 
     .elements-move,
     .elements-enter-active,

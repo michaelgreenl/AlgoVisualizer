@@ -52,7 +52,23 @@
     </header>
     <div class="main">
       <div class="visual" :class="{ center: !sidebarOpen }">
+        <h2 class="explanation">1. Explanation</h2>
         <slot name="visual"></slot>
+        <div class="controls">
+          <button class="control-button">
+            <RestartIcon class="icon restart" />
+          </button>
+          <button class="control-button">
+            <SkipLeftIcon class="icon" />
+          </button>
+          <button class="control-button" @click="visualPlaying = !visualPlaying">
+            <PauseIcon class="icon" v-if="visualPlaying" />
+            <PlayIcon class="icon play" v-else />
+          </button>
+          <button class="control-button">
+            <SkipRightIcon class="icon" />
+          </button>
+        </div>
       </div>
       <div class="sidebar" :class="{ open: sidebarOpen }">
         <div
@@ -77,6 +93,12 @@
 </template>
 
 <script setup>
+import RestartIcon from '../assets/svgs/restart.svg';
+import PauseIcon from '../assets/svgs/pause.svg';
+import PlayIcon from '../assets/svgs/play.svg';
+import SkipLeftIcon from '../assets/svgs/skipLeft.svg';
+import SkipRightIcon from '../assets/svgs/skipRight.svg';
+
 import { ref, reactive } from 'vue';
 
 const props = defineProps({
@@ -89,6 +111,8 @@ const props = defineProps({
     required: true,
   },
 });
+
+const visualPlaying = ref(true);
 
 const sidebarTabs = reactive({
   settings: true,
@@ -226,15 +250,85 @@ $sidebar-width: 43.2em;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      padding: 10vh 1em 20vh;
       margin-left: auto;
 
       // better than this
+      height: 100%;
       width: 57%;
       transition: width 200ms ease-out;
 
       &.center {
-        margin-right: 5.33em;
+        // Length of navbar + current padding
+        padding-right: 6.33em;
         width: 100%;
+      }
+
+      .explanation {
+        color: $primary-dark;
+        font-size: 15px;
+        font-family: $secondary-font-stack;
+        font-weight: 400;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: flex-end;
+        gap: 3em;
+        margin: 0 auto;
+        padding-right: 9em;
+        width: 90%;
+
+        .control-button {
+          padding: 0;
+          border: 0;
+          outline: solid 0px $primary-white;
+          background: $primary-light;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
+          width: 12.5%;
+          max-width: 5em;
+          aspect-ratio: 1;
+          border-radius: 100%;
+          transition: all 50ms ease-out;
+
+          &:first-child {
+            margin-right: auto;
+          }
+
+          &:last-child {
+            margin-right: auto;
+          }
+
+          &:hover {
+            background: #d4cca7;
+          }
+
+          &:active {
+            outline: solid 3px $primary-white;
+            background: #d4cca7;
+            outline-offset: -2px;
+          }
+
+          .icon {
+            aspect-ratio: 1;
+            filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.08));
+            height: 40%;
+            width: 40%;
+
+            &.restart {
+              transform: translateX(-1px);
+              height: 53.5%;
+              width: 53.5%;
+            }
+
+            &.play {
+              transform: translateX(2px);
+            }
+          }
+        }
       }
     }
 
@@ -275,9 +369,9 @@ $sidebar-width: 43.2em;
           visibility: hidden;
           transition: visibility 200ms;
 
-          /* 
+          /*
             Have at width 0 when tab is closed to prevent situation where switching from tab 1 to tab 3 has large space between.
-            This causes the animation to be faster and look worse, and in the future if there were more tabs the situation would 
+            This causes the animation to be faster and look worse, and in the future if there were more tabs the situation would
             become worse.
           */
           // width: 0;
