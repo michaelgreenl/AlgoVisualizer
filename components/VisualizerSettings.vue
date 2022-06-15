@@ -32,6 +32,9 @@ const props = defineProps({
 
 <style lang="scss" scoped>
 .settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
   list-style: none;
   text-decoration: none;
   padding: 0;
@@ -47,6 +50,26 @@ const props = defineProps({
       font-weight: 400;
       font-size: 15px;
       color: $primary-black;
+    }
+
+    .number {
+      background: transparent;
+      border: 0;
+      border-bottom: solid $primary-dark 2px; 
+      text-align: center;
+      font-family: $secondary-font-stack;
+      font-weight: 400;
+      font-size: 15px;
+      color: $primary-black;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        opacity: 1;
+      }
+      
+      &:focus {
+        outline: none;
+      }
     }
 
     .radio {
