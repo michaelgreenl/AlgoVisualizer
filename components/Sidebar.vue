@@ -64,8 +64,7 @@ const emit = defineEmits(['sidebarToggled']);
 const sidebar = ref(null);
 const algoSidebar = ref(null);
 const dataSidebar = ref(null);
-
-let opened = ref(false);
+const opened = ref(false);
 
 const algorithms = reactive({
   backtracking: ['Hamiltonian', 'Knights Tour', 'N Queen', 'Sudoku'],
@@ -177,7 +176,7 @@ defineExpose({ sidebar, opened, toggleSidebar });
     height: 100%;
     width: 5.33em;
     padding: 1.75em 0;
-    box-shadow: 1px 0 1px rgba(153, 153, 153, 0.2);
+    box-shadow: 1px 0 1px $primary-light-grey;
     background: $secondary-white;
 
     .nav-item:last-child {
@@ -190,7 +189,7 @@ defineExpose({ sidebar, opened, toggleSidebar });
     z-index: 999;
     height: 100%;
     background-color: $primary-white;
-    box-shadow: 1px 0 1px rgba(153, 153, 153, 0.2);
+    box-shadow: 1px 0 1px $primary-light-grey;
   }
 }
 </style>
