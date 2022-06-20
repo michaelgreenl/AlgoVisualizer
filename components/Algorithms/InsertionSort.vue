@@ -138,21 +138,12 @@ watch(
 );
 
 onMounted(() => {
+  elementsDiv.value.children[0].classList.add('border-up-0');
   const arraySizeObserver = new ResizeObserver(() => {
     arrayWidth.value = arrayDiv.value.offsetWidth;
   });
   arraySizeObserver.observe(arrayDiv.value);
-  elementsDiv.value.children[0].classList.add('border-up-0');
 });
-
-function setCurrStep(val) {
-  currStep.value = val;
-
-  // If reset button was clicked
-  if (currStep.value === 0) {
-    // reset array, elements, settings, ...?
-  }
-}
 
 function playClick() {
   if (currStep.value === 0) {
@@ -169,14 +160,11 @@ function start() {
     elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
     elements[i].div.classList.add('border-up');
   }
-
-  // Shuffling array (FIXME: in the future, make sure the shuffling actually shuffles the array (i.e. more than just switching 2 elements))
-  elements.sort(() => Math.random() - 0.5);
+  shuffleArray(elements);
 
   setTimeout(() => {
     for (const [i, element] of elements.entries()) {
-      // translateX((newIndex - oldIndex) * 100%)
-      element.div.style.transitionDelay = `${i * 25}ms`
+      element.div.style.transitionDelay = `${i * 25}ms`;
       element.div.style.transform = `translateX(${(i - element.oldIndex) * 100}%)`;
     }
 
@@ -186,8 +174,26 @@ function start() {
           element.div.classList.add('border-down');
         }
       }
-    }, 400 + (visualizerSettings.value.arraySize.value * 25));
+    }, 400 + visualizerSettings.value.arraySize.value * 25);
   }, 350);
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length; i-- > 1; ) {
+    const j = Math.floor(Math.random() * i);
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+}
+
+function setCurrStep(val) {
+  currStep.value = val;
+
+  // If reset button was clicked
+  if (currStep.value === 0) {
+    // reset array, elements, settings, ...?
+  }
 }
 </script>
 
