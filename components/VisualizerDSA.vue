@@ -52,20 +52,24 @@
     </header>
     <div class="main">
       <div class="visual" :class="{ center: !sidebarOpen }">
-        <h2 class="explanation">1. Explanation</h2>
+        <h2 class="explanation" v-if="visualizerSettings.explanation.value">To start, hit play.</h2>
         <slot name="visual"></slot>
         <div class="controls">
-          <button class="control-button">
+          <button class="control-button" @click="restart">
             <RestartIcon class="icon restart" />
           </button>
-          <button class="control-button">
+          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep < 1">
             <SkipLeftIcon class="icon" />
           </button>
-          <button class="control-button" @click="visualPlaying = !visualPlaying">
+          <button class="control-button" @click="playClick">
             <PauseIcon class="icon" v-if="visualPlaying" />
             <PlayIcon class="icon play" v-else />
           </button>
-          <button class="control-button">
+          <button
+            class="control-button"
+            @click="emit('setCurrStep', currStep + 1)"
+            :disabled="currStep === steps.length"
+          >
             <SkipRightIcon class="icon" />
           </button>
         </div>
@@ -77,7 +81,7 @@
         >
           <div class="tab" :class="{ open: sidebarTabs.settings }">
             <slot name="settings">
-              <VisualizerSettings :settings="settings" />
+              <VisualizerSettings :visualPlaying="visualPlaying" />
             </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
@@ -106,21 +110,37 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  settings: {
-    type: Object,
+  currStep: {
+    type: Number,
+    required: true,
+  },
+  steps: {
+    type: Array,
     required: true,
   },
 });
 
-const visualPlaying = ref(true);
+const emit = defineEmits(['setCurrStep', 'playClick']);
 
+const visualizerSettings = useVisualizerSettings();
+
+const visualPlaying = ref(false);
+const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
   settings: true,
   explanation: false,
   description: false,
 });
 
-const sidebarOpen = ref(true);
+function playClick() {
+  visualPlaying.value = !visualPlaying.value;
+  emit('playClick');
+}
+
+function restart() {
+  emit('setCurrStep', 0);
+  visualPlaying.value = false;
+}
 
 function tabButtonClick(tab) {
   sidebarTabs[tab] = true;
@@ -132,6 +152,8 @@ function closeSidebar() {
   sidebarOpen.value = false;
   setTimeout(() => Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = false)), 100);
 }
+
+defineExpose({ visualPlaying });
 </script>
 
 <style lang="scss" scoped>
@@ -168,7 +190,7 @@ $sidebar-width: 43.2em;
       height: 2.5rem;
       width: $sidebar-width;
       padding: 0 1.25em;
-      border-bottom: solid $primary-light-grey 1px;
+      box-shadow: 2px 1px 1px $primary-light-grey;
 
       .close-button-enter-active .close-icon .line-one,
       .close-button-leave-active .close-icon .line-one {
@@ -266,7 +288,7 @@ $sidebar-width: 43.2em;
 
       .explanation {
         color: $primary-dark;
-        font-size: 15px;
+        font-size: 22px;
         font-family: $secondary-font-stack;
         font-weight: 400;
       }
