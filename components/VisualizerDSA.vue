@@ -81,7 +81,12 @@
         >
           <div class="tab" :class="{ open: sidebarTabs.settings }">
             <slot name="settings">
-              <VisualizerSettings :visualPlaying="visualPlaying" />
+              <VisualizerSettings
+                ref="settings"
+                :visualPlaying="visualPlaying"
+                :currStep="currStep"
+                @restart="restart"
+              />
             </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
@@ -123,6 +128,7 @@ const props = defineProps({
 const emit = defineEmits(['setCurrStep', 'playClick']);
 
 const visualizerSettings = useVisualizerSettings();
+const settings = ref(null);
 
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
@@ -133,6 +139,9 @@ const sidebarTabs = reactive({
 });
 
 function playClick() {
+  if (props.currStep === 0) {
+    settings.value.setUtilSettings();
+  }
   visualPlaying.value = !visualPlaying.value;
   emit('playClick');
 }
