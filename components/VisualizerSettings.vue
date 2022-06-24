@@ -64,7 +64,7 @@
         :value="currStep === 0 ? input.value : restartSettings[`${key}`]"
         :min="input.min"
         :max="input.max"
-        @input="inputCheck(key, $event.target.value)"
+        @input="inputCheck(key, parseInt($event.target.value, 10))"
       />
       <input
         v-else-if="input.type === 'checkbox' && input.requiresRestart"
@@ -101,9 +101,11 @@ const visualizerSettings = useVisualizerSettings();
 const defaultSettings = reactive({});
 const restartSettings = reactive({});
 const enableRestartBtn = computed(() => {
-  // If the visual hasn't been played yet or there are no restart settings 
+  // If the visual hasn't been played yet or there are no restart settings
   // (also used to prevent errors since there are no properties in restartSettings before component is mounted)
-  if (props.currStep === 0 || Object.keys(restartSettings).length === 0) { return true };
+  if (props.currStep === 0 || Object.keys(restartSettings).length === 0) {
+    return true;
+  }
   let btnDisabled = true;
   Object.keys(restartSettings).forEach((setting) => {
     if (restartSettings[`${setting}`] !== visualizerSettings.value[`${setting}`].value) {
@@ -130,17 +132,9 @@ function setUtilSettings(setDefault) {
 
 function inputCheck(key, inputVal) {
   if (props.currStep === 0) {
-    if (/\d/.test(inputVal)) {
-      visualizerSettings.value[`${key}`].value = parseInt(inputVal, 10);
-    } else {
-      visualizerSettings.value[`${key}`].value = inputVal;
-    }
+    visualizerSettings.value[`${key}`].value = inputVal;
   } else {
-    if (/\d/.test(inputVal)) {
-      restartSettings[`${key}`] = parseInt(inputVal, 10);
-    } else {
-      restartSettings[`${key}`] = inputVal;
-    }
+    restartSettings[`${key}`] = inputVal;
   }
 }
 
