@@ -9,6 +9,8 @@
       @playClick="playClick"
     >
       <template #visual>
+        <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
+              Incrementing with the arraySize works to keep the div responsive -->
         <div
           ref="arrayDiv"
           v-if="visualizerSettings.visual.value === 'Array'"
@@ -18,7 +20,6 @@
           <Pointer class="pointer one" />
           <Pointer class="pointer two" />
           <div ref="elementsDiv" class="elements">
-            <!-- for bounded fontSized style, Initial aspectRatio for 8 elements is 12, so add 4 -->
             <TransitionGroup name="element" appear>
               <div
                 v-for="(element, i) in array"
@@ -53,10 +54,10 @@
 <script setup>
 import Pointer from '../../assets/svgs/polygonPointer.svg';
 
-import { onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 
 const visualizerSettings = useVisualizerSettings();
-visualizerSettings.value = {
+visualizerSettings.value = reactive({
   visual: {
     label: 'Visual',
     type: 'radio',
@@ -95,7 +96,7 @@ visualizerSettings.value = {
     value: true,
     requiresRestart: false,
   },
-};
+});
 
 const steps = reactive([{ explanation: '' }]);
 const visualizer = ref(null);
@@ -105,6 +106,10 @@ const arrayWidth = ref(0);
 const elementsDiv = ref(null);
 const elements = reactive([]);
 const array = reactive([1, 2, 3, 4, 5, 6, 7, 8]);
+const transitionSpeed = reactive({
+  string: computed(() => `${1000 - visualizerSettings.value.speed.value * 10}ms`),
+  int: computed(() => 1000 - visualizerSettings.value.speed.value * 10),
+});
 
 watch(
   () => visualizerSettings.value.elementType.value,
@@ -147,6 +152,7 @@ onMounted(() => {
 
 function playClick() {
   if (currStep.value === 0) {
+    currStep.value += 1;
     start();
   } else if (visualizer.value.visualPlaying) {
     // start animations
@@ -164,7 +170,7 @@ function start() {
 
   setTimeout(() => {
     for (const [i, element] of elements.entries()) {
-      element.div.style.transitionDelay = `${i * 25}ms`;
+      element.div.style.transition = `transform calc(${transitionSpeed.string} * 0.8) ease-out ${i * 25}ms`;
       element.div.style.transform = `translateX(${(i - element.oldIndex) * 100}%)`;
     }
 
@@ -172,10 +178,11 @@ function start() {
       for (const [i, element] of elements.entries()) {
         if (i !== 0) {
           element.div.classList.add('border-down');
+          element.div.classList.remove('border-up');
         }
       }
-    }, 400 + visualizerSettings.value.arraySize.value * 25);
-  }, 350);
+    }, transitionSpeed.int + visualizerSettings.value.arraySize.value * 25);
+  }, transitionSpeed.int * 0.75);
 }
 
 function shuffleArray(arr) {
@@ -189,10 +196,9 @@ function shuffleArray(arr) {
 
 function setCurrStep(val) {
   currStep.value = val;
-
-  // If reset button was clicked
+  // If restart button was clicked
   if (currStep.value === 0) {
-    // reset array, elements, settings, ...?
+    // reset array, elements, settings, border-up/down classes on element div's?
   }
 }
 </script>
@@ -246,7 +252,7 @@ function setCurrStep(val) {
       .element-move,
       .element-enter-active,
       .element-leave-active {
-        transition: all 0ms linear;
+        transition: all 150ms ease-out;
       }
 
       .element-enter-from,
@@ -260,7 +266,6 @@ function setCurrStep(val) {
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: transform 350ms ease-out;
 
         &::after {
           content: '';
@@ -274,19 +279,19 @@ function setCurrStep(val) {
 
         &.border-up-0 {
           &::after {
-            animation: border-up 0ms ease forwards;
+            animation: border-up ease forwards;
           }
         }
 
         &.border-up {
           &::after {
-            animation: border-up 400ms ease forwards;
+            animation: border-up calc(v-bind('transitionSpeed.string') * 0.75) ease forwards;
           }
         }
 
         &.border-down {
           &::after {
-            animation: border-down 400ms ease forwards;
+            animation: border-down calc(v-bind('transitionSpeed.string') * 0.75) ease forwards;
           }
         }
 
