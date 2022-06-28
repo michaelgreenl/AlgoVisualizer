@@ -2,81 +2,64 @@
   <ul class="settings">
     <li class="input" v-for="(input, key) in visualizerSettings" :key="input">
       <label class="label" :for="input.label">{{ input.label }}:</label>
-      <div v-if="input.type === 'radio' && !input.requiresRestart" class="radio">
+      <div v-if="input.type === 'radio'" class="radio">
         <div class="radio-input" v-for="option in input.options" :key="option">
-          <input :class="input.type" :type="input.type" :name="option" :value="option" v-model="input.value" />
-          <label class="label" :for="option">{{ option }}</label>
-        </div>
-      </div>
-      <input
-        v-else-if="input.type === 'range' && !input.requiresRestart"
-        :class="input.type"
-        :type="input.type"
-        :name="input.label"
-        v-model="input.value"
-        :min="input.min"
-        :max="input.max"
-      />
-      <input
-        v-else-if="input.type === 'number' && !input.requiresRestart"
-        :class="input.type"
-        :type="input.type"
-        :name="input.label"
-        v-model="input.value"
-        :min="input.min"
-        :max="input.max"
-      />
-      <input
-        v-else-if="input.type === 'checkbox' && !input.requiresRestart"
-        :class="input.type"
-        :type="input.type"
-        :name="input.label"
-        v-model="input.value"
-      />
-      <div v-else-if="input.type === 'radio' && input.requiresRestart" class="radio">
-        <div class="radio-input" v-for="(option, index) in input.options" :key="option">
           <input
+            v-if="input.tempValue"
             :class="input.type"
             :type="input.type"
-            :name="input.label"
+            :name="option"
             :value="option"
-            :checked="index === 0"
-            @input="inputCheck(key, $event.target.value)"
+            v-model="input.tempValue"
+            @input="onInput(key, input.requiresRestart, $event.target.value, true)"
+          />
+          <input
+            v-else
+            :class="input.type"
+            :type="input.type"
+            :name="option"
+            :value="option"
+            v-model="input.state.value"
+            @input="onInput(key, input.requiresRestart)"
           />
           <label class="label" :for="option">{{ option }}</label>
         </div>
       </div>
       <input
-        v-else-if="input.type === 'range' && input.requiresRestart"
+        v-else-if="input.type === 'range'"
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        :value="currStep === 0 ? input.value : restartSettings[`${key}`]"
+        v-model="input.state.value"
         :min="input.min"
         :max="input.max"
-        @input="inputCheck(key, $event.target.value)"
+        @input="onInput(key, input.requiresRestart)"
       />
       <input
-        v-else-if="input.type === 'number' && input.requiresRestart"
+        v-else-if="input.type === 'number'"
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        :value="currStep === 0 ? input.value : restartSettings[`${key}`]"
+        v-model="input.state.value"
         :min="input.min"
         :max="input.max"
-        @input="inputCheck(key, parseInt($event.target.value, 10))"
+        @input="onInput(key, input.requiresRestart)"
       />
       <input
-        v-else-if="input.type === 'checkbox' && input.requiresRestart"
+        v-else-if="input.type === 'checkbox'"
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        :checked="currStep === 0 ? input.value : restartSettings[`${key}`]"
-        @input="inputCheck(key, $event.target.checked)"
+        v-model="input.state.value"
+        :true-value="input.trueValue"
+        :false-value="input.falseValue"
+        @input="onInput(key, input.requiresRestart, $event.target.checked)"
       />
     </li>
     <li class="input">
-      <button class="restart" @click="restart" :disabled="enableRestartBtn">Restart</button>
+      <!-- Change :disabled to v-if and transition comp -->
+      <button class="settings-buttons" @click="reset" :disabled="currStep < 0 && enableRestartBtn">Reset</button>
+      <button class="settings-buttons" @click="restart" :disabled="currStep < 0 && enableRestartBtn">Restart</button>
     </li>
   </ul>
 </template>
@@ -85,10 +68,6 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-  visualPlaying: {
-    type: Boolean,
-    required: true,
-  },
   currStep: {
     type: Number,
     required: true,
@@ -98,54 +77,33 @@ const props = defineProps({
 const emit = defineEmits(['restart']);
 
 const visualizerSettings = useVisualizerSettings();
-const defaultSettings = reactive({});
-const restartSettings = reactive({});
-const enableRestartBtn = computed(() => {
-  // If the visual hasn't been played yet or there are no restart settings
-  // (also used to prevent errors since there are no properties in restartSettings before component is mounted)
-  if (props.currStep === 0 || Object.keys(restartSettings).length === 0) {
-    return true;
-  }
-  let btnDisabled = true;
-  Object.keys(restartSettings).forEach((setting) => {
-    if (restartSettings[`${setting}`] !== visualizerSettings.value[`${setting}`].value) {
-      btnDisabled = false;
-    }
-  });
-  return btnDisabled;
-});
+// const defaultSettings = reactive({});
+const enableRestartBtn = ref(false);
 
-onMounted(() => {
-  setUtilSettings(true);
-});
-
-function setUtilSettings(setDefault) {
-  Object.keys(visualizerSettings.value).forEach((setting) => {
-    if (visualizerSettings.value[`${setting}`].requiresRestart) {
-      restartSettings[`${setting}`] = visualizerSettings.value[`${setting}`].value;
-    }
-    if (setDefault) {
-      defaultSettings[`${setting}`] = visualizerSettings.value[`${setting}`].value;
-    }
-  });
-}
-
-function inputCheck(key, inputVal) {
-  if (props.currStep === 0) {
-    visualizerSettings.value[`${key}`].value = inputVal;
+function onInput(key, requiresRestart, inputValue, multiInput) {
+  if (requiresRestart && props.currStep !== 0 && multiInput) {
+    enableRestartBtn.value = true;
+    visualizerSettings.value[`${key}`].tempValue = inputValue;
+  } else if (props.currStep !== 0 && requiresRestart) {
+    // change this to check if the restart settings are equal to the right settings selected when play was clicked ( setUtilSettings() ? )
+    enableRestartBtn.value = true;
+  } else if (typeof inputValue !== 'undefined') {
+    visualizerSettings.value[`${key}`].state = { value: inputValue };
   } else {
-    restartSettings[`${key}`] = inputVal;
+    visualizerSettings.value[`${key}`].state = { value: visualizerSettings.value[`${key}`].state.value };
   }
 }
 
 function restart() {
-  Object.keys(restartSettings).forEach((setting) => {
-    visualizerSettings.value[`${setting}`].value = restartSettings[`${setting}`];
+  Object.keys(visualizerSettings.value).forEach((setting) => {
+    if (visualizerSettings.value[`${setting}`].requiresRestart && visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
+      visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].tempValue };
+    } else if (visualizerSettings.value[`${setting}`].requiresRestart) {
+      visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].state.value };
+    }
   });
   emit('restart');
 }
-
-defineExpose({ setUtilSettings });
 </script>
 
 <style lang="scss" scoped>

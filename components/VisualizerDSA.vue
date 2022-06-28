@@ -52,7 +52,7 @@
     </header>
     <div class="main">
       <div class="visual" :class="{ center: !sidebarOpen }">
-        <h2 class="explanation" v-if="visualizerSettings.explanation.value">To start, hit play.</h2>
+        <h2 class="explanation" v-if="visualizerSettings.explanation.state.value">To start, hit play.</h2>
         <slot name="visual"></slot>
         <div class="controls">
           <button class="control-button" @click="restart">
@@ -83,7 +83,6 @@
             <slot name="settings">
               <VisualizerSettings
                 ref="settings"
-                :visualPlaying="visualPlaying"
                 :currStep="currStep"
                 @restart="restart"
               />
@@ -139,9 +138,6 @@ const sidebarTabs = reactive({
 });
 
 function playClick() {
-  if (props.currStep === 0) {
-    settings.value.setUtilSettings();
-  }
   visualPlaying.value = !visualPlaying.value;
   emit('playClick');
 }

@@ -13,9 +13,9 @@
               Incrementing with the arraySize works to keep the div responsive -->
         <div
           ref="arrayDiv"
-          v-if="visualizerSettings.visual.value === 'Array'"
+          v-if="visualizerSettings.visual.state.value === 'Array'"
           class="array"
-          :style="{ aspectRatio: `${visualizerSettings.arraySize.value + 4}/2` }"
+          :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }"
         >
           <Pointer class="pointer one" />
           <Pointer class="pointer two" />
@@ -25,7 +25,9 @@
                 v-for="(element, i) in array"
                 :key="i"
                 class="element"
-                :style="{ fontSize: `clamp(25px, ${arrayWidth / (2 * visualizerSettings.arraySize.value)}px, 45px)` }"
+                :style="{
+                  fontSize: `clamp(25px, ${arrayWidth / (2 * visualizerSettings.arraySize.state.value)}px, 45px)`,
+                }"
               >
                 <span class="value">{{ element }}</span>
               </div>
@@ -34,10 +36,12 @@
           <div class="indices">
             <TransitionGroup name="element" appear>
               <div
-                v-for="index in visualizerSettings.arraySize.value"
+                v-for="index in visualizerSettings.arraySize.state.value"
                 :key="index"
                 class="index"
-                :style="{ fontSize: `clamp(12px, ${arrayWidth / (5 * visualizerSettings.arraySize.value)}px, 16px)` }"
+                :style="{
+                  fontSize: `clamp(12px, ${arrayWidth / (5 * visualizerSettings.arraySize.state.value)}px, 16px)`,
+                }"
               >
                 <span class="value">{{ index - 1 }}</span>
               </div>
@@ -54,15 +58,36 @@
 <script setup>
 import Pointer from '../../assets/svgs/polygonPointer.svg';
 
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive, shallowReactive } from 'vue';
 
 const visualizerSettings = useVisualizerSettings();
-visualizerSettings.value = reactive({
+
+const arraySize = shallowReactive({
+  label: 'Elements',
+  type: 'number',
+  min: 8,
+  get max() {
+    return visualizerSettings.value.visual.value === 'Array' ? 15 : 200;
+  },
+  state: { value: 8 },
+  requiresRestart: true,
+});
+
+const elementType = shallowReactive({
+  label: 'Element Type',
+  type: 'radio',
+  options: ['Range', 'Random'],
+  state: { value: 'Range' },
+  tempValue: 'Range',
+  requiresRestart: true,
+});
+
+visualizerSettings.value = {
   visual: {
     label: 'Visual',
     type: 'radio',
     options: ['Array', 'Bar Graph'],
-    value: 'Array',
+    state: { value: 'Array' },
     requiresRestart: false,
   },
   speed: {
@@ -70,33 +95,20 @@ visualizerSettings.value = reactive({
     type: 'range',
     min: 0,
     max: 100,
-    value: 50,
+    state: { value: 50 },
     requiresRestart: false,
   },
-  arraySize: {
-    label: 'Elements',
-    type: 'number',
-    min: 8,
-    get max() {
-      return visualizerSettings.value.visual.value === 'Array' ? 15 : 200;
-    },
-    value: 8,
-    requiresRestart: true,
-  },
-  elementType: {
-    label: 'Element Type',
-    type: 'radio',
-    options: ['Range', 'Random'],
-    value: 'Range',
-    requiresRestart: true,
-  },
+  arraySize,
+  elementType,
   explanation: {
     label: 'Show Explanation',
     type: 'checkbox',
-    value: true,
+    trueValue: true,
+    falseValue: false,
+    state: { value: true },
     requiresRestart: false,
   },
-});
+};
 
 const steps = reactive([{ explanation: '' }]);
 const visualizer = ref(null);
@@ -107,21 +119,21 @@ const elementsDiv = ref(null);
 const elements = reactive([]);
 const array = reactive([1, 2, 3, 4, 5, 6, 7, 8]);
 const transitionSpeed = reactive({
-  string: computed(() => `${1000 - visualizerSettings.value.speed.value * 10}ms`),
-  int: computed(() => 1000 - visualizerSettings.value.speed.value * 10),
+  string: computed(() => `${1000 - visualizerSettings.value.speed.state.value * 10}ms`),
+  int: computed(() => 1000 - visualizerSettings.value.speed.state.value * 10),
 });
 
 watch(
-  () => visualizerSettings.value.elementType.value,
+  () => visualizerSettings.value.elementType.state.value,
   (currVal) => {
     array.length = 0;
     if (currVal === 'Random') {
-      for (let i = 1; i <= visualizerSettings.value.arraySize.value; i++) {
+      for (let i = 1; i <= visualizerSettings.value.arraySize.state.value; i++) {
         array.push(Math.floor(Math.random() * 20));
       }
       array.sort((a, b) => a - b);
     } else {
-      for (let i = 1; i <= visualizerSettings.value.arraySize.value; i++) {
+      for (let i = 1; i <= visualizerSettings.value.arraySize.state.value; i++) {
         array.push(i);
       }
     }
@@ -129,15 +141,15 @@ watch(
 );
 
 watch(
-  () => visualizerSettings.value.arraySize.value,
+  () => visualizerSettings.value.arraySize.state.value,
   (currVal, oldVal) => {
     if (oldVal > currVal) {
       array.pop();
-    } else if (visualizerSettings.value.elementType.value === 'Random') {
+    } else if (visualizerSettings.value.elementType.state.value === 'Random') {
       array.push(Math.floor(Math.random() * 20));
       array.sort((a, b) => a - b);
     } else {
-      array.push(visualizerSettings.value.arraySize.value);
+      array.push(visualizerSettings.value.arraySize.state.value);
     }
   },
 );
@@ -181,7 +193,7 @@ function start() {
           element.div.classList.remove('border-up');
         }
       }
-    }, transitionSpeed.int + visualizerSettings.value.arraySize.value * 25);
+    }, transitionSpeed.int + visualizerSettings.value.arraySize.state.value * 25);
   }, transitionSpeed.int * 0.75);
 }
 
