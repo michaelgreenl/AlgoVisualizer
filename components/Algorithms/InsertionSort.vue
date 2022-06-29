@@ -26,7 +26,7 @@
                 :key="i"
                 class="element"
                 :style="{
-                  fontSize: `clamp(25px, ${arrayWidth / (2 * visualizerSettings.arraySize.state.value)}px, 45px)`,
+                  fontSize: `clamp(25px, ${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.4}px, 45px)`,
                 }"
               >
                 <span class="value">{{ element }}</span>
@@ -40,7 +40,7 @@
                 :key="index"
                 class="index"
                 :style="{
-                  fontSize: `clamp(12px, ${arrayWidth / (5 * visualizerSettings.arraySize.state.value)}px, 16px)`,
+                  fontSize: `clamp(12px, ${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.2}px, 16px)`,
                 }"
               >
                 <span class="value">{{ index - 1 }}</span>
@@ -59,6 +59,7 @@
 import Pointer from '../../assets/svgs/polygonPointer.svg';
 
 import { computed, onMounted, reactive, shallowReactive } from 'vue';
+import { gsap } from 'gsap';
 
 const visualizerSettings = useVisualizerSettings();
 
@@ -67,7 +68,7 @@ const arraySize = shallowReactive({
   type: 'number',
   min: 8,
   get max() {
-    return visualizerSettings.value.visual.value === 'Array' ? 15 : 200;
+    return visualizerSettings.value.visual.state.value === 'Array' ? 15 : 200;
   },
   state: { value: 8 },
   requiresRestart: true,
