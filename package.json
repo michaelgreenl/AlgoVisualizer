@@ -25,6 +25,7 @@
     "vite-plugin-eslint": "^1.6.0"
   },
   "dependencies": {
+    "gsap": "^3.10.4",
     "vite-svg-loader": "^3.3.0",
     "vue": "^3.2.33"
   }
