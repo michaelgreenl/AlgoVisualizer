@@ -138,6 +138,7 @@ const sidebarTabs = reactive({
 });
 
 function playClick() {
+  settings.value.setRestartSettings();
   visualPlaying.value = !visualPlaying.value;
   emit('playClick');
 }

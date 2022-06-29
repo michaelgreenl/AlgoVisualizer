@@ -20,7 +20,7 @@
             :name="option"
             :value="option"
             v-model="input.state.value"
-            @input="onInput(key, input.requiresRestart)"
+            @input="onInput(key, input.requiresRestart, $event.target.value)"
           />
           <label class="label" :for="option">{{ option }}</label>
         </div>
@@ -33,17 +33,17 @@
         v-model="input.state.value"
         :min="input.min"
         :max="input.max"
-        @input="onInput(key, input.requiresRestart)"
+        @input="onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <input
         v-else-if="input.type === 'number'"
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        v-model="input.state.value"
+        v-model.number="input.state.value"
         :min="input.min"
         :max="input.max"
-        @input="onInput(key, input.requiresRestart)"
+        @input="onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <input
         v-else-if="input.type === 'checkbox'"
@@ -57,15 +57,18 @@
       />
     </li>
     <li class="input">
-      <!-- Change :disabled to v-if and transition comp -->
-      <button class="settings-buttons" @click="reset" :disabled="currStep < 0 && enableRestartBtn">Reset</button>
-      <button class="settings-buttons" @click="restart" :disabled="currStep < 0 && enableRestartBtn">Restart</button>
+      <transition name="">
+        <button class="settings-buttons" @click="reset" v-show="showResetBtn">Reset</button>
+      </transition>
+      <transition name="">
+        <button class="settings-buttons" @click="restart" v-show="currStep > 0 && showRestartBtn">Restart</button>
+      </transition>
     </li>
   </ul>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, reactive } from 'vue';
 
 const props = defineProps({
   currStep: {
@@ -77,33 +80,56 @@ const props = defineProps({
 const emit = defineEmits(['restart']);
 
 const visualizerSettings = useVisualizerSettings();
-// const defaultSettings = reactive({});
-const enableRestartBtn = ref(false);
+const defaultSettings = reactive({});
+const restartSettings = reactive({});
+const showResetBtn = computed(() =>
+  Object.values(defaultSettings)
+    .map((setting) => setting.equal)
+    .includes(false),
+);
+const showRestartBtn = computed(() =>
+  Object.values(restartSettings)
+    .map((setting) => setting.equal)
+    .includes(false),
+);
+
+onMounted(() => {
+  Object.keys(visualizerSettings.value).forEach((setting) => {
+    defaultSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
+    restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
+  });
+});
 
 function onInput(key, requiresRestart, inputValue, multiInput) {
+  defaultSettings[`${key}`].equal = defaultSettings[`${key}`].value === inputValue;
+  restartSettings[`${key}`].equal = props.currStep === 0 ? true : restartSettings[`${key}`].value === inputValue;
+
   if (requiresRestart && props.currStep !== 0 && multiInput) {
-    enableRestartBtn.value = true;
     visualizerSettings.value[`${key}`].tempValue = inputValue;
-  } else if (props.currStep !== 0 && requiresRestart) {
-    // change this to check if the restart settings are equal to the right settings selected when play was clicked ( setUtilSettings() ? )
-    enableRestartBtn.value = true;
-  } else if (typeof inputValue !== 'undefined') {
+  } else if (props.currStep === 0 || !requiresRestart) {
     visualizerSettings.value[`${key}`].state = { value: inputValue };
-  } else {
-    visualizerSettings.value[`${key}`].state = { value: visualizerSettings.value[`${key}`].state.value };
   }
+}
+
+function setRestartSettings() {
+  Object.keys(visualizerSettings.value).forEach((setting) => {
+    restartSettings[`${setting}`].value = visualizerSettings.value[`${setting}`].state.value;
+  });
 }
 
 function restart() {
   Object.keys(visualizerSettings.value).forEach((setting) => {
-    if (visualizerSettings.value[`${setting}`].requiresRestart && visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
+    if (visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
       visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].tempValue };
     } else if (visualizerSettings.value[`${setting}`].requiresRestart) {
       visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].state.value };
     }
+    restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
   });
   emit('restart');
 }
+
+defineExpose({ setRestartSettings });
 </script>
 
 <style lang="scss" scoped>
