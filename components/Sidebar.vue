@@ -57,8 +57,6 @@ import ContactIcon from '../assets/svgs/contact.svg';
 
 import { ref, reactive } from 'vue';
 
-const selectedVisualizer = useSelectedVisualizer();
-
 const emit = defineEmits(['sidebarToggled']);
 
 const sidebar = ref(null);

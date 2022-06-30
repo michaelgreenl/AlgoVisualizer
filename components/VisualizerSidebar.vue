@@ -16,7 +16,7 @@
     <div class="search-results" v-if="userInput">
       <ul class="result-list" v-if="Object.keys(searchResults).length">
         <li v-for="item in Object.keys(searchResults)" :key="item">
-          <button class="result" :disabled="selectedVisualizer === item" @click="selectedVisualizer = item">
+          <button class="result" :disabled="route.params.visualizer === item.replaceAll(/[\s\-*\']/g, '')" @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)">
             <div class="item">
               <span class="item-text" v-for="(itemIndex, i) in searchResults[item].indices" :key="itemIndex">
                 <span v-if="!i">
@@ -74,7 +74,7 @@
           ]"
         >
           <li v-for="content in dropdownContent[category]" :key="content">
-            <button class="item" :disabled="selectedVisualizer === content" @click="selectedVisualizer = content">
+            <button class="item" :disabled="route.params.visualizer === content.replaceAll(/[\s\-*\']/g, '')" @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)">
               <span class="content">{{ content }}</span>
             </button>
           </li>
@@ -89,6 +89,9 @@ import ArrowDownIcon from '../assets/svgs/arrowDown.svg';
 import SearchIcon from '../assets/svgs/search.svg';
 
 import { ref, reactive } from 'vue';
+
+const router = useRouter();
+const route = useRoute();
 
 const props = defineProps({
   dropdownContent: {
@@ -105,7 +108,6 @@ const props = defineProps({
   },
 });
 
-const selectedVisualizer = useSelectedVisualizer();
 const userInput = ref(null);
 const searchResults = reactive({});
 const openDropdowns = reactive(new Set());

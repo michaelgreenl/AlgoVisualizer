@@ -1,11 +1,17 @@
 <template>
-  <main ref="index" class="index" @click="sidebarOpen ? closeSidebar($event) : null">
+  <main ref="visualizer" class="visualizer" @click="sidebarOpen ? closeSidebar($event) : null">
     <Sidebar ref="sidebar" @sidebarToggled="sidebarToggled" />
+    <component :is="visualizerComp" />
   </main>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { shallowRef, ref, onMounted } from 'vue';
+
+const route = useRoute();
+const visualizerComp = shallowRef(
+  defineAsyncComponent(() => import(`../components/${route.params.category}/${route.params.visualizer}.vue`)),
+);
 
 const sidebar = ref(null);
 const sidebarOpen = ref(false);
@@ -32,8 +38,8 @@ function sidebarToggled(currSidebar) {
 }
 </script>
 
-<style lang="scss" scoped>
-.index {
+<style lang="scss">
+.visualizer {
   font-size: 12px;
   position: relative;
   z-index: 1;
@@ -42,4 +48,4 @@ function sidebarToggled(currSidebar) {
   width: 100vw;
   background: $primary-white;
 }
-</style> -->
+</style>
