@@ -3,7 +3,7 @@
     <h1 class="header">{{ title }}</h1>
 
     <div class="search">
-      <SearchIcon />
+      <SearchIcon class="search-icon" />
       <input
         class="search-input"
         :placeholder="`Search ${title}`"
@@ -124,7 +124,7 @@ function filterSearch() {
         if (compareVal.includes(userInput.value.toLowerCase())) {
           searchResults[val] = { category: key, indices: [] };
 
-          // FIXME: account for special characters
+          // FIXME: account for special characters (* currently causes error since 'A* Tree Search' exists in algorithms data)
 
           // Looking for the indices of userInput to eventually emphasize in the item
           const regexInp = new RegExp(userInput.value.toLowerCase(), 'g');
@@ -184,6 +184,11 @@ defineExpose({ openDropdowns, userInput });
     border-radius: 8px;
     background-color: $primary-bright;
     color: $primary-black;
+
+    .search-icon {
+      height: 12px;
+      width: 12px;
+    }
 
     .search-input {
       border: 0;
@@ -300,6 +305,8 @@ defineExpose({ openDropdowns, userInput });
       transition: color 100ms ease;
 
       .arrow-icon {
+        width: 9px;
+        height: 6px; 
         opacity: 0;
         transform: rotate(180deg);
         transition: opacity 100ms ease, transform 125ms ease-in-out;

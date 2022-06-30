@@ -83,6 +83,8 @@ const mouseEntered = ref(false);
       position: absolute;
       top: 6px;
       left: -4px;
+      height: 12px;
+      width: 6px;
     }
 
     .tooltip-text {

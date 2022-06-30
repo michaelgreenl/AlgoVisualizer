@@ -1,7 +1,7 @@
 <template>
   <div ref="sidebar" class="sidebar">
     <nav class="sidebar-nav">
-      <LogoIcon />
+      <LogoIcon class="logo" />
       <NavItem
         ref="algoNavItem"
         class="nav-item"
@@ -11,7 +11,7 @@
         @click="toggleSidebar('algorithms')"
       >
         <template #icon>
-          <AlgorithmsIcon class="icon" />
+          <AlgorithmsIcon class="icon algorithms" />
         </template>
       </NavItem>
       <NavItem
@@ -23,12 +23,12 @@
         @click="toggleSidebar('dataStructures')"
       >
         <template #icon>
-          <DataStructuresIcon class="icon" />
+          <DataStructuresIcon class="icon data-structures" />
         </template>
       </NavItem>
       <NavItem class="nav-item" tooltip="Contact" :sidebarOpened="opened">
         <template #icon>
-          <ContactIcon class="icon" />
+          <ContactIcon class="icon contact" />
         </template>
       </NavItem>
     </nav>
@@ -178,6 +178,30 @@ defineExpose({ sidebar, opened, toggleSidebar });
     padding: 1.75em 0;
     box-shadow: 1px 0 1px $primary-light-grey;
     background: $secondary-white;
+
+    .logo {
+      height: 33px;
+      width: 41px;
+    }
+
+    .nav-item {
+      .icon {
+        &.algorithms {
+          height: 34px;
+          width: 34px;
+        }
+        
+        &.data-structures {
+          height: 28px;
+          width: 29px;
+        }
+
+        &.contact {
+          height: 30px;
+          width: 27px;
+        }
+      }
+    }
 
     .nav-item:last-child {
       margin-top: auto;
