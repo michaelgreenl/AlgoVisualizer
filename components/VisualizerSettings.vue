@@ -129,6 +129,20 @@ function restart() {
   emit('restart');
 }
 
+function reset() {
+  Object.keys(visualizerSettings.value).forEach((setting) => {
+    if (props.currStep > 0 && visualizerSettings.value[`${setting}`].requiresRestart) {
+      visualizerSettings.value[`${setting}`].state.value = defaultSettings[`${setting}`].value;
+      restartSettings[`${setting}`].equal = restartSettings[`${setting}`] === defaultSettings[`${setting}`].value;
+    } else if (visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
+      visualizerSettings.value[`${setting}`].tempValue = defaultSettings[`${setting}`].value;
+    } else {
+      visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].state.value };
+      restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
+    }
+  });
+}
+
 defineExpose({ setRestartSettings });
 </script>
 
