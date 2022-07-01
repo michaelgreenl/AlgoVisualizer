@@ -16,10 +16,14 @@
     <div class="search-results" v-if="userInput">
       <ul class="result-list" v-if="Object.keys(searchResults).length">
         <li v-for="item in Object.keys(searchResults)" :key="item">
-          <button class="result" :disabled="route.params.visualizer === item.replaceAll(/[\s\-*\']/g, '')" @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)">
+          <button
+            class="result"
+            :disabled="route.params.visualizer === item.replaceAll(/[\s\-*\']/g, '')"
+            @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
+          >
             <div class="item">
-              <span class="item-text" v-for="(itemIndex, i) in searchResults[item].indices" :key="itemIndex">
-                <span v-if="!i">
+              <span class="item-text" v-for="(itemIndex, index) in searchResults[item].indices" :key="itemIndex">
+                <span v-if="!index">
                   <mark class="highlight" v-if="item.toLowerCase().startsWith(userInput.toLowerCase())">
                     {{ item.substring(0, userInput.length) }}
                   </mark>
@@ -27,14 +31,14 @@
                     {{ item.substring(0, itemIndex) }}
                   </span>
                 </span>
-                <mark class="highlight" v-if="i || !item.toLowerCase().startsWith(userInput.toLowerCase())">
+                <mark class="highlight" v-if="index || !item.toLowerCase().startsWith(userInput.toLowerCase())">
                   {{ item.substring(itemIndex, itemIndex + userInput.length) }}
                 </mark>
-                <span v-if="searchResults[item].indices.length - 1 === i" class="item">
+                <span v-if="searchResults[item].indices.length - 1 === index" class="item">
                   {{ item.substring(itemIndex + userInput.length) }}
                 </span>
                 <span v-else>
-                  {{ item.substring(itemIndex + userInput.length, searchResults[item].indices[i + 1]) }}
+                  {{ item.substring(itemIndex + userInput.length, searchResults[item].indices[index + 1]) }}
                 </span>
               </span>
             </div>
@@ -74,7 +78,11 @@
           ]"
         >
           <li v-for="content in dropdownContent[category]" :key="content">
-            <button class="item" :disabled="route.params.visualizer === content.replaceAll(/[\s\-*\']/g, '')" @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)">
+            <button
+              class="item"
+              :disabled="route.params.visualizer === content.replaceAll(/[\s\-*\']/g, '')"
+              @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
+            >
               <span class="content">{{ content }}</span>
             </button>
           </li>
@@ -118,7 +126,7 @@ function filterSearch() {
     delete searchResults[key];
   });
 
-  // Preventing bug from a blank string input
+  // Preventing infinite while loop caused from a blank string input
   if (userInput.value !== '') {
     Object.keys(props.dropdownContent).forEach((key) => {
       for (const val of props.dropdownContent[key]) {
@@ -308,7 +316,7 @@ defineExpose({ openDropdowns, userInput });
 
       .arrow-icon {
         width: 9px;
-        height: 6px; 
+        height: 6px;
         opacity: 0;
         transform: rotate(180deg);
         transition: opacity 100ms ease, transform 125ms ease-in-out;
