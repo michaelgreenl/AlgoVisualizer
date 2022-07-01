@@ -1,36 +1,9 @@
 <template>
-  <main ref="index" class="index" @click="sidebarOpen ? closeSidebar($event) : null">
-    <Sidebar ref="sidebar" @sidebarToggled="sidebarToggled" />
-  </main>
+  <div class="index">
+  </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-
-const sidebar = ref(null);
-const sidebarOpen = ref(false);
-const openedSidebar = ref();
-
-// Closing Sidebar if click event was fired on the index element.
-function closeSidebar($event, forceClose) {
-  if (!sidebar.value.sidebar.contains($event.target) || forceClose) {
-    sidebar.value.toggleSidebar(openedSidebar.value);
-  }
-}
-
-/*
-  Emitted function when NavItem is clicked in Sidebar. Enabling the click event listener if the sidebar is open, disabling it if
-  it was closed by the user clicking a NavItem.
-*/
-function sidebarToggled(currSidebar) {
-  if (sidebar.value.opened) {
-    sidebarOpen.value = true;
-    openedSidebar.value = Object.values(currSidebar)[0];
-  } else {
-    sidebarOpen.value = false;
-  }
-}
-</script>
+<script setup></script>
 
 <style lang="scss" scoped>
 .index {
@@ -42,4 +15,4 @@ function sidebarToggled(currSidebar) {
   width: 100vw;
   background: $primary-white;
 }
-</style> -->
+</style>
