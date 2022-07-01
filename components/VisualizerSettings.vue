@@ -131,11 +131,13 @@ function restart() {
 
 function reset() {
   Object.keys(visualizerSettings.value).forEach((setting) => {
-    if (props.currStep > 0 && visualizerSettings.value[`${setting}`].requiresRestart) {
+    if (props.currStep > 0 && visualizerSettings.value[`${setting}`].requiresRestart && !visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
       visualizerSettings.value[`${setting}`].state.value = defaultSettings[`${setting}`].value;
       restartSettings[`${setting}`].equal = restartSettings[`${setting}`] === defaultSettings[`${setting}`].value;
     } else if (props.currStep > 0 && visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
       visualizerSettings.value[`${setting}`].tempValue = defaultSettings[`${setting}`].value;
+      visualizerSettings.value[`${setting}`].state = { value: defaultSettings[`${setting}`].value };
+      restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
     } else {
       visualizerSettings.value[`${setting}`].state = { value: defaultSettings[`${setting}`].value };
       restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
