@@ -1,35 +1,23 @@
 <template>
-  <button
-    class="nav-item"
-    :class="{ greyscale: sidebarOpened && !itemToggled }"
-    @mouseenter="mouseEntered = true"
-    @mouseleave="mouseEntered = false"
-  >
-    <slot name="icon" class="nav-icon"></slot>
-    <transition name="fade" appear>
-      <div class="tooltip" :class="{ hidden: itemToggled }" @mouseenter="mouseEntered = false" v-if="mouseEntered && !itemToggled">
-        <PolygonTT class="polygon" />
-        <span class="tooltip-text">
-          {{ tooltip }}
-        </span>
-      </div>
-    </transition>
-  </button>
+  <transition name="fade" appear>
+    <div ref="tooltipDiv" class="tooltip" @mouseenter="mouseEntered = false" v-show="mouseEntered && !itemToggled">
+      <PolygonTT class="polygon" />
+      <span class="tooltip-text">
+        {{ tooltip }}
+      </span>
+    </div>
+  </transition>
 </template>
 
 <script setup>
 import PolygonTT from '../assets/svgs/polygon.svg';
 
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
   tooltip: {
     type: String,
     default: '',
-  },
-  sidebarOpened: {
-    type: Boolean,
-    default: false,
   },
   itemToggled: {
     type: Boolean,
@@ -37,7 +25,19 @@ const props = defineProps({
   },
 });
 
+const tooltipDiv = ref(null);
 const mouseEntered = ref(false);
+
+onMounted(() => {
+  tooltipDiv.value.parentNode.addEventListener('mouseenter', () => {
+    mouseEntered.value = true;
+  });
+  tooltipDiv.value.parentNode.addEventListener('mouseleave', () => {
+    mouseEntered.value = false;
+  });
+});
+
+defineExpose({ mouseEntered });
 </script>
 
 <style lang="scss" scoped>
@@ -50,10 +50,6 @@ const mouseEntered = ref(false);
   display: flex;
   justify-content: center;
   width: 100%;
-
-  &.greyscale {
-    filter: grayscale(0.8);
-  }
 
   .fade-enter-active {
     transition: all 100ms ease;
@@ -75,10 +71,6 @@ const mouseEntered = ref(false);
     border-radius: 7px;
     background: $primary-black;
 
-    &.hidden {
-      visibility: hidden;
-    }
-
     .polygon {
       position: absolute;
       top: 6px;
@@ -95,11 +87,5 @@ const mouseEntered = ref(false);
       white-space: nowrap;
     }
   }
-
-  // &:hover {
-  //   .tooltip {
-  //     opacity: 1;
-  //   }
-  // }
 }
 </style>

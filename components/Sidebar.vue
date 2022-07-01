@@ -1,38 +1,42 @@
 <template>
   <div ref="sidebar" class="sidebar">
     <nav class="sidebar-nav">
-      <NavItem class="nav-item" tooltip="Home" @click="router.push('/')">
-        <template #icon>
-          <LogoIcon class="icon logo" />
-        </template>  
-      </NavItem>
-      <NavItem
+      <button class="nav-item" @click="router.push('/')">
+        <Tooltip tooltip="Home" />
+        <LogoIcon class="icon logo" />
+      </button>
+      <button
         class="nav-item"
-        tooltip="Algorithms"
-        :sidebarOpened="opened"
-        :itemToggled="openSidebars.algorithms"
+        :class="{ greyscale: opened && !openSidebars.algorithms }"
         @click="toggleSidebar('algorithms')"
       >
-        <template #icon>
-          <AlgorithmsIcon class="icon algorithms" />
-        </template>
-      </NavItem>
-      <NavItem
+        <AlgorithmsIcon class="icon algorithms" />
+        <Tooltip
+          class="tooltip"
+          :addMouseListener="true"
+          :class="{ hidden: openSidebars.algorithms }"
+          :itemToggled="openSidebars.algorithms"
+          tooltip="Algorithms"
+        />
+      </button>
+      <button
         class="nav-item"
-        tooltip="Data Structures"
-        :sidebarOpened="opened"
-        :itemToggled="openSidebars.dataStructures"
+        :class="{ greyscale: opened && !openSidebars.dataStructures }"
         @click="toggleSidebar('dataStructures')"
       >
-        <template #icon>
-          <DataStructuresIcon class="icon data-structures" />
-        </template>
-      </NavItem>
-      <NavItem class="nav-item" tooltip="Contact" :sidebarOpened="opened" @click="router.push('/contact')">
-        <template #icon>
-          <ContactIcon class="icon contact" />
-        </template>
-      </NavItem>
+        <DataStructuresIcon class="icon data-structures" />
+        <Tooltip
+          class="tooltip"
+          :addMouseListener="true"
+          :class="{ hidden: openSidebars.dataStructures }"
+          :itemToggled="openSidebars.dataStructures"
+          tooltip="Data Structures"
+        />
+      </button>
+      <button class="nav-item" :class="{ greyscale: opened }" @click="router.push('/contact')">
+        <Tooltip tooltip="Contact" />
+        <ContactIcon class="icon contact" />
+      </button>
     </nav>
     <VisualizerSidebar
       ref="algoSidebar"
@@ -81,15 +85,7 @@ const algorithms = reactive({
     'Rabin-Karp',
     'Soundex',
   ],
-  pathfinding: [
-    'A* Tree Search',
-    'Bellman-Ford',
-    "Dial's",
-    "Dijkstra's",
-    'Floyd-Warshall',
-    'Johnson',
-    "Prim's",
-  ],
+  pathfinding: ['A* Tree Search', 'Bellman-Ford', "Dial's", "Dijkstra's", 'Floyd-Warshall', 'Johnson', "Prim's"],
   searching: ['Binary Search', 'Breadth-First Search', 'Best-First Search', 'Depth-First Search'],
   sorting: [
     'Bubble Sort',
@@ -131,7 +127,7 @@ const dataStructures = reactive({
   Object with booleans to know if an sidebar component is open. These values are used as props to open and close 
   the sidebars and also to disable the tooltip for their relative NavItem.
 */
-let openSidebars = reactive({
+const openSidebars = reactive({
   algorithms: false,
   dataStructures: false,
 });
@@ -181,8 +177,20 @@ defineExpose({ sidebar, opened, toggleSidebar });
     box-shadow: 1px 0 1px $primary-light-grey;
     background: $secondary-white;
 
-
     .nav-item {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+
+      &.greyscale {
+        filter: grayscale(0.8);
+      }
+
       .icon {
         &.logo {
           height: 33px;
@@ -192,7 +200,7 @@ defineExpose({ sidebar, opened, toggleSidebar });
           height: 34px;
           width: 34px;
         }
-        
+
         &.data-structures {
           height: 28px;
           width: 29px;
@@ -201,6 +209,12 @@ defineExpose({ sidebar, opened, toggleSidebar });
         &.contact {
           height: 30px;
           width: 27px;
+        }
+      }
+
+      .tooltip {
+        &.hidden {
+          visibility: hidden;
         }
       }
     }
