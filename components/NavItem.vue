@@ -25,11 +25,11 @@ import { ref } from 'vue';
 const props = defineProps({
   tooltip: {
     type: String,
-    required: true,
+    default: '',
   },
   sidebarOpened: {
     type: Boolean,
-    required: true,
+    default: false,
   },
   itemToggled: {
     type: Boolean,

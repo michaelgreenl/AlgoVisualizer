@@ -1,9 +1,12 @@
 <template>
   <div ref="sidebar" class="sidebar">
     <nav class="sidebar-nav">
-      <LogoIcon class="logo" />
+      <NavItem class="nav-item" tooltip="Home" @click="router.push('/')">
+        <template #icon>
+          <LogoIcon class="icon logo" />
+        </template>  
+      </NavItem>
       <NavItem
-        ref="algoNavItem"
         class="nav-item"
         tooltip="Algorithms"
         :sidebarOpened="opened"
@@ -15,7 +18,6 @@
         </template>
       </NavItem>
       <NavItem
-        ref="dataNavItem"
         class="nav-item"
         tooltip="Data Structures"
         :sidebarOpened="opened"
@@ -26,7 +28,7 @@
           <DataStructuresIcon class="icon data-structures" />
         </template>
       </NavItem>
-      <NavItem class="nav-item" tooltip="Contact" :sidebarOpened="opened">
+      <NavItem class="nav-item" tooltip="Contact" :sidebarOpened="opened" @click="router.push('/contact')">
         <template #icon>
           <ContactIcon class="icon contact" />
         </template>
@@ -56,6 +58,8 @@ import DataStructuresIcon from '../assets/svgs/dataStructures.svg';
 import ContactIcon from '../assets/svgs/contact.svg';
 
 import { ref, reactive } from 'vue';
+
+const router = useRouter();
 
 const emit = defineEmits(['sidebarToggled']);
 
@@ -177,13 +181,13 @@ defineExpose({ sidebar, opened, toggleSidebar });
     box-shadow: 1px 0 1px $primary-light-grey;
     background: $secondary-white;
 
-    .logo {
-      height: 33px;
-      width: 41px;
-    }
 
     .nav-item {
       .icon {
+        &.logo {
+          height: 33px;
+          width: 41px;
+        }
         &.algorithms {
           height: 34px;
           width: 34px;
