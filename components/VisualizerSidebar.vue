@@ -15,35 +15,35 @@
 
     <div class="search-results" v-if="userInput">
       <ul class="result-list" v-if="Object.keys(searchResults).length">
-        <li v-for="item in Object.keys(searchResults)" :key="item">
+        <li v-for="content in Object.keys(searchResults)" :key="content">
           <button
             class="result"
-            :disabled="route.params.visualizer === item.replaceAll(/[\s\-*\']/g, '')"
+            :disabled="route.params.visualizer === content.replaceAll(/[\s\-*\']/g, '')"
             @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
           >
             <div class="item">
-              <span class="item-text" v-for="(itemIndex, index) in searchResults[item].indices" :key="itemIndex">
+              <span class="item-text" v-for="(contentIndex, index) in searchResults[content].indices" :key="contentIndex">
                 <span v-if="!index">
-                  <mark class="highlight" v-if="item.toLowerCase().startsWith(userInput.toLowerCase())">
-                    {{ item.substring(0, userInput.length) }}
+                  <mark class="highlight" v-if="content.toLowerCase().startsWith(userInput.toLowerCase())">
+                    {{ content.substring(0, userInput.length) }}
                   </mark>
                   <span v-else>
-                    {{ item.substring(0, itemIndex) }}
+                    {{ content.substring(0, contentIndex) }}
                   </span>
                 </span>
-                <mark class="highlight" v-if="index || !item.toLowerCase().startsWith(userInput.toLowerCase())">
-                  {{ item.substring(itemIndex, itemIndex + userInput.length) }}
+                <mark class="highlight" v-if="index || !content.toLowerCase().startsWith(userInput.toLowerCase())">
+                  {{ content.substring(contentIndex, contentIndex + userInput.length) }}
                 </mark>
-                <span v-if="searchResults[item].indices.length - 1 === index" class="item">
-                  {{ item.substring(itemIndex + userInput.length) }}
+                <span v-if="searchResults[content].indices.length - 1 === index" class="item">
+                  {{ content.substring(contentIndex + userInput.length) }}
                 </span>
                 <span v-else>
-                  {{ item.substring(itemIndex + userInput.length, searchResults[item].indices[index + 1]) }}
+                  {{ content.substring(contentIndex + userInput.length, searchResults[content].indices[index + 1]) }}
                 </span>
               </span>
             </div>
             <span class="category">{{
-              `${searchResults[item].category.charAt(0).toUpperCase()}${searchResults[item].category.substring(1)}`
+              `${searchResults[content].category.charAt(0).toUpperCase()}${searchResults[content].category.substring(1)}`
             }}</span>
           </button>
         </li>
