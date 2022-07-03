@@ -12,7 +12,7 @@
             :name="option"
             :value="option"
             :checked="input.state.value === option"
-            @input="onRadioInput(key, input.requiresRestart, $event.target.value, input)"
+            @input="onRadioInput(key, $event.target.value, input)"
           />
           <label class="label" :for="option">{{ option }}</label>
         </div>
@@ -24,7 +24,7 @@
         :name="input.label"
         :min="input.min"
         :max="input.max"
-        :value="input.state.value"
+        v-model="input.state.value"
         @input="onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <input
@@ -34,7 +34,7 @@
         :name="input.label"
         :min="input.min"
         :max="input.max"
-        :value="input.state.value"
+        v-model="input.state.value"
         @input="onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <input
@@ -44,7 +44,7 @@
         :name="input.label"
         :true-value="input.trueValue"
         :false-value="input.falseValue"
-        :checked="input.state.value"
+        v-model="input.state.value"
         @input="onInput(key, input.requiresRestart, $event.target.checked)"
       />
     </li>
@@ -104,6 +104,8 @@ function onRadioInput(key, inputValue, input) {
     for (const option of input.options) {
       if (document.getElementById(`radio-input-${option}`).value !== inputValue) {
         document.getElementById(`radio-input-${option}`).checked = false;
+      } else {
+        document.getElementById(`radio-input-${option}`).checked = true;
       }
     }
     visualizerSettings.value[`${key}`].state.value = inputValue;
@@ -144,11 +146,12 @@ function reset() {
       } else {
         visualizerSettings.value[`${setting}`].state.value = defaultSettings[`${setting}`].value;
       }
-      restartSettings[`${setting}`].equal = restartSettings[`${setting}`] !== defaultSettings[`${setting}`].value;
+      restartSettings[`${setting}`].equal = restartSettings[`${setting}`] === defaultSettings[`${setting}`].value;
     } else {
       visualizerSettings.value[`${setting}`].state = { value: defaultSettings[`${setting}`].value };
       restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
     }
+    defaultSettings[`${setting}`].equal = true; 
   });
 }
 

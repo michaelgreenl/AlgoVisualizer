@@ -144,7 +144,9 @@ watch(
   () => visualizerSettings.value.arraySize.state.value,
   (currVal, oldVal) => {
     if (oldVal > currVal) {
-      array.pop();
+      while (array.length > currVal) {
+        array.pop();
+      }
     } else if (visualizerSettings.value.elementType.state.value === 'Random') {
       array.push(Math.floor(Math.random() * 20));
       array.sort((a, b) => a - b);
