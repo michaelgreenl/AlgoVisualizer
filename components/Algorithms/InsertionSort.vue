@@ -79,7 +79,6 @@ const elementType = shallowReactive({
   type: 'radio',
   options: ['Range', 'Random'],
   state: { value: 'Range' },
-  tempValue: 'Range',
   requiresRestart: true,
 });
 
@@ -112,11 +111,11 @@ visualizerSettings.value = {
 };
 
 const steps = reactive([{ explanation: '' }]);
-const visualizer = ref(null);
+const visualizer = ref();
 const currStep = ref(0);
-const arrayDiv = ref(null);
+const arrayDiv = ref();
 const arrayWidth = ref(0);
-const elementsDiv = ref(null);
+const elementsDiv = ref();
 const elements = reactive([]);
 const array = reactive([1, 2, 3, 4, 5, 6, 7, 8]);
 const transitionSpeed = reactive({

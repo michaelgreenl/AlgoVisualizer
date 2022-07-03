@@ -4,23 +4,15 @@
       <label class="label" :for="input.label">{{ input.label }}:</label>
       <div v-if="input.type === 'radio'" class="radio">
         <div class="radio-input" v-for="option in input.options" :key="option">
+          <!-- FIXME: Make this a ref instead of id (!* still make it distinct *!)-->
           <input
-            v-if="input.tempValue"
+            :id="`radio-input-${option}`"
             :class="input.type"
             :type="input.type"
             :name="option"
             :value="option"
-            v-model="input.tempValue"
-            @input="onInput(key, input.requiresRestart, $event.target.value, true)"
-          />
-          <input
-            v-else
-            :class="input.type"
-            :type="input.type"
-            :name="option"
-            :value="option"
-            v-model="input.state.value"
-            @input="onInput(key, input.requiresRestart, $event.target.value)"
+            :checked="input.state.value === option"
+            @input="onRadioInput(key, input.requiresRestart, $event.target.value, input)"
           />
           <label class="label" :for="option">{{ option }}</label>
         </div>
@@ -30,9 +22,9 @@
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        v-model="input.state.value"
         :min="input.min"
         :max="input.max"
+        :value="input.state.value"
         @input="onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <input
@@ -40,9 +32,9 @@
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        v-model.number="input.state.value"
         :min="input.min"
         :max="input.max"
+        :value="input.state.value"
         @input="onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <input
@@ -50,9 +42,9 @@
         :class="input.type"
         :type="input.type"
         :name="input.label"
-        v-model="input.state.value"
         :true-value="input.trueValue"
         :false-value="input.falseValue"
+        :checked="input.state.value"
         @input="onInput(key, input.requiresRestart, $event.target.checked)"
       />
     </li>
@@ -100,13 +92,30 @@ onMounted(() => {
   });
 });
 
-function onInput(key, requiresRestart, inputValue, multiInput) {
+function checkUtilSettings(key, inputValue) {
   defaultSettings[`${key}`].equal = defaultSettings[`${key}`].value === inputValue;
   restartSettings[`${key}`].equal = props.currStep === 0 ? true : restartSettings[`${key}`].value === inputValue;
+}
 
-  if (requiresRestart && props.currStep !== 0 && multiInput) {
-    visualizerSettings.value[`${key}`].tempValue = inputValue;
-  } else if (props.currStep === 0 || !requiresRestart) {
+function onRadioInput(key, inputValue, input) {
+  checkUtilSettings(key, inputValue);
+
+  if (input.requiresRestart && props.currStep !== 0) {
+    for (const option of input.options) {
+      if (document.getElementById(`radio-input-${option}`).value !== inputValue) {
+        document.getElementById(`radio-input-${option}`).checked = false;
+      }
+    }
+    visualizerSettings.value[`${key}`].state.value = inputValue;
+  } else {
+    visualizerSettings.value[`${key}`].state = { value: inputValue };
+  }
+}
+
+function onInput(key, requiresRestart, inputValue, multiInput) {
+  checkUtilSettings(key, inputValue);
+
+  if (props.currStep === 0 || !requiresRestart) {
     visualizerSettings.value[`${key}`].state = { value: inputValue };
   }
 }
@@ -119,9 +128,7 @@ function setRestartSettings() {
 
 function restart() {
   Object.keys(visualizerSettings.value).forEach((setting) => {
-    if (visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
-      visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].tempValue };
-    } else if (visualizerSettings.value[`${setting}`].requiresRestart) {
+    if (visualizerSettings.value[`${setting}`].requiresRestart) {
       visualizerSettings.value[`${setting}`].state = { value: visualizerSettings.value[`${setting}`].state.value };
     }
     restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
@@ -131,13 +138,13 @@ function restart() {
 
 function reset() {
   Object.keys(visualizerSettings.value).forEach((setting) => {
-    if (props.currStep > 0 && visualizerSettings.value[`${setting}`].requiresRestart && !visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
-      visualizerSettings.value[`${setting}`].state.value = defaultSettings[`${setting}`].value;
-      restartSettings[`${setting}`].equal = restartSettings[`${setting}`] === defaultSettings[`${setting}`].value;
-    } else if (props.currStep > 0 && visualizerSettings.value[`${setting}`].hasOwnProperty('tempValue')) {
-      visualizerSettings.value[`${setting}`].tempValue = defaultSettings[`${setting}`].value;
-      visualizerSettings.value[`${setting}`].state = { value: defaultSettings[`${setting}`].value };
-      restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
+    if (props.currStep !== 0 && visualizerSettings.value[`${setting}`].requiresRestart) {
+      if (visualizerSettings.value[`${setting}`].type === 'radio') {
+        onRadioInput(setting, defaultSettings[`${setting}`].value, visualizerSettings.value[`${setting}`]);
+      } else {
+        visualizerSettings.value[`${setting}`].state.value = defaultSettings[`${setting}`].value;
+      }
+      restartSettings[`${setting}`].equal = restartSettings[`${setting}`] !== defaultSettings[`${setting}`].value;
     } else {
       visualizerSettings.value[`${setting}`].state = { value: defaultSettings[`${setting}`].value };
       restartSettings[`${setting}`] = { value: visualizerSettings.value[`${setting}`].state.value, equal: true };
