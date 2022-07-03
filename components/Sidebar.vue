@@ -67,9 +67,9 @@ const router = useRouter();
 
 const emit = defineEmits(['sidebarToggled']);
 
-const sidebar = ref(null);
-const algoSidebar = ref(null);
-const dataSidebar = ref(null);
+const sidebar = ref();
+const algoSidebar = ref();
+const dataSidebar = ref();
 const opened = ref(false);
 
 const algorithms = reactive({

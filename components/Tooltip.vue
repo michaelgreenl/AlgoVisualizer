@@ -25,7 +25,7 @@ const props = defineProps({
   },
 });
 
-const tooltipDiv = ref(null);
+const tooltipDiv = ref();
 const mouseEntered = ref(false);
 
 onMounted(() => {

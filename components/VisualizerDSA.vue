@@ -127,7 +127,7 @@ const props = defineProps({
 const emit = defineEmits(['setCurrStep', 'playClick']);
 
 const visualizerSettings = useVisualizerSettings();
-const settings = ref(null);
+const settings = ref();
 
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);

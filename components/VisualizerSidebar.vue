@@ -116,7 +116,7 @@ const props = defineProps({
   },
 });
 
-const userInput = ref(null);
+const userInput = ref();
 const searchResults = reactive({});
 const openDropdowns = reactive(new Set());
 

@@ -12,7 +12,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const sidebar = ref(null);
+const sidebar = ref();
 const sidebarOpen = ref(false);
 const openedSidebar = ref();
 
