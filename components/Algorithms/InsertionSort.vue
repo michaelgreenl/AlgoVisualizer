@@ -9,7 +9,7 @@
       @playClick="playClick"
     >
       <template #visual>
-        <Array ref="array" :transitionSpeed="transitionSpeed" />
+        <Array ref="array" :transitionSpeed="transitionSpeed" :currStep="currStep" />
       </template>
       <template #explanation></template>
       <template #description></template>
@@ -81,8 +81,8 @@ const transitionSpeed = reactive({
 
 function playClick() {
   if (currStep.value === 0) {
+    array.value.setElementsAnim();
     currStep.value += 1;
-    array.value.shuffleAnim();
   } else if (visualizer.value.visualPlaying) {
     // start animations
   } else {
@@ -91,10 +91,16 @@ function playClick() {
 }
 
 function setCurrStep(val) {
-  currStep.value = val;
   // If restart button was clicked
-  if (currStep.value === 0) {
+  if (val === 0) {
     // reset array, elements, settings, border-up/down classes on element div's?
+    array.value.setElementsAnim();
+    nextTick(() => {
+      timeline.value.clear();
+      currStep.value = val;
+    });
+  } else {
+    currStep.value = val;
   }
 }
 </script>

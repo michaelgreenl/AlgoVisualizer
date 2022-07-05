@@ -52,6 +52,10 @@ const props = defineProps({
       return { string: '400ms', int: 400 };
     },
   },
+  currStep: {
+    type: Number,
+    required: true,
+  },
 });
 
 const visualizerSettings = useVisualizerSettings();
@@ -109,12 +113,29 @@ onMounted(() => {
   });
 });
 
-function shuffleAnim() {
+function setElements() {
+  if (props.currStep === 0) {
+    for (let i = 0; i < elementsDiv.value.children.length; i++) {
+      elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
+    }
+    for (let i = elements.length; i-- > 1; ) {
+      const j = Math.floor(Math.random() * i);
+      const tmp = elements[i];
+      elements[i] = elements[j];
+      elements[j] = tmp;
+    }
+  } else {
+    elements.sort((a, b) => a.value - b.value);
+    timeline.value.clear();
+  }
+}
+
+function setElementsAnim() {
+  setElements();
   for (let i = 0; i < elementsDiv.value.children.length; i++) {
-    elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
+    elements[i].div.classList.remove('border-down');
     elements[i].div.classList.add('border-up');
   }
-  shuffleArray(elements);
 
   setTimeout(() => {
     for (const [i, element] of elements.entries()) {
@@ -124,6 +145,7 @@ function shuffleAnim() {
         '<10%',
       );
     }
+    timeline.value.addLabel('1');
 
     setTimeout(() => {
       for (const [i, element] of elements.entries()) {
@@ -136,16 +158,7 @@ function shuffleAnim() {
   }, props.transitionSpeed.int * 0.75);
 }
 
-function shuffleArray(arr) {
-  for (let i = arr.length; i-- > 1; ) {
-    const j = Math.floor(Math.random() * i);
-    const tmp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = tmp;
-  }
-}
-
-defineExpose({ shuffleAnim });
+defineExpose({ setElementsAnim });
 </script>
 
 <style lang="scss" scoped>
