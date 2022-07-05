@@ -21,7 +21,7 @@
         </div>
       </TransitionGroup>
       <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
-                       Incrementing with the arraySize works to keep the div responsive -->
+            Incrementing with the arraySize works to keep the div responsive -->
     </div>
     <div class="indices">
       <TransitionGroup name="element" appear>
@@ -55,6 +55,7 @@ const props = defineProps({
 });
 
 const visualizerSettings = useVisualizerSettings();
+const timeline = useTimeline();
 
 const arrayDiv = ref();
 const arrayWidth = ref(0);
@@ -117,8 +118,11 @@ function shuffleAnim() {
 
   setTimeout(() => {
     for (const [i, element] of elements.entries()) {
-      element.div.style.transition = `transform calc(${props.transitionSpeed.string} * 0.8) ease-out ${i * 25}ms`;
-      element.div.style.transform = `translateX(${(i - element.oldIndex) * 100}%)`;
+      timeline.value.to(
+        element.div,
+        { duration: props.transitionSpeed.int * 0.8 * 0.001, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
+        '<10%',
+      );
     }
 
     setTimeout(() => {

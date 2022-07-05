@@ -19,9 +19,9 @@
 
 <script setup>
 import { computed, ref, reactive, shallowReactive } from 'vue';
-import { gsap } from 'gsap';
 
 const visualizerSettings = useVisualizerSettings();
+const timeline = useTimeline();
 
 const arraySize = shallowReactive({
   label: 'Elements',
