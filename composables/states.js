@@ -1,1 +1,0 @@
-export const useVisualizerSettings = () => useState('visualizerSettings', () => null);
