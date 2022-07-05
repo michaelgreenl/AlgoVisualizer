@@ -1,5 +1,11 @@
 <template>
-  <component :is="visualizerComp" />
+  <suspense>
+    <component :is="visualizerComp" />
+
+    <template #fallback>
+      <Loading />
+    </template>
+  </suspense>
 </template>
 
 <script setup>
