@@ -1,11 +1,11 @@
 <template>
   <div ref="arrayDiv" class="array" :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }">
+    <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
+          Incrementing with the arraySize works to keep the div responsive -->
     <Pointer class="pointer one" />
     <Pointer class="pointer two" />
     <div ref="elementsDiv" class="elements">
       <TransitionGroup name="element" appear>
-        <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
-              Incrementing with the arraySize works to keep the div responsive -->
         <div
           v-for="(element, i) in array"
           :key="i"
@@ -16,19 +16,21 @@
         >
           <span class="value">{{ element }}</span>
         </div>
-        <div v-for="(val, i) in array" :key="i" class="borders">
-          <div
-            v-if="i !== array.length - 1"
-            class="border"
-            :style="{
-              transform: `translateX(${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.99 * (i + 1)}px)`,
-            }"
-          ></div>
-        </div>
+      </TransitionGroup>
+      <TransitionGroup name="border" appear>
+        <div
+          v-for="i in visualizerSettings.arraySize.state.value - 1"
+          :key="i"
+          class="border"
+          :style="{
+            width: `${arrayWidth / visualizerSettings.arraySize.state.value}px`,
+            left: `${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.99 * i}px`,
+          }"
+        ></div>
       </TransitionGroup>
     </div>
     <div class="indices">
-      <TransitionGroup name="element" appear>
+      <TransitionGroup name="index" appear>
         <div
           v-for="index in visualizerSettings.arraySize.state.value"
           :key="index"
@@ -100,7 +102,9 @@ watch(
       array.push(Math.floor(Math.random() * 20));
       array.sort((a, b) => a - b);
     } else {
-      array.push(visualizerSettings.value.arraySize.state.value);
+      while (array.length < currVal) {
+        array.push(array.length + 1);
+      }
     }
   },
 );
@@ -121,7 +125,7 @@ function setElements() {
   if (props.currStep === 0) {
     for (let i = 0; i < elementsDiv.value.children.length; i++) {
       // Since the border elements are last in the elements children nodes
-      if (elementsDiv.value.children[i].classList.contains('borders')) {
+      if (elementsDiv.value.children[i].classList.contains('border')) {
         break;
       }
       elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
@@ -181,6 +185,7 @@ defineExpose({ setElementsAnim });
   justify-content: center;
   width: 90%;
   max-width: 90em;
+  overflow: hidden;
 
   @include bp-xxl-desktop-large {
     max-width: 80em;
@@ -206,37 +211,33 @@ defineExpose({ setElementsAnim });
     }
   }
 
-  .borders {
-    position: absolute;
-    height: 69%;
+  .element-move,
+  .element-enter-active,
+  .element-leave-active,
+  .index-move,
+  .index-enter-active,
+  .index-leave-active {
+    transition: all 150ms ease-out;
+  }
 
-    .border {
-      position: absolute;
-      z-index: 1;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background-color: $primary-black;
-    }
+  .element-enter-from,
+  .element-leave-to,
+  .border-leave-to,
+  .index-leave-to {
+    transform: translateX(5vw);
+  }
+
+  .index-enter-from {
+    opacity: 0;
   }
 
   .elements {
+    position: relative;
     display: flex;
     border: solid $primary-black 2px;
     overflow: hidden;
     flex: 4;
     max-height: 16vh;
-
-    .element-move,
-    .element-enter-active,
-    .element-leave-active {
-      transition: all 150ms ease-out;
-    }
-
-    .element-enter-from,
-    .element-leave-to {
-      transform: translateX(5vw);
-    }
 
     .element {
       flex: 1;
@@ -249,6 +250,33 @@ defineExpose({ setElementsAnim });
         font-weight: 300;
         color: $primary-black;
       }
+    }
+
+    .border-move,
+    .border-leave-active {
+      transition: all 150ms ease-out;
+    }
+
+    .border-enter-active {
+      transition: all 150ms ease-out 100ms;
+    }
+
+    .border-enter-to {
+      bottom: 0;
+    }
+
+    .border-enter-from {
+      bottom: 100% !important;
+    }
+
+    .border {
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      bottom: 0;
+      // width: 2px;
+      // background-color: $primary-black;
+      border-left: 2px solid $primary-black;
     }
   }
 

@@ -98,7 +98,9 @@ function playClick() {
 function setCurrStep(val) {
   // If restart button was clicked
   if (val === 0) {
-    array.value.setElementsAnim();
+    nextTick(() => {
+      array.value.setElementsAnim();
+    });
     nextTick(() => {
       currStep.value = val;
     });
