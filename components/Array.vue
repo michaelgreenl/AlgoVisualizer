@@ -2,8 +2,14 @@
   <div ref="arrayDiv" class="array" :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }">
     <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
           Incrementing with the arraySize works to keep the div responsive -->
-    <Pointer class="pointer one" />
-    <Pointer class="pointer two" />
+    <Pointer
+      v-for="pointer in numPointers"
+      :key="pointer"
+      ref="pointers"
+      class="pointer"
+      :class="pointer"
+      :style="{ opacity: currStep > 0 ? '1' : '0' }"
+    />
     <div ref="elementsDiv" class="elements">
       <TransitionGroup name="element" appear>
         <div
@@ -24,7 +30,7 @@
           class="border"
           :style="{
             width: `${arrayWidth / visualizerSettings.arraySize.state.value}px`,
-            left: `${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.99 * i}px`,
+            left: `${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.995 * i}px`,
           }"
         ></div>
       </TransitionGroup>
@@ -63,6 +69,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  numPointers: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const visualizerSettings = useVisualizerSettings();
@@ -73,6 +83,7 @@ const arrayWidth = ref(0);
 const array = reactive([]);
 const elementsDiv = ref();
 const elements = reactive([]);
+const pointers = ref();
 
 watch(
   () => visualizerSettings.value.elementType.state.value,
@@ -173,7 +184,7 @@ function setElementsAnim() {
   timeline.value.add(tl);
 }
 
-defineExpose({ setElementsAnim });
+defineExpose({ elements, pointers, setElementsAnim });
 </script>
 
 <style lang="scss" scoped>
@@ -185,7 +196,7 @@ defineExpose({ setElementsAnim });
   justify-content: center;
   width: 90%;
   max-width: 90em;
-  overflow: hidden;
+  // overflow: hidden;
 
   @include bp-xxl-desktop-large {
     max-width: 80em;
@@ -201,34 +212,19 @@ defineExpose({ setElementsAnim });
     min-width: 20px;
     max-width: 30px;
     top: -20%;
-
-    &.one {
-      right: 5%;
-    }
-
-    &.two {
-      right: 17.5%;
-    }
+    transition: opacity 200ms ease;
   }
 
   .element-move,
   .element-enter-active,
-  .element-leave-active,
-  .index-move,
-  .index-enter-active,
-  .index-leave-active {
+  .element-leave-active {
     transition: all 150ms ease-out;
   }
 
   .element-enter-from,
   .element-leave-to,
-  .border-leave-to,
-  .index-leave-to {
+  .border-leave-to {
     transform: translateX(5vw);
-  }
-
-  .index-enter-from {
-    opacity: 0;
   }
 
   .elements {
@@ -274,10 +270,19 @@ defineExpose({ setElementsAnim });
       z-index: 1;
       top: 0;
       bottom: 0;
-      // width: 2px;
-      // background-color: $primary-black;
       border-left: 2px solid $primary-black;
     }
+  }
+
+  .index-move,
+  .index-enter-active,
+  .index-leave-active {
+    transition: all 150ms ease-out;
+  }
+
+  .index-enter-from,
+  .index-leave-to {
+    opacity: 0;
   }
 
   .indices {

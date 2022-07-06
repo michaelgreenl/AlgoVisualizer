@@ -4,7 +4,7 @@
       ref="visualizer"
       title="Insertion Sort"
       :currStep="currStep"
-      :steps="steps"
+      :explanations="explanations"
       @setCurrStep="setCurrStep"
       @playClick="playClick"
     >
@@ -14,6 +14,7 @@
           ref="array"
           :transitionSpeed="transitionSpeed"
           :currStep="currStep"
+          :numPointers="2"
         />
       </template>
       <template #explanation></template>
@@ -75,7 +76,7 @@ visualizerSettings.value = {
   },
 };
 
-const steps = reactive([{ explanation: '' }]);
+const explanations = reactive([ '1. This is the first step' ]);
 const visualizer = ref();
 const array = ref();
 const currStep = ref(0);

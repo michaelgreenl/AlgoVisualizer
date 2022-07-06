@@ -52,7 +52,14 @@
     </header>
     <div class="main">
       <div class="visual" :class="{ center: !sidebarOpen }">
-        <h2 class="explanation" v-if="visualizerSettings.explanation.state.value">To start, hit play.</h2>
+        <div class="explanations">
+          <Transition name="fade-in-out">
+            <h2 v-if="currStep === 0" class="explanation">To start, hit play.</h2>
+            <h2 v-else-if="currStep > 0 && visualizerSettings.explanation.state.value" class="explanation">
+              {{ explanations[currStep - 1] }}
+            </h2>
+          </Transition>
+        </div>
         <slot name="visual"></slot>
         <div class="controls">
           <button class="control-button" @click="restart">
@@ -68,7 +75,7 @@
           <button
             class="control-button"
             @click="emit('setCurrStep', currStep + 1)"
-            :disabled="currStep === steps.length"
+            :disabled="currStep === explanations.length"
           >
             <SkipRightIcon class="icon" />
           </button>
@@ -81,11 +88,7 @@
         >
           <div class="tab" :class="{ open: sidebarTabs.settings }">
             <slot name="settings">
-              <VisualizerSettings
-                ref="settings"
-                :currStep="currStep"
-                @restart="restart"
-              />
+              <VisualizerSettings ref="settings" :currStep="currStep" @restart="restart" />
             </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
@@ -118,7 +121,7 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  steps: {
+  explanations: {
     type: Array,
     required: true,
   },
@@ -163,6 +166,25 @@ defineExpose({ visualPlaying });
 </script>
 
 <style lang="scss" scoped>
+.fade-in-out-enter-active {
+  transition: all 200ms ease 200ms;
+}
+
+.fade-in-out-leave-active {
+  transition: all 200ms ease;
+}
+
+.fade-in-out-enter-from {
+  opacity: 0;
+  transform: translateX(-100%);
+  position: absolute;
+}
+
+.fade-in-out-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
 $sidebar-width: 43.2em;
 
 .visualizer {
@@ -292,11 +314,16 @@ $sidebar-width: 43.2em;
         width: 100%;
       }
 
-      .explanation {
-        color: $primary-dark;
-        font-size: 22px;
-        font-family: $secondary-font-stack;
-        font-weight: 400;
+      .explanations {
+        position: relative;
+        display: flex;
+
+        .explanation {
+          color: $primary-dark;
+          font-size: 22px;
+          font-family: $secondary-font-stack;
+          font-weight: 400;
+        }
       }
 
       .controls {
