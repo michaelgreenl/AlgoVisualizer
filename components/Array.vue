@@ -1,14 +1,11 @@
 <template>
-  <div
-    ref="arrayDiv"
-    v-if="visualizerSettings.visual.state.value === 'Array'"
-    class="array"
-    :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }"
-  >
+  <div ref="arrayDiv" class="array" :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }">
     <Pointer class="pointer one" />
     <Pointer class="pointer two" />
     <div ref="elementsDiv" class="elements">
       <TransitionGroup name="element" appear>
+        <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
+              Incrementing with the arraySize works to keep the div responsive -->
         <div
           v-for="(element, i) in array"
           :key="i"
@@ -19,9 +16,16 @@
         >
           <span class="value">{{ element }}</span>
         </div>
+        <div v-for="(val, i) in array" :key="i" class="borders">
+          <div
+            v-if="i !== array.length - 1"
+            class="border"
+            :style="{
+              transform: `translateX(${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.99 * (i + 1)}px)`,
+            }"
+          ></div>
+        </div>
       </TransitionGroup>
-      <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
-            Incrementing with the arraySize works to keep the div responsive -->
     </div>
     <div class="indices">
       <TransitionGroup name="element" appear>
@@ -44,6 +48,7 @@
 import Pointer from '../assets/svgs/polygonPointer.svg';
 
 import { ref, reactive, onMounted, nextTick } from 'vue';
+import gsap from 'gsap';
 
 const props = defineProps({
   transitionSpeed: {
@@ -105,7 +110,6 @@ onMounted(() => {
     array.push(i);
   }
   nextTick(() => {
-    elementsDiv.value.children[0].classList.add('border-up-0');
     const arraySizeObserver = new ResizeObserver(() => {
       arrayWidth.value = arrayDiv.value.offsetWidth;
     });
@@ -116,6 +120,10 @@ onMounted(() => {
 function setElements() {
   if (props.currStep === 0) {
     for (let i = 0; i < elementsDiv.value.children.length; i++) {
+      // Since the border elements are last in the elements children nodes
+      if (elementsDiv.value.children[i].classList.contains('borders')) {
+        break;
+      }
       elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
     }
     for (let i = elements.length; i-- > 1; ) {
@@ -126,36 +134,39 @@ function setElements() {
     }
   } else {
     elements.sort((a, b) => a.value - b.value);
-    timeline.value.clear();
   }
 }
 
 function setElementsAnim() {
   setElements();
-  for (let i = 0; i < elementsDiv.value.children.length; i++) {
-    elements[i].div.classList.remove('border-down');
-    elements[i].div.classList.add('border-up');
-  }
-
-  setTimeout(() => {
-    for (const [i, element] of elements.entries()) {
-      timeline.value.to(
-        element.div,
-        { duration: props.transitionSpeed.int * 0.8 * 0.001, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
-        '<10%',
-      );
-    }
-    timeline.value.addLabel('1');
-
-    setTimeout(() => {
-      for (const [i, element] of elements.entries()) {
-        if (i !== 0) {
-          element.div.classList.add('border-down');
-          element.div.classList.remove('border-up');
-        }
+  const tl = gsap.timeline({
+    onComplete: () => {
+      if (props.currStep === 0) {
+        elements.length = 0;
+        timeline.value.clear();
       }
-    }, props.transitionSpeed.int + visualizerSettings.value.arraySize.state.value * 25);
-  }, props.transitionSpeed.int * 0.75);
+    },
+  });
+
+  tl.to('.border', { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: '100%', ease: 'power2' });
+
+  // Doing the first element first *without the overlapping option* so the border animation is done first
+  tl.to(elements[0].div, {
+    duration: props.transitionSpeed.int * 0.8 * 0.001,
+    xPercent: (0 - elements[0].oldIndex) * 100,
+    ease: 'expo',
+  });
+  for (const [i, element] of elements.entries()) {
+    tl.to(
+      element.div,
+      { duration: props.transitionSpeed.int * 0.8 * 0.001, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
+      '<10%',
+    );
+  }
+  tl.to('.border', { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: 0, ease: 'expo' });
+  tl.addLabel('1');
+
+  timeline.value.add(tl);
 }
 
 defineExpose({ setElementsAnim });
@@ -195,6 +206,20 @@ defineExpose({ setElementsAnim });
     }
   }
 
+  .borders {
+    position: absolute;
+    height: 69%;
+
+    .border {
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: $primary-black;
+    }
+  }
+
   .elements {
     display: flex;
     border: solid $primary-black 2px;
@@ -214,57 +239,10 @@ defineExpose({ setElementsAnim });
     }
 
     .element {
-      position: relative;
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-
-      &::after {
-        content: '';
-        position: absolute;
-        z-index: -1;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        border-left: solid $primary-black 2px;
-      }
-
-      &.border-up-0 {
-        &::after {
-          animation: border-up ease forwards;
-        }
-      }
-
-      &.border-up {
-        &::after {
-          animation: border-up calc(v-bind('props.transitionSpeed.string') * 0.75) ease forwards;
-        }
-      }
-
-      &.border-down {
-        &::after {
-          animation: border-down calc(v-bind('props.transitionSpeed.string') * 0.75) ease forwards;
-        }
-      }
-
-      @keyframes border-up {
-        0% {
-          bottom: 0;
-        }
-        100% {
-          bottom: 100%;
-        }
-      }
-
-      @keyframes border-down {
-        0% {
-          bottom: 100%;
-        }
-        100% {
-          bottom: 0;
-        }
-      }
 
       .value {
         font-family: $secondary-font-stack;

@@ -9,7 +9,12 @@
       @playClick="playClick"
     >
       <template #visual>
-        <Array ref="array" :transitionSpeed="transitionSpeed" :currStep="currStep" />
+        <Array
+          v-if="visualizerSettings.visual.state.value === 'Array'"
+          ref="array"
+          :transitionSpeed="transitionSpeed"
+          :currStep="currStep"
+        />
       </template>
       <template #explanation></template>
       <template #description></template>
@@ -84,19 +89,17 @@ function playClick() {
     array.value.setElementsAnim();
     currStep.value += 1;
   } else if (visualizer.value.visualPlaying) {
-    // start animations
+    timeline.value.resume();
   } else {
-    // pause animations
+    timeline.value.pause();
   }
 }
 
 function setCurrStep(val) {
   // If restart button was clicked
   if (val === 0) {
-    // reset array, elements, settings, border-up/down classes on element div's?
     array.value.setElementsAnim();
     nextTick(() => {
-      timeline.value.clear();
       currStep.value = val;
     });
   } else {
