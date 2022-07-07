@@ -30,6 +30,7 @@
         <div
           v-for="i in visualizerSettings.arraySize.state.value - 1"
           :key="i"
+          ref="borders"
           class="border"
           :style="{
             width: `${elementWidth}px`,
@@ -87,6 +88,7 @@ const arrayWidth = ref(0);
 const array = reactive([]);
 const elementsDiv = ref();
 const elements = reactive([]);
+const borders = ref();
 const pointers = ref();
 const pointerPositions = reactive([]);
 
@@ -171,7 +173,7 @@ function setElementsAnim() {
     },
   });
 
-  tl.to('.border', { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: '100%', ease: 'power2' });
+  setBorderVisibility(tl, 'all', '100%');
 
   // Doing the first element first *without the overlapping option* so the border animation is done first
   tl.to(elements[0].div, {
@@ -186,14 +188,14 @@ function setElementsAnim() {
       '<10%',
     );
   }
-  tl.to('.border', { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: 0, ease: 'expo' });
+  setBorderVisibility(tl, 'all', 0);
   tl.addLabel('1');
 
   timeline.value.add(tl);
 }
 
 function setPointerPosition(pointer, position) {
-  // Arg - pointer: can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
+  // Arg - pointer: Can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
   if (pointer === 'all') {
     for (let i = 0; i < props.numPointers; i++) {
       pointerPositions[i] = elementWidth.value * position + elementWidth.value * 0.35;
@@ -203,7 +205,17 @@ function setPointerPosition(pointer, position) {
   }
 }
 
-defineExpose({ elements, pointers, setElementsAnim, setPointerPosition });
+function setBorderVisibility(timeline, border, direction) {
+  // Arg - border: Can either be 'all' (string), indicating to set all border's visibility, or an index (int) indicating to set set border's visibility.
+  // Arg - direction: Can either be 0 (down/visible) or '100%' (up/hidden).
+  if (border === 'all') {
+    timeline.to('.border', { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: direction, ease: 'power2' });
+  } else {
+    timeline.to(borders.value[border], { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: direction, ease: 'power2' });
+  }
+}
+
+defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorderVisibility });
 </script>
 
 <style lang="scss" scoped>
