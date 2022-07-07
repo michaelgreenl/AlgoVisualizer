@@ -88,6 +88,7 @@ const transitionSpeed = reactive({
 function playClick() {
   if (currStep.value === 0) {
     array.value.setElementsAnim();
+    array.value.setPointerPosition('all', array.value.elements.length - 1);
     currStep.value += 1;
   } else if (visualizer.value.visualPlaying) {
     timeline.value.resume();
@@ -100,6 +101,7 @@ function setCurrStep(val) {
   // If restart button was clicked
   if (val === 0) {
     nextTick(() => {
+      array.value.setPointerPosition('all', 0);
       array.value.setElementsAnim();
     });
     nextTick(() => {

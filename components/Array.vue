@@ -2,14 +2,17 @@
   <div ref="arrayDiv" class="array" :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }">
     <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
           Incrementing with the arraySize works to keep the div responsive -->
-    <Pointer
-      v-for="pointer in numPointers"
-      :key="pointer"
-      ref="pointers"
-      class="pointer"
-      :class="pointer"
-      :style="{ opacity: currStep > 0 ? '1' : '0' }"
-    />
+    <TransitionGroup name="fade-in-out" appear>
+      <template v-if="currStep > 0">
+        <Pointer
+          v-for="pointer in numPointers"
+          :key="pointer"
+          ref="pointers"
+          class="pointer"
+          :style="{ left: pointerPositions[pointer - 1] }"
+        />
+      </template>
+    </TransitionGroup>
     <div ref="elementsDiv" class="elements">
       <TransitionGroup name="element" appear>
         <div
@@ -17,7 +20,7 @@
           :key="i"
           class="element"
           :style="{
-            fontSize: `clamp(25px, ${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.4}px, 45px)`,
+            fontSize: `clamp(25px, ${elementWidth * 0.4}px, 45px)`,
           }"
         >
           <span class="value">{{ element }}</span>
@@ -29,20 +32,20 @@
           :key="i"
           class="border"
           :style="{
-            width: `${arrayWidth / visualizerSettings.arraySize.state.value}px`,
-            left: `${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.995 * i}px`,
+            width: `${elementWidth}px`,
+            left: `${elementWidth * 0.995 * i}px`,
           }"
         ></div>
       </TransitionGroup>
     </div>
     <div class="indices">
-      <TransitionGroup name="index" appear>
+      <TransitionGroup name="fade-in-out" appear>
         <div
           v-for="index in visualizerSettings.arraySize.state.value"
           :key="index"
           class="index"
           :style="{
-            fontSize: `clamp(12px, ${(arrayWidth / visualizerSettings.arraySize.state.value) * 0.2}px, 16px)`,
+            fontSize: `clamp(12px, ${elementWidth * 0.2}px, 16px)`,
           }"
         >
           <span class="value">{{ index - 1 }}</span>
@@ -78,12 +81,14 @@ const props = defineProps({
 const visualizerSettings = useVisualizerSettings();
 const timeline = useTimeline();
 
+const elementWidth = computed(() => arrayWidth.value / visualizerSettings.value.arraySize.state.value);
 const arrayDiv = ref();
 const arrayWidth = ref(0);
 const array = reactive([]);
 const elementsDiv = ref();
 const elements = reactive([]);
 const pointers = ref();
+const pointerPositions = reactive([]);
 
 watch(
   () => visualizerSettings.value.elementType.state.value,
@@ -121,6 +126,9 @@ watch(
 );
 
 onMounted(() => {
+  for (let i = 0; i++ < 2; ) {
+    pointerPositions.push(0);
+  }
   for (let i = 0; i++ < visualizerSettings.value.arraySize.state.value; ) {
     array.push(i);
   }
@@ -184,10 +192,32 @@ function setElementsAnim() {
   timeline.value.add(tl);
 }
 
-defineExpose({ elements, pointers, setElementsAnim });
+function setPointerPosition(pointer, position) {
+  // Arg - pointer: can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
+  if (pointer === 'all') {
+    for (let i = 0; i < props.numPointers; i++) {
+      pointerPositions[i] = elementWidth.value * position + elementWidth.value * 0.35;
+    }
+  } else {
+    pointerPositions[pointer] = elementWidth.value * position + elementWidth.value * 0.35;
+  }
+}
+
+defineExpose({ elements, pointers, setElementsAnim, setPointerPosition });
 </script>
 
 <style lang="scss" scoped>
+.fade-in-out-move,
+.fade-in-out-enter-active,
+.fade-in-out-leave-active {
+  transition: all 150ms ease-out;
+}
+
+.fade-in-out-enter-from,
+.fade-in-out-leave-to {
+  opacity: 0;
+}
+
 .array {
   position: relative;
   margin: auto 0;
@@ -196,7 +226,6 @@ defineExpose({ elements, pointers, setElementsAnim });
   justify-content: center;
   width: 90%;
   max-width: 90em;
-  // overflow: hidden;
 
   @include bp-xxl-desktop-large {
     max-width: 80em;
@@ -212,7 +241,7 @@ defineExpose({ elements, pointers, setElementsAnim });
     min-width: 20px;
     max-width: 30px;
     top: -20%;
-    transition: opacity 200ms ease;
+    transition: opacity 200ms ease, left 200ms ease-in-out;
   }
 
   .element-move,
@@ -272,17 +301,6 @@ defineExpose({ elements, pointers, setElementsAnim });
       bottom: 0;
       border-left: 2px solid $primary-black;
     }
-  }
-
-  .index-move,
-  .index-enter-active,
-  .index-leave-active {
-    transition: all 150ms ease-out;
-  }
-
-  .index-enter-from,
-  .index-leave-to {
-    opacity: 0;
   }
 
   .indices {
