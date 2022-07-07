@@ -76,19 +76,19 @@ visualizerSettings.value = {
   },
 };
 
-const explanations = reactive([ '1. This is the first step' ]);
+const explanations = reactive(['1. This is the first step']);
 const visualizer = ref();
 const array = ref();
 const currStep = ref(0);
 const transitionSpeed = reactive({
-  string: computed(() => `${1000 - visualizerSettings.value.speed.state.value * 10}ms`),
-  int: computed(() => 1000 - visualizerSettings.value.speed.state.value * 10),
+  string: computed(() => `${(100 - visualizerSettings.value.speed.state.value) * 0.01}s`),
+  int: computed(() => (100 - visualizerSettings.value.speed.state.value) * 0.01),
 });
 
 function playClick() {
   if (currStep.value === 0) {
     array.value.setElementsAnim();
-    array.value.setPointerPosition('all', array.value.elements.length - 1);
+    array.value.setPointerPosition('all', 0);
     currStep.value += 1;
   } else if (visualizer.value.visualPlaying) {
     timeline.value.resume();
@@ -109,6 +109,23 @@ function setCurrStep(val) {
     });
   } else {
     currStep.value = val;
+  }
+}
+
+function insertionSort(arr, n) {
+  let i, key, j;
+  for (i = 1; i < n; i++) {
+    key = arr[i];
+    j = i - 1;
+
+    /* Move elements of arr[0..i-1], that are 
+        greater than key, to one position ahead 
+        of their current position */
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j = j - 1;
+    }
+    arr[j + 1] = key;
   }
 }
 </script>

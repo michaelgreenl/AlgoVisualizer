@@ -33,8 +33,8 @@
           ref="borders"
           class="border"
           :style="{
-            width: `${elementWidth}px`,
-            left: `${elementWidth * 0.995 * i}px`,
+            width: `${elementWidth * 0.995}px`,
+            left: i < 2 ? `${(elementWidth * 0.99) * i}px` : `${(elementWidth * 0.995) * i}px`,
           }"
         ></div>
       </TransitionGroup>
@@ -177,14 +177,19 @@ function setElementsAnim() {
 
   // Doing the first element first *without the overlapping option* so the border animation is done first
   tl.to(elements[0].div, {
-    duration: props.transitionSpeed.int * 0.8 * 0.001,
+    duration: props.transitionSpeed.int * 0.8,
     xPercent: (0 - elements[0].oldIndex) * 100,
     ease: 'expo',
   });
   for (const [i, element] of elements.entries()) {
+    // First animation is to compensate for the 2px gap;
     tl.to(
       element.div,
-      { duration: props.transitionSpeed.int * 0.8 * 0.001, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
+      { duration: 0, x: (i - element.oldIndex) * 2 },
+      '<10%'
+    ).to(
+      element.div,
+      { duration: props.transitionSpeed.int * 0.8, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
       '<10%',
     );
   }
@@ -209,9 +214,9 @@ function setBorderVisibility(timeline, border, direction) {
   // Arg - border: Can either be 'all' (string), indicating to set all border's visibility, or an index (int) indicating to set set border's visibility.
   // Arg - direction: Can either be 0 (down/visible) or '100%' (up/hidden).
   if (border === 'all') {
-    timeline.to('.border', { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: direction, ease: 'power2' });
+    timeline.to('.border', { duration: props.transitionSpeed.int * 0.75, bottom: direction, ease: 'power2' });
   } else {
-    timeline.to(borders.value[border], { duration: props.transitionSpeed.int * 0.75 * 0.001, bottom: direction, ease: 'power2' });
+    timeline.to(borders.value[border], { duration: props.transitionSpeed.int * 0.75, bottom: direction, ease: 'power2' });
   }
 }
 
@@ -274,6 +279,7 @@ defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorde
     border: solid $primary-black 2px;
     overflow: hidden;
     flex: 4;
+    gap: 2px;
     max-height: 16vh;
 
     .element {
