@@ -34,7 +34,7 @@
           class="border"
           :style="{
             width: `${elementWidth * 0.995}px`,
-            left: i < 2 ? `${(elementWidth * 0.99) * i}px` : `${(elementWidth * 0.995) * i}px`,
+            left: i < 2 ? `${elementWidth * 0.99 * i}px` : `${elementWidth * 0.995 * i}px`,
           }"
         ></div>
       </TransitionGroup>
@@ -183,44 +183,85 @@ function setElementsAnim() {
   });
   for (const [i, element] of elements.entries()) {
     // First animation is to compensate for the 2px gap;
-    tl.to(
-      element.div,
-      { duration: 0, x: (i - element.oldIndex) * 2 },
-      '<10%'
-    ).to(
+    tl.to(element.div, { duration: 0, x: (i - element.oldIndex) * 2 }, '<10%').to(
       element.div,
       { duration: props.transitionSpeed.int * 0.8, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
       '<10%',
     );
   }
   setBorderVisibility(tl, 'all', 0);
-  tl.addLabel('1');
+  tl.addLabel('0');
 
   timeline.value.add(tl);
 }
 
-function setPointerPosition(pointer, position) {
+function setPointerPosition(pointer, positionIndex) {
   // Arg - pointer: Can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
   if (pointer === 'all') {
     for (let i = 0; i < props.numPointers; i++) {
-      pointerPositions[i] = elementWidth.value * position + elementWidth.value * 0.35;
+      pointerPositions[i] = `${(100 / visualizerSettings.value.arraySize.state.value) * (positionIndex + 1)}%`;
     }
   } else {
-    pointerPositions[pointer] = elementWidth.value * position + elementWidth.value * 0.35;
+    pointerPositions[pointer] = `${(100 / visualizerSettings.value.arraySize.state.value) * (positionIndex + 1)}%`;
   }
 }
 
-function setBorderVisibility(timeline, border, direction) {
+function setBorderVisibility(timeline, border, direction, overlap) {
   // Arg - border: Can either be 'all' (string), indicating to set all border's visibility, or an index (int) indicating to set set border's visibility.
   // Arg - direction: Can either be 0 (down/visible) or '100%' (up/hidden).
+  const tl = gsap.timeline();
   if (border === 'all') {
-    timeline.to('.border', { duration: props.transitionSpeed.int * 0.75, bottom: direction, ease: 'power2' });
+    tl.to('.border', { duration: props.transitionSpeed.int * 0.75, bottom: direction, ease: 'power2' });
   } else {
-    timeline.to(borders.value[border], { duration: props.transitionSpeed.int * 0.75, bottom: direction, ease: 'power2' });
+    tl.to(
+      borders.value[border],
+      {
+        duration: props.transitionSpeed.int * 0.75,
+        bottom: direction,
+        ease: 'power2',
+      },
+      overlap,
+    );
   }
+  timeline.add(tl);
 }
 
-defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorderVisibility });
+// TODO: Make this account for long swaps
+function swapElements(timeline, indices) {
+  const tl = gsap.timeline();
+  tl.to(
+    elements[indices[0]].div,
+    {
+      duration: props.transitionSpeed.int * 0.8,
+      xPercent: (indices[1] - elements[indices[0]].oldIndex) * 100,
+      ease: 'expo',
+    },
+    '<',
+    )
+    .to(
+      elements[indices[1]].div,
+      {
+        duration: props.transitionSpeed.int * 0.8,
+        xPercent: (indices[0] - elements[indices[1]].oldIndex) * 100,
+        ease: 'expo',
+      },
+      '<',
+    )
+    // to accommodate for 2px gap
+    .to(
+      elements[indices[1]].div,
+      { duration: 0.1, x: (indices[0] - elements[indices[1]].oldIndex) * 2, ease: 'expo' },
+      '<+=0.1',
+    )
+    .to(
+      elements[indices[0]].div,
+      { duration: 0.1, x: (indices[1] - elements[indices[0]].oldIndex) * 2, ease: 'expo' },
+      '<+=0.1',
+    );
+  timeline.add(tl);
+}
+
+defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorderVisibility, swapElements });
 </script>
 
 <style lang="scss" scoped>
@@ -255,10 +296,11 @@ defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorde
   .pointer {
     position: absolute;
     width: 3%;
-    min-width: 20px;
+    min-width: 15px;
     max-width: 30px;
-    top: -20%;
+    top: -25%;
     transition: opacity 200ms ease, left 200ms ease-in-out;
+    transform: translateX(-250%);
   }
 
   .element-move,
