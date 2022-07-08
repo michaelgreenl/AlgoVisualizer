@@ -25,6 +25,7 @@
 
 <script setup>
 import { computed, ref, reactive, shallowReactive } from 'vue';
+import gsap from 'gsap';
 
 const visualizerSettings = useVisualizerSettings();
 const timeline = useTimeline();
@@ -90,6 +91,9 @@ function playClick() {
     array.value.setElementsAnim();
     array.value.setPointerPosition('all', 0);
     currStep.value += 1;
+    setTimeout(() => {
+      insertionSort();
+    }, 3000);
   } else if (visualizer.value.visualPlaying) {
     timeline.value.resume();
   } else {
@@ -112,20 +116,27 @@ function setCurrStep(val) {
   }
 }
 
-function insertionSort(arr, n) {
+function insertionSort() {
+  const n = array.value.elements.length;
   let i, key, j;
   for (i = 1; i < n; i++) {
-    key = arr[i];
+    key = array.value.elements[i].value;
     j = i - 1;
 
-    /* Move elements of arr[0..i-1], that are 
-        greater than key, to one position ahead 
-        of their current position */
-    while (j >= 0 && arr[j] > key) {
-      arr[j + 1] = arr[j];
+    const tl = gsap.timeline();
+    while (j >= 0 && array.value.elements[j].value > key) {
+      // swapping the elements
+      array.value.setBorderVisibility(tl, j, '100%', '<');
+      array.value.swapElements(tl, [j, j + 1]);
+      array.value.setBorderVisibility(tl, j, 0, '<');
+      [array.value.elements[j], array.value.elements[j + 1]] = [array.value.elements[j + 1], array.value.elements[j]];
       j = j - 1;
     }
-    arr[j + 1] = key;
+    // element is sorted
+    console.log(i);
+
+    tl.addLabel(`${i}`);
+    timeline.value.add(tl);
   }
 }
 </script>
