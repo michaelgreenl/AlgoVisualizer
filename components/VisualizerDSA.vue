@@ -65,7 +65,7 @@
           <button class="control-button" @click="restart">
             <RestartIcon class="icon restart" />
           </button>
-          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep < 1">
+          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep <= 1">
             <SkipLeftIcon class="icon" />
           </button>
           <button class="control-button" @click="playClick">
@@ -75,7 +75,7 @@
           <button
             class="control-button"
             @click="emit('setCurrStep', currStep + 1)"
-            :disabled="currStep === explanations.length"
+            :disabled="currStep === Object.keys(timeline.labels).filter((key) => !isNaN(key)).length"
           >
             <SkipRightIcon class="icon" />
           </button>
@@ -130,6 +130,7 @@ const props = defineProps({
 const emit = defineEmits(['setCurrStep', 'playClick']);
 
 const visualizerSettings = useVisualizerSettings();
+const timeline = useTimeline();
 const settings = ref();
 
 const visualPlaying = ref(false);

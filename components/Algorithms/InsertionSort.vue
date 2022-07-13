@@ -15,7 +15,13 @@
           :transitionSpeed="transitionSpeed"
           :currStep="currStep"
           :numPointers="2"
-        />
+        >
+          <template #borderSvg>
+            <div class="icon-wrapper">
+              <CompareIcon class="compare-icon" />
+            </div>
+          </template>
+        </Array>
       </template>
       <template #explanation></template>
       <template #description></template>
@@ -24,11 +30,13 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, shallowReactive } from 'vue';
+import CompareIcon from '../../assets/svgs/lessThanEqual.svg';
+
+import { computed, ref, reactive, shallowReactive, onMounted, nextTick } from 'vue';
 import gsap from 'gsap';
 
-const visualizerSettings = useVisualizerSettings();
 const timeline = useTimeline();
+const visualizerSettings = useVisualizerSettings();
 
 const arraySize = shallowReactive({
   label: 'Elements',
@@ -77,7 +85,16 @@ visualizerSettings.value = {
   },
 };
 
-const explanations = reactive(['1. This is the first step']);
+const explanations = reactive([
+  '1. This is the first step',
+  '2. This is the second step',
+  '3. This is the third step',
+  '4. This is the fourth step',
+  '5. This is the fifth step',
+  '6. This is the sixth step',
+  '7. This is the seventh step',
+  '8. This is the eighth step',
+]);
 const visualizer = ref();
 const array = ref();
 const currStep = ref(0);
@@ -85,15 +102,14 @@ const transitionSpeed = reactive({
   string: computed(() => `${(100 - visualizerSettings.value.speed.state.value) * 0.01}s`),
   int: computed(() => (100 - visualizerSettings.value.speed.state.value) * 0.01),
 });
+const arrayHeight = computed(() => array.value.arrayHeight * 0.675 + 'px');
 
 function playClick() {
   if (currStep.value === 0) {
+    array.value.setPointerPosition(timeline.value, 'all', 0);
     array.value.setElementsAnim();
-    array.value.setPointerPosition('all', 0);
     currStep.value += 1;
-    setTimeout(() => {
-      insertionSort();
-    }, 3000);
+    insertionSort();
   } else if (visualizer.value.visualPlaying) {
     timeline.value.resume();
   } else {
@@ -104,8 +120,8 @@ function playClick() {
 function setCurrStep(val) {
   // If restart button was clicked
   if (val === 0) {
+    array.value.setPointerPosition(timeline.value, 'all', 0);
     nextTick(() => {
-      array.value.setPointerPosition('all', 0);
       array.value.setElementsAnim();
     });
     nextTick(() => {
@@ -113,31 +129,83 @@ function setCurrStep(val) {
     });
   } else {
     currStep.value = val;
+    timeline.value.seek(`${val}`);
   }
 }
 
 function insertionSort() {
-  const n = array.value.elements.length;
   let i, key, j;
-  for (i = 1; i < n; i++) {
+  for (i = 1; i < array.value.elements.length; i++) {
     key = array.value.elements[i].value;
     j = i - 1;
 
-    const tl = gsap.timeline();
-    while (j >= 0 && array.value.elements[j].value > key) {
-      // swapping the elements
-      array.value.setBorderVisibility(tl, j, '100%', '<');
-      array.value.swapElements(tl, [j, j + 1]);
-      array.value.setBorderVisibility(tl, j, 0, '<');
-      [array.value.elements[j], array.value.elements[j + 1]] = [array.value.elements[j + 1], array.value.elements[j]];
-      j = j - 1;
-    }
-    // element is sorted
-    console.log(i);
+    const tl = gsap.timeline({
+      delay: 1,
+      onComplete: () => {
+        currStep.value += 1;
+      },
+    });
 
-    tl.addLabel(`${i}`);
+    while (j >= 0) {
+      if (array.value.elements[j].value > key) {
+        // animation for comparing and swapping element's that are unsorted, and swapping the values in elements[]
+        compareElements(tl, j, [j, j + 1]);
+        [array.value.elements[j], array.value.elements[j + 1]] = [array.value.elements[j + 1], array.value.elements[j]];
+        j = j - 1;
+      } else if (array.value.elements[j].value <= key) {
+        // animation for comparing element's that are sorted
+        compareElements(tl, j);
+
+        // Add dynamic explanation here
+        // element is sorted (explanation explain either j === 0 or arr[j] > key)
+        break;
+      }
+    }
+
+    // pointers to next element, adding timeline to global timeline with label
+    array.value.setPointerPosition(tl, 'all', i);
     timeline.value.add(tl);
+    timeline.value.addLabel(`${i}`);
   }
+}
+
+function compareElements(timeline, j, elements) {
+  // setting the pointers to the next 2 elements to be compared and removing the border in between
+  array.value.setPointerPosition(timeline, 0, j);
+  array.value.setPointerPosition(timeline, 1, j + 1, '<');
+  array.value.setBorderVisibility(timeline, j, 0, 0.5, '>');
+
+  if (elements) {
+    // compareIcon appearing and color to red
+    array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 1);
+    array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#C77F7F', 1);
+
+    // pointer color to red
+    timeline.to('.pointer', { duration: transitionSpeed.int * 0.4, fill: '#C77F7F', ease: 'power2' }, '<');
+
+    // compareIcon disappearing before swapping the elements (with 1s delay)
+    array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 0, 1);
+    array.value.swapElements(timeline, elements, 0.5);
+
+    // compareIcon is green immediately after appearing again
+    array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#8FBF7F');
+    array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 1);
+  } else {
+    // compareIcon fill change delays before changing (just like if what happens for the color red).
+    array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 1);
+    array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#8FBF7F', 1);
+  }
+
+  // pointer color to green
+  timeline.to('.pointer', { duration: transitionSpeed.int * 0.4, fill: '#8FBF7F', ease: 'power2' }, '<');
+
+  // compare icon disappears and color back to default, the border back to visible
+  array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 0, 1);
+  array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#bfb47c');
+  array.value.setBorderVisibility(timeline, j, '100%', 0.5, '>');
+
+  // pointer color to default
+  timeline.to('.pointer', { duration: transitionSpeed.int * 0.4, fill: '#D7D0AE', ease: 'power2' }, '>');
 }
 </script>
 
@@ -146,5 +214,19 @@ function insertionSort() {
   font-size: 12px;
   height: 100%;
   width: 100%;
+
+  .icon-wrapper {
+    display: flex;
+    align-items: center;
+    height: v-bind(arrayHeight);
+    opacity: 0;
+
+    .compare-icon {
+      // fill slightly darker than $primary-bright since icon is thin and to make it more visible
+      fill: #bfb47c;
+      width: 23%;
+      margin-left: -15%;
+    }
+  }
 }
 </style>

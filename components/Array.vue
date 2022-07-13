@@ -3,15 +3,15 @@
     <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
           Incrementing with the arraySize works to keep the div responsive -->
     <TransitionGroup name="fade-in-out" appear>
-      <template v-if="currStep > 0">
-        <Pointer
-          v-for="pointer in numPointers"
-          :key="pointer"
-          ref="pointers"
-          class="pointer"
-          :style="{ left: pointerPositions[pointer - 1] }"
-        />
-      </template>
+      <div
+        v-for="pointer in numPointers"
+        :key="pointer"
+        ref="pointers"
+        class="pointer-wrapper"
+        :style="{ opacity: currStep > 0 ? '1' : '0', width: `${elementWidth}px` }"
+      >
+        <Pointer class="pointer" />
+      </div>
     </TransitionGroup>
     <div ref="elementsDiv" class="elements">
       <TransitionGroup name="element" appear>
@@ -26,18 +26,21 @@
           <span class="value">{{ element }}</span>
         </div>
       </TransitionGroup>
-      <TransitionGroup name="border" appear>
-        <div
-          v-for="i in visualizerSettings.arraySize.state.value - 1"
-          :key="i"
-          ref="borders"
-          class="border"
-          :style="{
-            width: `${elementWidth * 0.995}px`,
-            left: i < 2 ? `${elementWidth * 0.99 * i}px` : `${elementWidth * 0.995 * i}px`,
-          }"
-        ></div>
-      </TransitionGroup>
+      <div class="borders" :style="{ paddingLeft: `${elementWidth}px` }">
+        <TransitionGroup name="border" appear>
+          <div
+            v-for="i in visualizerSettings.arraySize.state.value - 1"
+            :key="i"
+            ref="borders"
+            class="border"
+            :style="{
+              width: `${elementWidth * 0.995}px`,
+            }"
+          >
+            <slot name="borderSvg"></slot>
+          </div>
+        </TransitionGroup>
+      </div>
     </div>
     <div class="indices">
       <TransitionGroup name="fade-in-out" appear>
@@ -79,18 +82,18 @@ const props = defineProps({
   },
 });
 
-const visualizerSettings = useVisualizerSettings();
 const timeline = useTimeline();
+const visualizerSettings = useVisualizerSettings();
 
 const elementWidth = computed(() => arrayWidth.value / visualizerSettings.value.arraySize.state.value);
 const arrayDiv = ref();
+const arrayHeight = ref(0);
 const arrayWidth = ref(0);
 const array = reactive([]);
 const elementsDiv = ref();
 const elements = reactive([]);
 const borders = ref();
-const pointers = ref();
-const pointerPositions = reactive([]);
+const pointers = ref([]);
 
 watch(
   () => visualizerSettings.value.elementType.state.value,
@@ -128,15 +131,13 @@ watch(
 );
 
 onMounted(() => {
-  for (let i = 0; i++ < 2; ) {
-    pointerPositions.push(0);
-  }
   for (let i = 0; i++ < visualizerSettings.value.arraySize.state.value; ) {
     array.push(i);
   }
   nextTick(() => {
     const arraySizeObserver = new ResizeObserver(() => {
       arrayWidth.value = arrayDiv.value.offsetWidth;
+      arrayHeight.value = arrayDiv.value.offsetHeight;
     });
     arraySizeObserver.observe(arrayDiv.value);
   });
@@ -146,7 +147,7 @@ function setElements() {
   if (props.currStep === 0) {
     for (let i = 0; i < elementsDiv.value.children.length; i++) {
       // Since the border elements are last in the elements children nodes
-      if (elementsDiv.value.children[i].classList.contains('border')) {
+      if (elementsDiv.value.children[i].classList.contains('borders')) {
         break;
       }
       elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
@@ -172,8 +173,7 @@ function setElementsAnim() {
       }
     },
   });
-
-  setBorderVisibility(tl, 'all', '100%');
+  setBorderVisibility(tl, 'all', 0);
 
   // Doing the first element first *without the overlapping option* so the border animation is done first
   tl.to(elements[0].div, {
@@ -189,54 +189,24 @@ function setElementsAnim() {
       '<10%',
     );
   }
-  setBorderVisibility(tl, 'all', 0);
+  setBorderVisibility(tl, 'all', '100%');
   tl.addLabel('0');
 
   timeline.value.add(tl);
 }
 
-function setPointerPosition(pointer, positionIndex) {
-  // Arg - pointer: Can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
-  if (pointer === 'all') {
-    for (let i = 0; i < props.numPointers; i++) {
-      pointerPositions[i] = `${(100 / visualizerSettings.value.arraySize.state.value) * (positionIndex + 1)}%`;
-    }
-  } else {
-    pointerPositions[pointer] = `${(100 / visualizerSettings.value.arraySize.state.value) * (positionIndex + 1)}%`;
-  }
-}
-
-function setBorderVisibility(timeline, border, direction, overlap) {
-  // Arg - border: Can either be 'all' (string), indicating to set all border's visibility, or an index (int) indicating to set set border's visibility.
-  // Arg - direction: Can either be 0 (down/visible) or '100%' (up/hidden).
-  const tl = gsap.timeline();
-  if (border === 'all') {
-    tl.to('.border', { duration: props.transitionSpeed.int * 0.75, bottom: direction, ease: 'power2' });
-  } else {
-    tl.to(
-      borders.value[border],
-      {
-        duration: props.transitionSpeed.int * 0.75,
-        bottom: direction,
-        ease: 'power2',
-      },
-      overlap,
-    );
-  }
-  timeline.add(tl);
-}
-
 // TODO: Make this account for long swaps
-function swapElements(timeline, indices) {
-  const tl = gsap.timeline();
-  tl.to(
-    elements[indices[0]].div,
-    {
-      duration: props.transitionSpeed.int * 0.8,
-      xPercent: (indices[1] - elements[indices[0]].oldIndex) * 100,
-      ease: 'expo',
-    },
-    '<',
+function swapElements(timeline, indices, delay) {
+  timeline
+    .to(
+      elements[indices[0]].div,
+      {
+        duration: props.transitionSpeed.int * 0.8,
+        delay: delay,
+        xPercent: (indices[1] - elements[indices[0]].oldIndex) * 100,
+        ease: 'expo',
+      },
+      '>',
     )
     .to(
       elements[indices[1]].div,
@@ -258,10 +228,88 @@ function swapElements(timeline, indices) {
       { duration: 0.1, x: (indices[1] - elements[indices[0]].oldIndex) * 2, ease: 'expo' },
       '<+=0.1',
     );
-  timeline.add(tl);
 }
 
-defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorderVisibility, swapElements });
+function setBorderVisibility(timeline, border, direction, delay, timing) {
+  // Arg - border: Can either be 'all' (string), indicating to set all border's visibility, or an index (int) indicating to set set border's visibility.
+  // Arg - direction: Can either be 0 (down/visible) or '100%' (up/hidden).
+  if (border === 'all') {
+    timeline.to('.border', {
+      duration: props.transitionSpeed.int * 0.75,
+      delay: delay,
+      height: direction,
+      ease: 'power2',
+    });
+  } else {
+    timeline.to(
+      borders.value[border],
+      {
+        duration: props.transitionSpeed.int * 0.75,
+        delay: delay,
+        height: direction,
+        ease: 'power2',
+      },
+      timing,
+    );
+  }
+}
+
+function toggleBorderSvg(timeline, border, timing, change, to, delay) {
+  switch (change) {
+    case 'opacity':
+      timeline.to(
+        borders.value[border].children[0],
+        { duration: props.transitionSpeed.int * 0.4, delay: delay, opacity: to, ease: 'power2' },
+        timing,
+      );
+      break;
+    case 'fill':
+      timeline.to(
+        borders.value[border].children[0].children[0],
+        { duration: props.transitionSpeed.int * 0.4, delay: delay, fill: to, ease: 'power2' },
+        timing,
+      );
+      break;
+    default:
+      break;
+  }
+}
+
+function setPointerPosition(timeline, pointer, positionIndex, timing) {
+  // Arg - pointer: Can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
+  if (pointer === 'all') {
+    timeline.to(
+      '.pointer-wrapper',
+      {
+        duration: props.transitionSpeed.int * 0.3,
+        left: `${(100 / visualizerSettings.value.arraySize.state.value) * positionIndex}%`,
+        ease: 'power2',
+      },
+      timing,
+    );
+  } else {
+    timeline.to(
+      pointers.value[pointer],
+      {
+        duration: props.transitionSpeed.int * 0.3,
+        left: `${(100 / visualizerSettings.value.arraySize.state.value) * positionIndex}%`,
+        ease: 'power2',
+      },
+      timing,
+    );
+  }
+}
+
+defineExpose({
+  elements,
+  pointers,
+  setElementsAnim,
+  setPointerPosition,
+  setBorderVisibility,
+  swapElements,
+  toggleBorderSvg,
+  arrayHeight,
+});
 </script>
 
 <style lang="scss" scoped>
@@ -293,14 +341,19 @@ defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorde
     max-width: 75em;
   }
 
-  .pointer {
+  .pointer-wrapper {
     position: absolute;
-    width: 3%;
-    min-width: 15px;
-    max-width: 30px;
     top: -25%;
-    transition: opacity 200ms ease, left 200ms ease-in-out;
-    transform: translateX(-250%);
+    display: flex;
+    justify-content: center;
+    transition: opacity 200ms ease;
+
+    .pointer {
+      width: 25%;
+      max-width: 25px;
+      min-width: 12px;
+      // transform: translateX(-250%);
+    }
   }
 
   .element-move,
@@ -347,19 +400,25 @@ defineExpose({ elements, pointers, setElementsAnim, setPointerPosition, setBorde
     }
 
     .border-enter-to {
-      bottom: 0;
+      height: 100%;
     }
 
     .border-enter-from {
-      bottom: 100% !important;
+      height: 0 !important;
     }
 
-    .border {
+    .borders {
       position: absolute;
       z-index: 1;
-      top: 0;
-      bottom: 0;
-      border-left: 2px solid $primary-black;
+      display: flex;
+      width: 100%;
+      height: 100%;
+
+      .border {
+        flex: 1;
+        height: 100%;
+        border-left: 2px solid $primary-black;
+      }
     }
   }
 
