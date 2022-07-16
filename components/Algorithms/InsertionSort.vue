@@ -4,7 +4,7 @@
       ref="visualizer"
       title="Insertion Sort"
       :currStep="currStep"
-      :explanations="explanations"
+      :transitionSpeed="transitionSpeed"
       @setCurrStep="setCurrStep"
       @playClick="playClick"
     >
@@ -32,8 +32,10 @@
 <script setup>
 import CompareIcon from '../../assets/svgs/lessThanEqual.svg';
 
-import { computed, ref, reactive, shallowReactive, onMounted, nextTick } from 'vue';
+import { computed, ref, reactive, shallowReactive, nextTick } from 'vue';
 import gsap from 'gsap';
+import { TextPlugin } from 'gsap/dist/TextPlugin';
+gsap.registerPlugin(TextPlugin);
 
 const timeline = useTimeline();
 const visualizerSettings = useVisualizerSettings();
@@ -85,16 +87,6 @@ visualizerSettings.value = {
   },
 };
 
-const explanations = reactive([
-  '1. This is the first step',
-  '2. This is the second step',
-  '3. This is the third step',
-  '4. This is the fourth step',
-  '5. This is the fifth step',
-  '6. This is the sixth step',
-  '7. This is the seventh step',
-  '8. This is the eighth step',
-]);
 const visualizer = ref();
 const array = ref();
 const currStep = ref(0);
@@ -170,6 +162,27 @@ function insertionSort() {
 }
 
 function compareElements(timeline, j, elements) {
+  // visualizer.value.changeExplanation(timeline, [
+  //   { string: 'Starting at the beginning of the array', underlined: [{ text: 'beginning of the array', i: 0 }] },
+  //   {
+  //     string: `, compare element ${j} and element ${j + 1}`,
+  //     underlined: [
+  //       { text: `element ${j}`, i: 1 },
+  //       { text: `element ${j + 1}`, i: 2 },
+  //     ],
+  //   },
+  // ]);
+  visualizer.value.changeExplanation(timeline, [
+    { string: 'Next', underlined: [] },
+    {
+      string: ` compare element ${j} and element ${j + 1}`,
+      underlined: [
+        { text: `element ${j}`, i: 0 },
+        { text: `element ${j + 1}`, i: 1 },
+      ],
+    },
+  ]);
+
   // setting the pointers to the next 2 elements to be compared and removing the border in between
   array.value.setPointerPosition(timeline, 0, j);
   array.value.setPointerPosition(timeline, 1, j + 1, '<');
@@ -182,6 +195,17 @@ function compareElements(timeline, j, elements) {
 
     // pointer color to red
     timeline.to('.pointer', { duration: transitionSpeed.int * 0.4, fill: '#C77F7F', ease: 'power2' }, '<');
+    visualizer.value.changeExplanation(timeline, [
+      {
+        string: `Since element ${j} is greater than element ${j + 1}`,
+        underlined: [
+          { text: `element ${j}`, i: 0 },
+          { text: 'greater than', i: 1 },
+          { text: `element ${j + 1}`, i: 2 },
+        ],
+      },
+      { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
+    ]);
 
     // compareIcon disappearing before swapping the elements (with 1s delay)
     array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 0, 1);

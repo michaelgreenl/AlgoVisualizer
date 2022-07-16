@@ -54,10 +54,13 @@
       <div class="visual" :class="{ center: !sidebarOpen }">
         <div class="explanations">
           <Transition name="fade-in-out">
-            <h2 v-if="currStep === 0" class="explanation">To start, hit play.</h2>
-            <h2 v-else-if="currStep > 0 && visualizerSettings.explanation.state.value" class="explanation">
-              {{ explanations[currStep - 1] }}
-            </h2>
+            <span
+              ref="explanation"
+              class="explanation"
+              v-show="currStep === 0 || visualizerSettings.explanation.state.value"
+            >
+              To start, hit play
+            </span>
           </Transition>
         </div>
         <slot name="visual"></slot>
@@ -65,7 +68,7 @@
           <button class="control-button" @click="restart">
             <RestartIcon class="icon restart" />
           </button>
-          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep <= 1">
+          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep < 1">
             <SkipLeftIcon class="icon" />
           </button>
           <button class="control-button" @click="playClick">
@@ -111,6 +114,10 @@ import SkipLeftIcon from '../assets/svgs/skipLeft.svg';
 import SkipRightIcon from '../assets/svgs/skipRight.svg';
 
 import { ref, reactive } from 'vue';
+import gsap from 'gsap';
+import { TextPlugin } from 'gsap/dist/TextPlugin';
+
+gsap.registerPlugin(TextPlugin);
 
 const props = defineProps({
   title: {
@@ -121,8 +128,8 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  explanations: {
-    type: Array,
+  transitionSpeed: {
+    type: Object,
     required: true,
   },
 });
@@ -133,6 +140,7 @@ const visualizerSettings = useVisualizerSettings();
 const timeline = useTimeline();
 const settings = ref();
 
+const explanation = ref();
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
@@ -163,8 +171,67 @@ function closeSidebar() {
   setTimeout(() => Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = false)), 100);
 }
 
-defineExpose({ visualPlaying });
+function changeExplanation(timeline, text) {
+  timeline.to('.explanation', { duration: 0.2, xPercent: 20, opacity: 0, ease: 'power2' });
+  timeline.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
+
+  const tl = gsap.timeline();
+  onCompleteExplanation(tl, text, 0);
+  timeline.add(tl);
+}
+
+function onCompleteExplanation(timeline, text, i) {
+  const prevInnerHTML = explanation.value.innerHTML; 
+  timeline.to('.explanation', {
+    duration: props.transitionSpeed.int * 0.6,
+    text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
+    ease: 'power1',
+    onComplete: () => {
+      if (text[i].underlined.length) {
+        let innerHTML = text[i].string;
+        for (const underlined of text[i].underlined) {
+          innerHTML = innerHTML.replace(
+            underlined.text,
+            `<span class="explanation-no-underline">${underlined.text}</span>`,
+          );
+        }
+        explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
+        for (let j = 0; j < text[i].underlined.length; j++) {
+          if (j === text[i].underlined.length - 1 && i + 1 !== text.length) {
+            timeline.to(explanation.value.children[text[i].underlined[j].i], {
+              duration: props.transitionSpeed.int * 0.4,
+              text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
+              ease: 'power1',
+              onCompleteParams: [timeline, text, i + 1],
+              onComplete: onCompleteExplanation,
+            });
+          } else {
+            timeline.to(explanation.value.children[text[i].underlined[j].i], {
+              duration: props.transitionSpeed.int * 0.4,
+              text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
+              ease: 'power1',
+            });
+          }
+        }
+      } else {
+        onCompleteExplanation(timeline, text, i + 1);
+      }
+    },
+  });
+}
+
+defineExpose({ visualPlaying, changeExplanation });
 </script>
+
+<style>
+.explanation-no-underline {
+  text-decoration: none;
+}
+
+.explanation-underline {
+  text-decoration: underline #d7d0ae;
+}
+</style>
 
 <style lang="scss" scoped>
 .fade-in-out-enter-active {
@@ -318,12 +385,23 @@ $sidebar-width: 43.2em;
       .explanations {
         position: relative;
         display: flex;
+        justify-content: center;
+
+        .underline {
+          text-decoration: underline $primary-light;
+        }
 
         .explanation {
+          text-align: center;
           color: $primary-dark;
           font-size: 22px;
           font-family: $secondary-font-stack;
           font-weight: 400;
+          letter-spacing: 0.05ch;
+
+          .underline {
+            text-decoration: underline $primary-light;
+          }
         }
       }
 
