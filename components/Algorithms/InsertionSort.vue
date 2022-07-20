@@ -127,6 +127,7 @@ function setCurrStep(val) {
 
 function insertionSort() {
   let i, key, j;
+
   for (i = 1; i < array.value.elements.length; i++) {
     key = array.value.elements[i].value;
     j = i - 1;
@@ -138,22 +139,19 @@ function insertionSort() {
       },
     });
 
+    explanations(tl, i !== 1 ? 'next' : 'start', j);
     while (j >= 0) {
       if (array.value.elements[j].value > key) {
         // animation for comparing and swapping element's that are unsorted, and swapping the values in elements[]
-        compareElements(tl, j, [j, j + 1]);
+        compareElements(tl, i, j, [j, j + 1]);
         [array.value.elements[j], array.value.elements[j + 1]] = [array.value.elements[j + 1], array.value.elements[j]];
         j = j - 1;
       } else if (array.value.elements[j].value <= key) {
         // animation for comparing element's that are sorted
-        compareElements(tl, j);
-
-        // Add dynamic explanation here
-        // element is sorted (explanation explain either j === 0 or arr[j] > key)
+        compareElements(tl, i, j);
         break;
       }
     }
-
     // pointers to next element, adding timeline to global timeline with label
     array.value.setPointerPosition(tl, 'all', i);
     timeline.value.add(tl);
@@ -161,60 +159,34 @@ function insertionSort() {
   }
 }
 
-function compareElements(timeline, j, elements) {
-  // visualizer.value.changeExplanation(timeline, [
-  //   { string: 'Starting at the beginning of the array', underlined: [{ text: 'beginning of the array', i: 0 }] },
-  //   {
-  //     string: `, compare element ${j} and element ${j + 1}`,
-  //     underlined: [
-  //       { text: `element ${j}`, i: 1 },
-  //       { text: `element ${j + 1}`, i: 2 },
-  //     ],
-  //   },
-  // ]);
-  visualizer.value.changeExplanation(timeline, [
-    { string: 'Next', underlined: [] },
-    {
-      string: ` compare element ${j} and element ${j + 1}`,
-      underlined: [
-        { text: `element ${j}`, i: 0 },
-        { text: `element ${j + 1}`, i: 1 },
-      ],
-    },
-  ]);
-
+function compareElements(timeline, i, j, elements) {
   // setting the pointers to the next 2 elements to be compared and removing the border in between
   array.value.setPointerPosition(timeline, 0, j);
   array.value.setPointerPosition(timeline, 1, j + 1, '<');
-  array.value.setBorderVisibility(timeline, j, 0, 0.5, '>');
+
+  array.value.setBorderVisibility(timeline, j, 0, i !== 1 ? 1.5 : 2.5, '>');
 
   if (elements) {
-    // compareIcon appearing and color to red
+    // arr[j] > key
+    explanations(timeline, 'invalid', j);
+
+    // compareIcon appearing, compareIcon and pointer color to red
     array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 1);
     array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#C77F7F', 1);
-
-    // pointer color to red
     timeline.to('.pointer', { duration: transitionSpeed.int * 0.4, fill: '#C77F7F', ease: 'power2' }, '<');
-    visualizer.value.changeExplanation(timeline, [
-      {
-        string: `Since element ${j} is greater than element ${j + 1}`,
-        underlined: [
-          { text: `element ${j}`, i: 0 },
-          { text: 'greater than', i: 1 },
-          { text: `element ${j + 1}`, i: 2 },
-        ],
-      },
-      { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
-    ]);
 
     // compareIcon disappearing before swapping the elements (with 1s delay)
     array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 0, 1);
     array.value.swapElements(timeline, elements, 0.5);
 
+    explanations(timeline, 'swapped', j);
     // compareIcon is green immediately after appearing again
     array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#8FBF7F');
     array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 1);
   } else {
+    // arr[j] <= key
+    explanations(timeline, 'valid', j);
+
     // compareIcon fill change delays before changing (just like if what happens for the color red).
     array.value.toggleBorderSvg(timeline, j, '>', 'opacity', 1);
     array.value.toggleBorderSvg(timeline, j, '>', 'fill', '#8FBF7F', 1);
@@ -230,6 +202,85 @@ function compareElements(timeline, j, elements) {
 
   // pointer color to default
   timeline.to('.pointer', { duration: transitionSpeed.int * 0.4, fill: '#D7D0AE', ease: 'power2' }, '>');
+}
+
+function explanations(timeline, explanation, j) {
+  switch (explanation) {
+    case 'start':
+      visualizer.value.changeExplanation(timeline, [
+        {
+          string: 'Starting at the beginning of the array',
+          underlined: [{ text: 'beginning of the array', i: 0 }],
+        },
+        {
+          string: `, compare element ${j} and element ${j + 1}`,
+          underlined: [
+            { text: `element ${j}`, i: 1 },
+            { text: `element ${j + 1}`, i: 2 },
+          ],
+        },
+      ]);
+      break;
+    case 'next':
+      visualizer.value.changeExplanation(timeline, [
+        { string: 'Next', underlined: [] },
+        {
+          string: ` compare element ${j} and element ${j + 1}`,
+          underlined: [
+            { text: `element ${j}`, i: 0 },
+            { text: `element ${j + 1}`, i: 1 },
+          ],
+        },
+      ]);
+      break;
+    case 'invalid':
+      visualizer.value.changeExplanation(timeline, [
+        {
+          string: `Since element ${j} is greater than element ${j + 1}`,
+          underlined: [
+            { text: `element ${j}`, i: 0 },
+            { text: 'greater', i: 1 },
+            { text: `element ${j + 1}`, i: 2 },
+          ],
+        },
+        { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
+      ]);
+      break;
+    case 'swapped':
+      visualizer.value.changeExplanation(timeline, [
+        {
+          string: `Now, element ${j + 1} is greater than element ${j}`,
+          underlined: [
+            { text: `element ${j + 1}`, i: 0 },
+            { text: 'greater', i: 1 },
+            { text: `element ${j}`, i: 2 },
+          ],
+        },
+        {
+          string: ', so the elements are in the correct position',
+          underlined: [{ text: 'correct position', i: 3 }],
+        },
+      ]);
+      break;
+    case 'valid':
+      visualizer.value.changeExplanation(timeline, [
+        {
+          string: `Element ${j + 1} is greater than element ${j}`,
+          underlined: [
+            { text: `Element ${j + 1}`, i: 0 },
+            { text: 'greater', i: 1 },
+            { text: `element ${j}`, i: 2 },
+          ],
+        },
+        {
+          string: ', so the elements are in the correct position',
+          underlined: [{ text: 'correct position', i: 3 }],
+        },
+      ]);
+      break;
+    default:
+      break;
+  }
 }
 </script>
 
