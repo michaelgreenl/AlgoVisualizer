@@ -38,8 +38,8 @@ $breakpoints: (
 }
 
 // Custom sizes
-@mixin bp-custom-min($min-width) {
-  @media (max-width: ($min-width + 'px')) {
+@mixin bp-custom-max($max-width) {
+  @media (max-width: ($max-width + 'px')) {
     @content;
   }
 }

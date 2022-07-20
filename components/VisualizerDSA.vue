@@ -172,7 +172,11 @@ function closeSidebar() {
 }
 
 function changeExplanation(timeline, text) {
-  timeline.to('.explanation', { duration: 0.2, xPercent: 20, opacity: 0, ease: 'power2' });
+  timeline.to(
+    '.explanation',
+    { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' },
+    '>',
+  );
   timeline.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
 
   const tl = gsap.timeline();
@@ -181,7 +185,7 @@ function changeExplanation(timeline, text) {
 }
 
 function onCompleteExplanation(timeline, text, i) {
-  const prevInnerHTML = explanation.value.innerHTML; 
+  const prevInnerHTML = explanation.value.innerHTML;
   timeline.to('.explanation', {
     duration: props.transitionSpeed.int * 0.6,
     text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
@@ -380,12 +384,22 @@ $sidebar-width: 43.2em;
         // Length of navbar + current padding
         padding-right: 6.33em;
         width: 100%;
+
+        .explanations {
+          max-width: none;
+
+          @include bp-lg-laptop {
+            max-width: 50em;
+          }
+        }
       }
 
       .explanations {
         position: relative;
         display: flex;
         justify-content: center;
+        width: 100%;
+        max-width: 50em;
 
         .underline {
           text-decoration: underline $primary-light;
@@ -398,6 +412,8 @@ $sidebar-width: 43.2em;
           font-family: $secondary-font-stack;
           font-weight: 400;
           letter-spacing: 0.05ch;
+          height: 2em;
+          margin-bottom: 2vh;
 
           .underline {
             text-decoration: underline $primary-light;
