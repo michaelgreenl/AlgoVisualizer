@@ -12,6 +12,8 @@ export default defineNuxtConfig({
     },
   },
 
+  modules: ['@pinia/nuxt'],
+
   // FIXME: Temporary while dynamic imports don't work with vite
   /* 
     Issue in this project - importing component route params in the visualizer page works only on initial load.
