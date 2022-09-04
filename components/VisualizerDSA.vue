@@ -57,7 +57,7 @@
             <span
               ref="explanation"
               class="explanation"
-              v-show="currStep === 0 || visualizerSettings.explanation.state.value"
+              v-show="timeline.currStep === 0 || visualizerSettings.settings.explanation.state"
             >
               To start, hit play
             </span>
@@ -65,10 +65,14 @@
         </div>
         <slot name="visual"></slot>
         <div class="controls">
-          <button class="control-button" @click="restart">
+          <button class="control-button" @click="restart" :disabled="timeline.currStep === 0">
             <RestartIcon class="icon restart" />
           </button>
-          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep < 1">
+          <button
+            class="control-button"
+            @click="timeline.currStep > 0 ? timeline.seek(-1) : null"
+            :disabled="timeline.currStep === 1"
+          >
             <SkipLeftIcon class="icon" />
           </button>
           <button class="control-button" @click="playClick">
@@ -77,21 +81,25 @@
           </button>
           <button
             class="control-button"
-            @click="emit('setCurrStep', currStep + 1)"
-            :disabled="currStep === Object.keys(timeline.labels).filter((key) => !isNaN(key)).length"
+            @click="timeline.currStep > 0 ? timeline.seek(1) : null"
+            :disabled="
+              timeline.currStep > 0 &&
+              timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length
+            "
           >
             <SkipRightIcon class="icon" />
           </button>
         </div>
       </div>
       <div class="sidebar" :class="{ open: sidebarOpen }">
+        <!-- TODO: add vue-agile  -->
         <div
           class="tabs"
           :class="{ one: sidebarTabs.settings, two: sidebarTabs.explanation, three: sidebarTabs.description }"
         >
           <div class="tab" :class="{ open: sidebarTabs.settings }">
             <slot name="settings">
-              <VisualizerSettings ref="settings" :currStep="currStep" @restart="restart" />
+              <VisualizerSettings ref="settings" @restart="restart" />
             </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
@@ -107,15 +115,17 @@
 </template>
 
 <script setup>
+import { ref, reactive } from 'vue';
+import { timelineStore } from '../stores/timeline';
+import { visualizerSettingsStore } from '../stores/visualizerSettings';
+import gsap from 'gsap';
+import { TextPlugin } from 'gsap/dist/TextPlugin';
+
 import RestartIcon from '../assets/svgs/restart.svg';
 import PauseIcon from '../assets/svgs/pause.svg';
 import PlayIcon from '../assets/svgs/play.svg';
 import SkipLeftIcon from '../assets/svgs/skipLeft.svg';
 import SkipRightIcon from '../assets/svgs/skipRight.svg';
-
-import { ref, reactive } from 'vue';
-import gsap from 'gsap';
-import { TextPlugin } from 'gsap/dist/TextPlugin';
 
 gsap.registerPlugin(TextPlugin);
 
@@ -124,22 +134,18 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  currStep: {
-    type: Number,
-    required: true,
-  },
   transitionSpeed: {
     type: Object,
     required: true,
   },
 });
 
-const emit = defineEmits(['setCurrStep', 'playClick']);
+const emit = defineEmits(['start', 'restart']);
 
-const visualizerSettings = useVisualizerSettings();
-const timeline = useTimeline();
+const timeline = timelineStore();
+const visualizerSettings = visualizerSettingsStore();
+
 const settings = ref();
-
 const explanation = ref();
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
@@ -150,14 +156,21 @@ const sidebarTabs = reactive({
 });
 
 function playClick() {
-  settings.value.setRestartSettings();
   visualPlaying.value = !visualPlaying.value;
-  emit('playClick');
+  if (timeline.currStep === 0) {
+    visualizerSettings.selected = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
+    emit('start');
+  } else if (visualPlaying.value) {
+    timeline.tl.resume();
+  } else {
+    timeline.tl.pause();
+  }
 }
 
 function restart() {
-  emit('setCurrStep', 0);
+  visualizerSettings.restart();
   visualPlaying.value = false;
+  emit('restart');
 }
 
 function tabButtonClick(tab) {
@@ -171,22 +184,26 @@ function closeSidebar() {
   setTimeout(() => Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = false)), 100);
 }
 
-function changeExplanation(timeline, text) {
-  timeline.to(
-    '.explanation',
-    { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' },
-    '>',
-  );
-  timeline.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
+function changeExplanation(tl, text, i) {
+  tl.to('.explanation', { duration: props.transitionSpeed.int * 4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
+  tl.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
 
-  const tl = gsap.timeline();
-  onCompleteExplanation(tl, text, 0);
-  timeline.add(tl);
+  /*
+    For ending explanations, adding a label. Also making sure it's added after the explanation has gone off to the side
+    for the previous steps last explanation.
+  */
+  if (typeof i === 'number') {
+    timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 5.5}`);
+  }
+
+  const tl2 = gsap.timeline();
+  onCompleteExplanation(tl2, text, 0);
+  tl.add(tl2);
 }
 
-function onCompleteExplanation(timeline, text, i) {
+function onCompleteExplanation(tl, text, i) {
   const prevInnerHTML = explanation.value.innerHTML;
-  timeline.to('.explanation', {
+  tl.to('.explanation', {
     duration: props.transitionSpeed.int * 0.6,
     text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
     ease: 'power1',
@@ -202,15 +219,15 @@ function onCompleteExplanation(timeline, text, i) {
         explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
         for (let j = 0; j < text[i].underlined.length; j++) {
           if (j === text[i].underlined.length - 1 && i + 1 !== text.length) {
-            timeline.to(explanation.value.children[text[i].underlined[j].i], {
+            tl.to(explanation.value.children[text[i].underlined[j].i], {
               duration: props.transitionSpeed.int * 0.4,
               text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
               ease: 'power1',
-              onCompleteParams: [timeline, text, i + 1],
+              onCompleteParams: [tl, text, i + 1],
               onComplete: onCompleteExplanation,
             });
           } else {
-            timeline.to(explanation.value.children[text[i].underlined[j].i], {
+            tl.to(explanation.value.children[text[i].underlined[j].i], {
               duration: props.transitionSpeed.int * 0.4,
               text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
               ease: 'power1',
@@ -218,7 +235,7 @@ function onCompleteExplanation(timeline, text, i) {
           }
         }
       } else {
-        onCompleteExplanation(timeline, text, i + 1);
+        onCompleteExplanation(tl, text, i + 1);
       }
     },
   });
@@ -280,6 +297,10 @@ $sidebar-width: 43.2em;
       margin: 0 2.25rem;
       color: $primary-dark;
       font-size: 4em;
+      border-bottom: solid 1px $primary-light;
+      margin: 0;
+      padding: 10px 25px;
+      width: 45%;
     }
 
     .sidebar-nav {
@@ -290,7 +311,7 @@ $sidebar-width: 43.2em;
       height: 2.5rem;
       width: $sidebar-width;
       padding: 0 1.25em;
-      box-shadow: 2px 1px 1px $primary-light-grey;
+      box-shadow: 2px 0.75px 1px $primary-light-grey;
 
       .close-button-enter-active .close-icon .line-one,
       .close-button-leave-active .close-icon .line-one {
@@ -458,8 +479,12 @@ $sidebar-width: 43.2em;
 
           &:active {
             outline: solid 3px $primary-white;
-            background: #d4cca7;
+            background: #cbbf9b;
             outline-offset: -2px;
+          }
+
+          &:disabled {
+            background-color: #e3dfce;
           }
 
           .icon {
@@ -494,6 +519,8 @@ $sidebar-width: 43.2em;
       &.open {
         width: $sidebar-width;
       }
+
+      // TODO: add vue-agile
 
       .tabs {
         display: flex;

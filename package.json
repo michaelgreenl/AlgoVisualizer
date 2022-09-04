@@ -18,6 +18,7 @@
     "eslint-plugin-nuxt": "^3.2.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.7.1",
+    "lodash": "^4.17.21",
     "nuxt": "3.0.0-rc.1",
     "prettier": "^2.6.2",
     "sass": "^1.51.0",
@@ -27,6 +28,7 @@
   "dependencies": {
     "@pinia/nuxt": "^0.3.1",
     "gsap": "^3.10.4",
+    "lodash.isequal": "^4.5.0",
     "pinia": "^2.0.17",
     "pinia-plugin-persistedstate": "^2.1.0",
     "vite-svg-loader": "^3.3.0",

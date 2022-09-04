@@ -1,16 +1,15 @@
 import { defineStore } from 'pinia';
+import { ref, markRaw } from 'vue';
+import gsap from 'gsap';
 
-/**
- * Default "app" store.
- * "persist: true" is a pinia-plugin-persistedstate setting to persist data between sessions into localStorage.
- * View the documentation for more advanced setup: https://www.npmjs.com/package/pinia-plugin-persistedstate
- */
-export default defineStore({
-  id: 'app',
-  persist: true,
-  state: () => ({
-    test: false,
-  }),
-  getters: {},
-  actions: {},
+export const timelineStore = defineStore('timeline', () => {
+  const tl = markRaw(gsap.timeline());
+  const currStep = ref(0);
+
+  function seek(change) {
+    this.currStep += change;
+    this.tl.seek(`${this.currStep}`);
+  }
+
+  return { tl, currStep, seek };
 });

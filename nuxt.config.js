@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@pinia/nuxt'],
+  modules: ['@pinia/nuxt', 'lodash'],
 
   // FIXME: Temporary while dynamic imports don't work with vite
   /* 

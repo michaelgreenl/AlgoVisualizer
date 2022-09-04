@@ -1,0 +1,17 @@
+// TODO: transfer over these functions into actions. (make them usable throughout the project)
+// TODO: commit 
+// TODO: add vue-3 template stuff, like @ for imports (go through and format imports), and scss formatting
+// TODO: test settings on all input types
+// FIXME: array values not being random if state setting for element type is Random (on refresh, if it was random before refresh)
+// FIXME: half of explanation showing after seek
+
+// CHECKPOINT: when user can restart and play the animation again, along with seeking (back and forth), using all settings, with no bugs (found bugs).
+
+// FIXME: refactor array (divs being together)
+
+// TODO: add vue-agile
+
+// TODO: change timelineStore to persisted state. Change the way the values are used in insertion sort and VisualizerDSA to do it.
+
+
+// FIXME: problem point for responsiveness: below width of 1150px at greater than height of 650px. (hamburger icon? for sidebar or settings? or both?)

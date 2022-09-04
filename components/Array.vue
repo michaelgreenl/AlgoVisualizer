@@ -1,5 +1,5 @@
 <template>
-  <div ref="arrayDiv" class="array" :style="{ aspectRatio: `${visualizerSettings.arraySize.state.value + 4}/2` }">
+  <div ref="arrayDiv" class="array" :style="{ aspectRatio: `${visualizerSettings.settings.arraySize.state + 4}/2` }">
     <!-- For bounded aspectRatio style, Initial aspectRatio for 8 elements is 12/2, so add 4 to 12. 
           Incrementing with the arraySize works to keep the div responsive -->
     <TransitionGroup name="fade-in-out" appear>
@@ -8,7 +8,7 @@
         :key="pointer"
         ref="pointers"
         class="pointer-wrapper"
-        :style="{ opacity: currStep > 0 ? '1' : '0', width: `${elementWidth}px` }"
+        :style="{ opacity: timeline.currStep > 0 ? '1' : '0', width: `${elementWidth}px` }"
       >
         <Pointer class="pointer" />
       </div>
@@ -29,7 +29,7 @@
       <div class="borders" :style="{ paddingLeft: `${elementWidth}px` }">
         <TransitionGroup name="border" appear>
           <div
-            v-for="i in visualizerSettings.arraySize.state.value - 1"
+            v-for="i in visualizerSettings.settings.arraySize.state - 1"
             :key="i"
             ref="borders"
             class="border"
@@ -45,7 +45,7 @@
     <div class="indices">
       <TransitionGroup name="fade-in-out" appear>
         <div
-          v-for="index in visualizerSettings.arraySize.state.value"
+          v-for="index in visualizerSettings.settings.arraySize.state"
           :key="index"
           class="index"
           :style="{
@@ -60,11 +60,12 @@
 </template>
 
 <script setup>
-import Pointer from '../assets/svgs/polygonPointer.svg';
-
 import { ref, reactive, onMounted, nextTick } from 'vue';
+import { timelineStore } from '../stores/timeline';
+import { visualizerSettingsStore } from '../stores/visualizerSettings';
 import gsap from 'gsap';
 
+import Pointer from '../assets/svgs/polygonPointer.svg';
 const props = defineProps({
   transitionSpeed: {
     type: Object,
@@ -72,40 +73,36 @@ const props = defineProps({
       return { string: '400ms', int: 400 };
     },
   },
-  currStep: {
-    type: Number,
-    required: true,
-  },
   numPointers: {
     type: Number,
     default: 0,
   },
 });
 
-const timeline = useTimeline();
-const visualizerSettings = useVisualizerSettings();
+const timeline = timelineStore();
+const visualizerSettings = visualizerSettingsStore();
 
-const elementWidth = computed(() => arrayWidth.value / visualizerSettings.value.arraySize.state.value);
+const elementWidth = computed(() => arrayWidth.value / visualizerSettings.settings.arraySize.state);
 const arrayDiv = ref();
 const arrayHeight = ref(0);
 const arrayWidth = ref(0);
 const array = reactive([]);
 const elementsDiv = ref();
-const elements = reactive([]);
+const elements = reactive({ arr: [] });
 const borders = ref();
 const pointers = ref([]);
 
 watch(
-  () => visualizerSettings.value.elementType.state.value,
+  () => visualizerSettings.settings.elementType.state,
   (currVal) => {
     array.length = 0;
     if (currVal === 'Random') {
-      for (let i = 1; i <= visualizerSettings.value.arraySize.state.value; i++) {
+      for (let i = 1; i <= visualizerSettings.settings.arraySize.state; i++) {
         array.push(Math.floor(Math.random() * 20));
       }
       array.sort((a, b) => a - b);
     } else {
-      for (let i = 1; i <= visualizerSettings.value.arraySize.state.value; i++) {
+      for (let i = 1; i <= visualizerSettings.settings.arraySize.state; i++) {
         array.push(i);
       }
     }
@@ -113,13 +110,13 @@ watch(
 );
 
 watch(
-  () => visualizerSettings.value.arraySize.state.value,
+  () => visualizerSettings.settings.arraySize.state,
   (currVal, oldVal) => {
     if (oldVal > currVal) {
       while (array.length > currVal) {
         array.pop();
       }
-    } else if (visualizerSettings.value.elementType.state.value === 'Random') {
+    } else if (visualizerSettings.settings.elementType.state === 'Random') {
       array.push(Math.floor(Math.random() * 20));
       array.sort((a, b) => a - b);
     } else {
@@ -131,7 +128,7 @@ watch(
 );
 
 onMounted(() => {
-  for (let i = 0; i++ < visualizerSettings.value.arraySize.state.value; ) {
+  for (let i = 0; i++ < visualizerSettings.settings.arraySize.state; ) {
     array.push(i);
   }
   nextTick(() => {
@@ -144,22 +141,24 @@ onMounted(() => {
 });
 
 function setElements() {
-  if (props.currStep === 0) {
+  if (timeline.currStep === 0) {
     for (let i = 0; i < elementsDiv.value.children.length; i++) {
       // Since the border elements are last in the elements children nodes
       if (elementsDiv.value.children[i].classList.contains('borders')) {
         break;
       }
-      elements.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
+      elements.arr.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
     }
-    for (let i = elements.length; i-- > 1; ) {
+
+    // shuffling elements (*every element)
+    for (let i = elements.arr.length; i-- > 1; ) {
       const j = Math.floor(Math.random() * i);
-      const tmp = elements[i];
-      elements[i] = elements[j];
-      elements[j] = tmp;
+      const tmp = elements.arr[i];
+      elements.arr[i] = elements.arr[j];
+      elements.arr[j] = tmp;
     }
   } else {
-    elements.sort((a, b) => a.value - b.value);
+    elements.arr.sort((a, b) => a.value - b.value);
   }
 }
 
@@ -167,21 +166,21 @@ function setElementsAnim() {
   setElements();
   const tl = gsap.timeline({
     onComplete: () => {
-      if (props.currStep === 0) {
-        elements.length = 0;
-        timeline.value.clear();
+      if (timeline.currStep === 0) {
+        elements.arr.length = 0;
+        timeline.tl.clear();
       }
     },
   });
   setBorderVisibility(tl, 'all', 0);
 
   // Doing the first element first *without the overlapping option* so the border animation is done first
-  tl.to(elements[0].div, {
+  tl.to(elements.arr[0].div, {
     duration: props.transitionSpeed.int * 0.8,
-    xPercent: (0 - elements[0].oldIndex) * 100,
+    xPercent: (0 - elements.arr[0].oldIndex) * 100,
     ease: 'expo',
   });
-  for (const [i, element] of elements.entries()) {
+  for (const [i, element] of elements.arr.entries()) {
     // First animation is to compensate for the 2px gap;
     tl.to(element.div, { duration: 0, x: (i - element.oldIndex) * 2 }, '<10%').to(
       element.div,
@@ -190,58 +189,59 @@ function setElementsAnim() {
     );
   }
   setBorderVisibility(tl, 'all', '100%');
-  tl.addLabel('0');
 
-  timeline.value.add(tl);
+  // FIXME: is this label necessary?
+  tl.addLabel('0');
+  timeline.tl.add(tl);
+  timeline.tl.resume();
 }
 
 // TODO: Make this account for long swaps
-function swapElements(timeline, indices, delay) {
-  timeline
+function swapElements(tl, indices, delay) {
+  tl.to(
+    elements.arr[indices[0]].div,
+    {
+      duration: props.transitionSpeed.int * 0.8,
+      delay: delay,
+      xPercent: (indices[1] - elements.arr[indices[0]].oldIndex) * 100,
+      ease: 'expo',
+    },
+    '>',
+  )
     .to(
-      elements[indices[0]].div,
+      elements.arr[indices[1]].div,
       {
         duration: props.transitionSpeed.int * 0.8,
-        delay: delay,
-        xPercent: (indices[1] - elements[indices[0]].oldIndex) * 100,
-        ease: 'expo',
-      },
-      '>',
-    )
-    .to(
-      elements[indices[1]].div,
-      {
-        duration: props.transitionSpeed.int * 0.8,
-        xPercent: (indices[0] - elements[indices[1]].oldIndex) * 100,
+        xPercent: (indices[0] - elements.arr[indices[1]].oldIndex) * 100,
         ease: 'expo',
       },
       '<',
     )
     // to accommodate for 2px gap
     .to(
-      elements[indices[1]].div,
-      { duration: 0.1, x: (indices[0] - elements[indices[1]].oldIndex) * 2, ease: 'expo' },
+      elements.arr[indices[1]].div,
+      { duration: 0.1, x: (indices[0] - elements.arr[indices[1]].oldIndex) * 2, ease: 'expo' },
       '<+=0.1',
     )
     .to(
-      elements[indices[0]].div,
-      { duration: 0.1, x: (indices[1] - elements[indices[0]].oldIndex) * 2, ease: 'expo' },
+      elements.arr[indices[0]].div,
+      { duration: 0.1, x: (indices[1] - elements.arr[indices[0]].oldIndex) * 2, ease: 'expo' },
       '<+=0.1',
     );
 }
 
-function setBorderVisibility(timeline, border, direction, delay, timing) {
+function setBorderVisibility(tl, border, direction, delay, timing) {
   // Arg - border: Can either be 'all' (string), indicating to set all border's visibility, or an index (int) indicating to set set border's visibility.
   // Arg - direction: Can either be 0 (down/visible) or '100%' (up/hidden).
   if (border === 'all') {
-    timeline.to('.border', {
+    tl.to('.border', {
       duration: props.transitionSpeed.int * 0.75,
       delay: delay,
       height: direction,
       ease: 'power2',
     });
   } else {
-    timeline.to(
+    tl.to(
       borders.value[border],
       {
         duration: props.transitionSpeed.int * 0.75,
@@ -254,17 +254,17 @@ function setBorderVisibility(timeline, border, direction, delay, timing) {
   }
 }
 
-function toggleBorderSvg(timeline, border, timing, change, to, delay) {
+function toggleBorderSvg(tl, border, timing, change, to, delay) {
   switch (change) {
     case 'opacity':
-      timeline.to(
+      tl.to(
         borders.value[border].children[0],
         { duration: props.transitionSpeed.int * 0.4, delay: delay, opacity: to, ease: 'power2' },
         timing,
       );
       break;
     case 'fill':
-      timeline.to(
+      tl.to(
         borders.value[border].children[0].children[0],
         { duration: props.transitionSpeed.int * 0.4, delay: delay, fill: to, ease: 'power2' },
         timing,
@@ -275,24 +275,24 @@ function toggleBorderSvg(timeline, border, timing, change, to, delay) {
   }
 }
 
-function setPointerPosition(timeline, pointer, positionIndex, timing) {
+function setPointerPosition(tl, pointer, positionIndex, timing) {
   // Arg - pointer: Can either be 'all' (string), indicating to move all pointers, or an index (int) indicating to move one pointer.
   if (pointer === 'all') {
-    timeline.to(
+    tl.to(
       '.pointer-wrapper',
       {
         duration: props.transitionSpeed.int * 0.3,
-        left: `${(100 / visualizerSettings.value.arraySize.state.value) * positionIndex}%`,
+        left: `${(100 / visualizerSettings.settings.arraySize.state) * positionIndex}%`,
         ease: 'power2',
       },
       timing,
     );
   } else {
-    timeline.to(
+    tl.to(
       pointers.value[pointer],
       {
         duration: props.transitionSpeed.int * 0.3,
-        left: `${(100 / visualizerSettings.value.arraySize.state.value) * positionIndex}%`,
+        left: `${(100 / visualizerSettings.settings.arraySize.state) * positionIndex}%`,
         ease: 'power2',
       },
       timing,
