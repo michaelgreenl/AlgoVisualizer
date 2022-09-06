@@ -63,8 +63,8 @@ onBeforeMount(() => {
     speed: {
       label: 'Speed',
       type: 'range',
-      min: 31,
-      max: 68,
+      min: 30,
+      max: 70,
       state: 50,
       requiresRestart: false,
     },

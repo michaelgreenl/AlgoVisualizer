@@ -185,16 +185,17 @@ function closeSidebar() {
 }
 
 function changeExplanation(tl, text, i) {
-  tl.to('.explanation', { duration: props.transitionSpeed.int * 4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
-  tl.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
+  tl.to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
 
   /*
     For ending explanations, adding a label. Also making sure it's added after the explanation has gone off to the side
     for the previous steps last explanation.
   */
   if (typeof i === 'number') {
-    timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 5.5}`);
+    timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 0.4 + 1}`);
   }
+
+  tl.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
 
   const tl2 = gsap.timeline();
   onCompleteExplanation(tl2, text, 0);
@@ -484,7 +485,7 @@ $sidebar-width: 43.2em;
           }
 
           &:disabled {
-            background-color: #e3dfce;
+            background-color: #eae8e0;
           }
 
           .icon {
