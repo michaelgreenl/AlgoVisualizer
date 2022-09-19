@@ -70,7 +70,7 @@
           </button>
           <button
             class="control-button"
-            @click="timeline.currStep > 0 ? timeline.seek(-1) : null"
+            @click="timeline.currStep > 0 ? seek(-1) : null"
             :disabled="timeline.currStep === 1"
           >
             <SkipLeftIcon class="icon" />
@@ -81,7 +81,7 @@
           </button>
           <button
             class="control-button"
-            @click="timeline.currStep > 0 ? timeline.seek(1) : null"
+            @click="timeline.currStep > 0 ? seek(1) : null"
             :disabled="
               timeline.currStep > 0 &&
               timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length
@@ -115,7 +115,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { timelineStore } from '../stores/timeline';
 import { visualizerSettingsStore } from '../stores/visualizerSettings';
 import gsap from 'gsap';
@@ -145,8 +145,16 @@ const emit = defineEmits(['start', 'restart']);
 const timeline = timelineStore();
 const visualizerSettings = visualizerSettingsStore();
 
-const settings = ref();
 const explanation = ref();
+const explanationCount = ref(0);
+const explanationTrack = reactive([]);
+const explanationOnSeek = reactive({
+  tl: null,
+  explanationCount: null,
+  tweensToKill: null,
+  textLength: null,
+  textAnimsAdded: null,
+});
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
@@ -184,7 +192,35 @@ function closeSidebar() {
   setTimeout(() => Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = false)), 100);
 }
 
+function seek(value) {
+  if (explanationOnSeek.tl) {
+    if (
+      !explanationTrack[explanationOnSeek.explanationCount] &&
+      explanationOnSeek.textAnimsAdded === explanationOnSeek.textLength &&
+      explanationOnSeek.tweensToKill.length !== 0
+    ) {
+      explanationOnSeek.tweensToKill.forEach((id) => {
+        if (explanationOnSeek.tl.getById(id)) {
+          explanationOnSeek.tl.getById(id).kill();
+        }
+      });
+      explanationTrack[explanationOnSeek.explanationCount] = true;
+    } else if (
+      !explanationTrack[explanationOnSeek.explanationCount] &&
+      explanationOnSeek.textAnimsAdded !== explanationOnSeek.textLength &&
+      explanationOnSeek.tweensToKill.length !== 0
+    ) {
+      for (let i = 1; i < explanationOnSeek.tl.getChildren(true).length; i++) {
+        explanationOnSeek.tl.getChildren(true)[i].kill();
+      }
+      explanationTrack[explanationOnSeek.explanationCount] = true;
+    }
+  }
+  timeline.seek(value);
+}
+
 function changeExplanation(tl, text, i) {
+  // Making the origninal explanation slide to the left and fade away
   tl.to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
 
   /*
@@ -195,51 +231,97 @@ function changeExplanation(tl, text, i) {
     timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 0.4 + 1}`);
   }
 
+  // Making the explanation div go back to the center and have an opacity of 1
   tl.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
 
+  explanationTrack.push(false);
+  const util = {
+    tweensToKill: new Set([]),
+    textAnimsAdded: 0,
+  };
+
+  // Adding a different timeline so the explanation animation can play along with other animations on the global timeline
   const tl2 = gsap.timeline();
-  onCompleteExplanation(tl2, text, 0);
+  onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
   tl.add(tl2);
+  explanationCount.value += 1;
 }
 
-function onCompleteExplanation(tl, text, i) {
+function onCompleteExplanation(tl, text, explanationCount, util, i) {
+  // TODO: Add comments to this function
   const prevInnerHTML = explanation.value.innerHTML;
-  tl.to('.explanation', {
-    duration: props.transitionSpeed.int * 0.6,
-    text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
-    ease: 'power1',
-    onComplete: () => {
-      if (text[i].underlined.length) {
-        let innerHTML = text[i].string;
-        for (const underlined of text[i].underlined) {
-          innerHTML = innerHTML.replace(
-            underlined.text,
-            `<span class="explanation-no-underline">${underlined.text}</span>`,
-          );
-        }
-        explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
-        for (let j = 0; j < text[i].underlined.length; j++) {
-          if (j === text[i].underlined.length - 1 && i + 1 !== text.length) {
-            tl.to(explanation.value.children[text[i].underlined[j].i], {
-              duration: props.transitionSpeed.int * 0.4,
-              text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
-              ease: 'power1',
-              onCompleteParams: [tl, text, i + 1],
-              onComplete: onCompleteExplanation,
-            });
-          } else {
-            tl.to(explanation.value.children[text[i].underlined[j].i], {
-              duration: props.transitionSpeed.int * 0.4,
-              text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
-              ease: 'power1',
-            });
+
+  if (!explanationTrack[explanationCount]) {
+    util.textAnimsAdded += 1;
+    tl.to('.explanation', {
+      id: `text${i}`,
+      duration: props.transitionSpeed.int * 0.6,
+      text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
+      ease: 'power1',
+      onComplete: () => {
+        explanationOnSeek.tl = tl;
+        explanationOnSeek.explanationCount = explanationCount;
+        explanationOnSeek.tweensToKill = util.tweensToKill;
+        explanationOnSeek.textLength = text.length;
+        explanationOnSeek.textAnimsAdded = util.textAnimsAdded;
+
+        if (text[i].underlined.length) {
+          let innerHTML = text[i].string;
+          for (const underlined of text[i].underlined) {
+            innerHTML = innerHTML.replace(
+              underlined.text,
+              `<span class="explanation-no-underline">${underlined.text}</span>`,
+            );
           }
+          explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
+
+          for (const [j, underlined] of text[i].underlined.entries()) {
+            const position = j !== 0 ? tl.getById(`underline${i}${j - 1}`)._end : tl.getById(`text${i}`)._end;
+
+            util.tweensToKill.add(`underline${i}${j}`);
+            const underline = (config) => {
+              return tl.to(
+                explanation.value.children[underlined.i],
+                {
+                  id: `underline${i}${j}`,
+                  duration: props.transitionSpeed.int * 0.4,
+                  text: {
+                    value: text[i].underlined[j].text,
+                    speed: 3,
+                    newClass: 'explanation-underline',
+                  },
+                  ease: 'power1',
+                  onCompleteParams: config.onCompleteParams,
+                  onComplete: config.onComplete,
+                },
+                position,
+              );
+            };
+            if (i !== text.length - 1 && j === text[i].underlined.length - 1) {
+              underline({
+                onCompleteParams: [tl, text, explanationCount, util, i + 1],
+                onComplete: onCompleteExplanation,
+              });
+            } else {
+              underline({
+                onComplete: () => {
+                  if (i === text.length - 1 && j === text[i].underlined.length - 1) {
+                    explanationTrack[explanationCount] = true;
+                    util.tweensToKill.forEach((id) => {
+                      tl.getById(id).kill();
+                    });
+                    util.tweensToKill.clear();
+                  }
+                },
+              });
+            }
+          }
+        } else {
+          onCompleteExplanation(tl, text, explanationCount, util, i + 1);
         }
-      } else {
-        onCompleteExplanation(tl, text, i + 1);
-      }
-    },
-  });
+      },
+    });
+  }
 }
 
 defineExpose({ visualPlaying, changeExplanation });
