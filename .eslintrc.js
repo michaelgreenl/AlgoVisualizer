@@ -41,6 +41,7 @@ module.exports = {
 
     // Vue rules (mostly to enforce airbnb in <template>)
     'vue/no-unused-components': process.env.PRE_COMMIT ? 'error' : 'warn',
+    'vue/no-unused-vars': 'warn',
     'vue/array-bracket-spacing': 'error',
     'vue/arrow-spacing': 'error',
     'vue/block-spacing': 'error',
