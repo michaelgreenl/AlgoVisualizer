@@ -5,7 +5,7 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: ['plugin:nuxt/recommended', 'plugin:vue/vue3-essential', 'prettier'],
+  extends: ['plugin:nuxt/recommended', 'plugin:vue/vue3-essential', 'prettier', '@vue/eslint-config-prettier'],
   plugins: ['vue'],
   parserOptions: {
     ecmaVersion: 'latest',

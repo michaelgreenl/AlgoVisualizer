@@ -1,4 +1,3 @@
-import { defineNuxtConfig } from 'nuxt';
 import eslintPlugin from 'vite-plugin-eslint';
 import svgLoader from 'vite-svg-loader';
 

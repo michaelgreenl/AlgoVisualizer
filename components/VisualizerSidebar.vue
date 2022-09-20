@@ -22,7 +22,11 @@
             @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
           >
             <div class="item">
-              <span class="item-text" v-for="(contentIndex, index) in searchResults[content].indices" :key="contentIndex">
+              <span
+                class="item-text"
+                v-for="(contentIndex, index) in searchResults[content].indices"
+                :key="contentIndex"
+              >
                 <span v-if="!index">
                   <mark class="highlight" v-if="content.toLowerCase().startsWith(userInput.toLowerCase())">
                     {{ content.substring(0, userInput.length) }}
@@ -43,7 +47,9 @@
               </span>
             </div>
             <span class="category">{{
-              `${searchResults[content].category.charAt(0).toUpperCase()}${searchResults[content].category.substring(1)}`
+              `${searchResults[content].category.charAt(0).toUpperCase()}${searchResults[content].category.substring(
+                1,
+              )}`
             }}</span>
           </button>
         </li>
@@ -81,7 +87,7 @@
             <button
               class="item"
               :disabled="route.params.visualizer === content.replaceAll(/[\s\-*\']/g, '')"
-              @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
+              @click="router.push(`/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
             >
               <span class="content">{{ content }}</span>
             </button>
