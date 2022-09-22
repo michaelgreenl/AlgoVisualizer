@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { timelineStore } from '../stores/timeline';
+import isEqual from 'lodash.isequal';
 
 export const visualizerSettingsStore = defineStore(
   'visualizerSettings',
@@ -10,6 +11,8 @@ export const visualizerSettingsStore = defineStore(
     const initial = reactive({});
     const selected = reactive({});
     const localState = reactive({});
+    const enableReset = computed(() => !isEqual(settings, initial));
+    const enableRestart = computed(() => !isEqual(localState, selected));
 
     function onInput(key, requiresRestart, inputValue) {
       // only setting visualizerSettings.localState value if (requiresRestart === true) and currStep > 0
@@ -22,7 +25,7 @@ export const visualizerSettingsStore = defineStore(
         this.localState[`${key}`].state = inputValue;
       }
     }
-    
+
     function reset() {
       if (timeline.currStep > 0) {
         Object.keys(this.settings).forEach((key) => {
@@ -39,7 +42,7 @@ export const visualizerSettingsStore = defineStore(
         });
       }
     }
-    
+
     function restart() {
       Object.keys(this.settings).forEach((key) => {
         if (this.settings[`${key}`].requiresRestart) {
@@ -52,7 +55,7 @@ export const visualizerSettingsStore = defineStore(
       timeline.currStep = 0;
     }
 
-    return { settings, initial, selected, localState, onInput, reset, restart };
+    return { settings, initial, selected, localState, onInput, reset, restart, enableReset, enableRestart };
   },
   { persist: true },
 );

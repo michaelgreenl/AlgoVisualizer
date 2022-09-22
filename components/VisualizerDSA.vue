@@ -176,9 +176,13 @@ function playClick() {
 }
 
 function restart() {
-  visualizerSettings.restart();
-  visualPlaying.value = false;
-  emit('restart');
+  if (visualizerSettings.enableReset && visualizerSettings.enableRestart) {
+    visualizerSettings.restart();
+    visualPlaying.value = false;
+    emit('restart');
+  } else {
+    seek('1');
+  }
 }
 
 function tabButtonClick(tab) {
@@ -199,6 +203,12 @@ function seek(value) {
       explanationOnSeek.textAnimsAdded === explanationOnSeek.textLength &&
       explanationOnSeek.tweensToKill.length !== 0
     ) {
+      /* 
+        If the explanation hasn't been ran through completely allowing the last onComplete to run,
+        and all of the text animations have been added,
+        and some of the underlining animations have been added.
+      */
+
       explanationOnSeek.tweensToKill.forEach((id) => {
         if (explanationOnSeek.tl.getById(id)) {
           explanationOnSeek.tl.getById(id).kill();
@@ -210,10 +220,14 @@ function seek(value) {
       explanationOnSeek.textAnimsAdded !== explanationOnSeek.textLength &&
       explanationOnSeek.tweensToKill.length !== 0
     ) {
+      /* 
+        If the explanation hasn't been ran through completely allowing the last onComplete to run,
+        and not all of the text animations have been added,
+        and some of the underlining animations have been added. 
+       */
       for (let i = 1; i < explanationOnSeek.tl.getChildren(true).length; i++) {
         explanationOnSeek.tl.getChildren(true)[i].kill();
       }
-      explanationTrack[explanationOnSeek.explanationCount] = true;
     }
   }
   timeline.seek(value);
@@ -249,8 +263,10 @@ function changeExplanation(tl, text, i) {
 
 function onCompleteExplanation(tl, text, explanationCount, util, i) {
   // TODO: Add comments to this function
+  // Getting the current innerHTML from the explanation div
   const prevInnerHTML = explanation.value.innerHTML;
 
+  // Only adding another text animation if the animation hasn't gone through yet
   if (!explanationTrack[explanationCount]) {
     util.textAnimsAdded += 1;
     tl.to('.explanation', {
@@ -266,6 +282,7 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
         explanationOnSeek.textAnimsAdded = util.textAnimsAdded;
 
         if (text[i].underlined.length) {
+          // If there is underlined animations for this text animation, surrounding the text that's going to be underlined with a span tag so it can be accessed as a child node.
           let innerHTML = text[i].string;
           for (const underlined of text[i].underlined) {
             innerHTML = innerHTML.replace(
@@ -273,9 +290,12 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
               `<span class="explanation-no-underline">${underlined.text}</span>`,
             );
           }
+
+          // Combining the previous innerHTML and the newly editted text unless the previous innerHTML comes from the last explanation.
           explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
 
           for (const [j, underlined] of text[i].underlined.entries()) {
+            // Getting the end time of the last added underline animation or text animation depending on if there are any previously added underline animations in this current loop.
             const position = j !== 0 ? tl.getById(`underline${i}${j - 1}`)._end : tl.getById(`text${i}`)._end;
 
             util.tweensToKill.add(`underline${i}${j}`);
@@ -298,11 +318,13 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
               );
             };
             if (i !== text.length - 1 && j === text[i].underlined.length - 1) {
+              // If this is the last underline animation but not the last text animation, run this function again.
               underline({
                 onCompleteParams: [tl, text, explanationCount, util, i + 1],
                 onComplete: onCompleteExplanation,
               });
             } else {
+              // If this is the last underline animation and the last text animation, kill the underline animations and set the explanation tracker to true.
               underline({
                 onComplete: () => {
                   if (i === text.length - 1 && j === text[i].underlined.length - 1) {

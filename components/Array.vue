@@ -66,6 +66,7 @@ import { visualizerSettingsStore } from '../stores/visualizerSettings';
 import gsap from 'gsap';
 
 import Pointer from '../assets/svgs/polygonPointer.svg';
+
 const props = defineProps({
   transitionSpeed: {
     type: Object,
@@ -190,8 +191,6 @@ function setElementsAnim() {
   }
   setBorderVisibility(tl, 'all', '100%');
 
-  // FIXME: is this label necessary?
-  tl.addLabel('0');
   timeline.tl.add(tl);
   timeline.tl.resume();
 }
