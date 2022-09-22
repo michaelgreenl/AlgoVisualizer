@@ -11,8 +11,6 @@ export const visualizerSettingsStore = defineStore(
     const initial = reactive({});
     const selected = reactive({});
     const localState = reactive({});
-    const enableReset = computed(() => !isEqual(settings, initial));
-    const enableRestart = computed(() => !isEqual(localState, selected));
 
     function onInput(key, requiresRestart, inputValue) {
       // only setting visualizerSettings.localState value if (requiresRestart === true) and currStep > 0

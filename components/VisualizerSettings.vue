@@ -58,7 +58,11 @@
     </li>
     <li class="input">
       <transition name="" appear>
-        <button class="settings-buttons" @click="visualizerSettings.reset()" v-show="visualizerSettings.enableReset">
+        <button
+          class="settings-buttons"
+          @click="visualizerSettings.reset()"
+          v-show="!isEqual(visualizerSettings.settings, visualizerSettings.initial)"
+        >
           Reset
         </button>
       </transition>
@@ -66,7 +70,7 @@
         <button
           class="settings-buttons"
           @click="emit('restart')"
-          v-show="timeline.currStep > 0 && visualizerSettings.enableRestart"
+          v-show="timeline.currStep > 0 && !isEqual(visualizerSettings.localState, visualizerSettings.selected)"
         >
           Restart
         </button>

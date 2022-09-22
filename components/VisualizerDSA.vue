@@ -176,7 +176,10 @@ function playClick() {
 }
 
 function restart() {
-  if (visualizerSettings.enableReset && visualizerSettings.enableRestart) {
+  if (
+    !isEqual(visualizerSettings.settings, visualizerSettings.initial) &&
+    !isEqual(visualizerSettings.localState, visualizerSettings.selected)
+  ) {
     visualizerSettings.restart();
     visualPlaying.value = false;
     emit('restart');
