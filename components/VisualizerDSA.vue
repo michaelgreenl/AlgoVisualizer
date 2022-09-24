@@ -292,7 +292,11 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
     tl.to('.explanation', {
       id: `text${i}`,
       duration: props.transitionSpeed.int * 0.6,
-      text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
+      text: {
+        value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`,
+        speed: visualizerSettings.settings.speed.state * 0.01 * 6,
+        type: 'diff',
+      },
       ease: 'power1',
       onComplete: () => {
         explanationOnSeek.tl = tl;
@@ -327,7 +331,7 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
                   duration: props.transitionSpeed.int * 0.4,
                   text: {
                     value: text[i].underlined[j].text,
-                    speed: 3,
+                    speed: visualizerSettings.settings.speed.state * 0.01 * 6,
                     newClass: 'explanation-underline',
                   },
                   ease: 'power1',
