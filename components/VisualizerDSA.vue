@@ -75,7 +75,7 @@
           >
             <SkipLeftIcon class="icon" />
           </button>
-          <button class="control-button" @click="playClick">
+          <button class="control-button" @click="!timeline.restarting ? playClick() : null">
             <PauseIcon class="icon" v-if="visualPlaying" />
             <PlayIcon class="icon play" v-else />
           </button>
@@ -115,9 +115,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive } from 'vue';
 import { timelineStore } from '../stores/timeline';
 import { visualizerSettingsStore } from '../stores/visualizerSettings';
+import isEqual from 'lodash.isequal';
 import gsap from 'gsap';
 import { TextPlugin } from 'gsap/dist/TextPlugin';
 
@@ -176,13 +177,26 @@ function playClick() {
 }
 
 function restart() {
-  if (
-    !isEqual(visualizerSettings.settings, visualizerSettings.initial) &&
-    !isEqual(visualizerSettings.localState, visualizerSettings.selected)
-  ) {
+  if (!isEqual(visualizerSettings.localState, visualizerSettings.selected)) {
+    timeline.restarting = true;
+    timeline.tl.clear();
+    timeline.currStep = 0;
     visualizerSettings.restart();
-    visualPlaying.value = false;
-    emit('restart');
+    timeline.tl
+      .to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' })
+      .to(
+        '.explanation',
+        {
+          duration: 0,
+          xPercent: 0,
+          text: '',
+          opacity: 1,
+          onComplete: () => {
+            emit('restart');
+          },
+        },
+        '>',
+      );
   } else {
     seek('1');
   }
@@ -212,6 +226,7 @@ function seek(value) {
         and some of the underlining animations have been added.
       */
 
+      // Carrying out the last onComplete that would haved ran.
       explanationOnSeek.tweensToKill.forEach((id) => {
         if (explanationOnSeek.tl.getById(id)) {
           explanationOnSeek.tl.getById(id).kill();
@@ -227,7 +242,9 @@ function seek(value) {
         If the explanation hasn't been ran through completely allowing the last onComplete to run,
         and not all of the text animations have been added,
         and some of the underlining animations have been added. 
-       */
+      */
+
+      // Killing all the animations except the first text animation. Allowing the timeline to be recalculated when needed again.
       for (let i = 1; i < explanationOnSeek.tl.getChildren(true).length; i++) {
         explanationOnSeek.tl.getChildren(true)[i].kill();
       }

@@ -5,15 +5,21 @@ import gsap from 'gsap';
 export const timelineStore = defineStore('timeline', () => {
   const tl = markRaw(gsap.timeline());
   const currStep = ref(0);
+  const restarting = ref(false);
 
   function seek(value) {
     if (typeof value === 'number') {
-      this.currStep += value;
+      currStep.value += value;
     } else if (typeof value === 'string') {
-      this.currStep = parseInt(value, 10);
+      currStep.value = parseInt(value, 10);
     }
-    this.tl.seek(`${this.currStep}`);
+    tl.seek(`${this.currStep}`);
   }
 
-  return { tl, currStep, seek };
+  function restart() {
+    tl.clear(true);
+    currStep.value = 0;
+  }
+
+  return { tl, currStep, restarting, seek, restart };
 });

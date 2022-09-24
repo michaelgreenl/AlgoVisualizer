@@ -109,10 +109,17 @@ function start() {
   insertionSort();
 }
 
-function restart() {
+async function restart() {
   array.value.setPointerPosition(timeline.tl, 'all', 0);
-  nextTick(() => {
-    array.value.setElementsAnim();
+  await nextTick();
+  array.value.setElementsAnim(true).then(async () => {
+    timeline.restart();
+    await nextTick();
+    array.value.setElementsAnim().then(() => {
+      timeline.currStep += 1;
+      insertionSort();
+      timeline.restarting = false;
+    });
   });
 }
 

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
-import { computed, reactive } from 'vue';
+import { reactive } from 'vue';
 import { timelineStore } from '../stores/timeline';
-import isEqual from 'lodash.isequal';
 
 export const visualizerSettingsStore = defineStore(
   'visualizerSettings',
@@ -50,10 +49,9 @@ export const visualizerSettingsStore = defineStore(
         }
       });
       this.selected = { ...JSON.parse(JSON.stringify(this.settings)) };
-      timeline.currStep = 0;
     }
 
-    return { settings, initial, selected, localState, onInput, reset, restart, enableReset, enableRestart };
+    return { settings, initial, selected, localState, onInput, reset, restart };
   },
   { persist: true },
 );

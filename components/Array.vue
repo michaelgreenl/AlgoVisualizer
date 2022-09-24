@@ -141,11 +141,14 @@ onMounted(() => {
   });
 });
 
-function setElements() {
-  if (timeline.currStep === 0) {
+function setElements(sort) {
+  if (!sort) {
     for (let i = 0; i < elementsDiv.value.children.length; i++) {
       // Since the border elements are last in the elements children nodes
-      if (elementsDiv.value.children[i].classList.contains('borders')) {
+      if (
+        elementsDiv.value.children[i].classList.value !== 'element' &&
+        !elementsDiv.value.children[i].classList.contains('element-move')
+      ) {
         break;
       }
       elements.arr.push({ div: elementsDiv.value.children[i], value: array[i], oldIndex: i });
@@ -163,36 +166,38 @@ function setElements() {
   }
 }
 
-function setElementsAnim() {
-  setElements();
-  const tl = gsap.timeline({
-    onComplete: () => {
-      if (timeline.currStep === 0) {
-        elements.arr.length = 0;
-        timeline.tl.clear();
-      }
-    },
-  });
-  setBorderVisibility(tl, 'all', 0);
+async function setElementsAnim(sort = false) {
+  return new Promise((res) => {
+    setElements(sort);
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (sort) {
+          elements.arr.length = 0;
+        }
+        res();
+      },
+    });
+    setBorderVisibility(tl, 'all', 0);
 
-  // Doing the first element first *without the overlapping option* so the border animation is done first
-  tl.to(elements.arr[0].div, {
-    duration: props.transitionSpeed.int * 0.8,
-    xPercent: (0 - elements.arr[0].oldIndex) * 100,
-    ease: 'expo',
-  });
-  for (const [i, element] of elements.arr.entries()) {
-    // First animation is to compensate for the 2px gap;
-    tl.to(element.div, { duration: 0, x: (i - element.oldIndex) * 2 }, '<10%').to(
-      element.div,
-      { duration: props.transitionSpeed.int * 0.8, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
-      '<10%',
-    );
-  }
-  setBorderVisibility(tl, 'all', '100%');
+    // Doing the first element first *without the overlapping option* so the border animation is done first
+    tl.to(elements.arr[0].div, {
+      duration: props.transitionSpeed.int * 0.8,
+      xPercent: (0 - elements.arr[0].oldIndex) * 100,
+      ease: 'expo',
+    });
+    for (const [i, element] of elements.arr.entries()) {
+      // First animation is to compensate for the 2px gap;
+      tl.to(element.div, { duration: 0, x: (i - element.oldIndex) * 2 }, '<10%').to(
+        element.div,
+        { duration: props.transitionSpeed.int * 0.8, xPercent: (i - element.oldIndex) * 100, ease: 'expo' },
+        '<10%',
+      );
+    }
+    setBorderVisibility(tl, 'all', '100%');
 
-  timeline.tl.add(tl);
-  timeline.tl.resume();
+    timeline.tl.add(tl);
+    timeline.tl.resume();
+  });
 }
 
 // TODO: Make this account for long swaps
