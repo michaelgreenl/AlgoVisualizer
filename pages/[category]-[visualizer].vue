@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { shallowRef } from 'vue';
+import { shallowRef, defineAsyncComponent } from 'vue';
 
 const route = useRoute();
 const visualizerComp = shallowRef(
@@ -19,12 +19,12 @@ const visualizerComp = shallowRef(
 
 <style lang="scss">
 .visualizer {
-  font-size: 12px;
   position: relative;
   z-index: 1;
   display: flex;
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
+  font-size: 12px;
   background: $primary-white;
 }
 </style>

@@ -1,10 +1,26 @@
 <template>
   <ul class="settings">
-    <li class="input" v-for="(input, key) in visualizerSettings.settings" :key="input">
-      <label class="label" :for="input.label">{{ input.label }}:</label>
-      <div v-if="input.type === 'radio'" class="radio">
-        <div class="radio-input" v-for="option in input.options" :key="option">
+    <li
+      v-for="(input, key) in visualizerSettings.settings"
+      :ref="
+        (el) => {
+          settingsRefs.parents[`${key}`] = el;
+        }
+      "
+      :key="input"
+      class="input-wrapper"
+    >
+      <div class="setting-label">
+        <label class="label label--setting" :for="input.label">{{ input.label }}</label>
+      </div>
+      <div v-if="input.type === 'radio'" class="input radio">
+        <div v-for="option in input.options" :key="option" class="radio-input">
           <input
+            :ref="
+              (el) => {
+                settingsRefs.inputs[`${key}`] = el;
+              }
+            "
             :class="input.type"
             :type="input.type"
             :name="option"
@@ -21,130 +37,417 @@
       </div>
       <input
         v-else-if="input.type === 'range'"
+        :ref="
+          (el) => {
+            settingsRefs.inputs[`${key}`] = el;
+          }
+        "
+        class="input range"
         :class="input.type"
         :type="input.type"
         :name="input.label"
         :min="input.min"
         :max="input.max"
+        :step="input.step"
         :value="
           timeline.currStep > 0 && input.requiresRestart ? visualizerSettings.localState[`${key}`].state : input.state
         "
         @input="visualizerSettings.onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
-      <input
-        v-else-if="input.type === 'number'"
-        :class="input.type"
-        :type="input.type"
-        :name="input.label"
-        :min="input.min"
-        :max="input.max"
-        :value="
-          timeline.currStep > 0 && input.requiresRestart ? visualizerSettings.localState[`${key}`].state : input.state
+      <div v-else-if="input.type === 'number'" class="input number">
+        <button class="number-step number-step--down" @click="settingsRefs.inputs[`${key}`].stepDown()">
+          <Polygon class="number-step-svg" />
+        </button>
+        <input
+          :ref="
+            (el) => {
+              settingsRefs.inputs[`${key}`] = el;
+            }
+          "
+          class="number-input"
+          :class="input.type"
+          :type="input.type"
+          :name="input.label"
+          :min="input.min"
+          :max="input.max"
+          :value="
+            timeline.currStep > 0 && input.requiresRestart ? visualizerSettings.localState[`${key}`].state : input.state
+          "
+          @input="
+            !keydown ? visualizerSettings.onInput(key, input.requiresRestart, parseInt($event.target.value, 10)) : null
+          "
+          @keydown="onKeydown"
+          @keyup="
+            onKeyup(settingsRefs.inputs[`${key}`], input, [
+              key,
+              input.requiresRestart,
+              parseInt($event.target.value, 10),
+            ])
+          "
+        />
+        <button class="number-step number-step--up" @click="settingsRefs.inputs[`${key}`].stepUp()">
+          <Polygon class="number-step-svg" />
+        </button>
+      </div>
+      <div
+        v-else-if="input.type === 'toggle'"
+        class="input toggle"
+        :class="
+          timeline.currStep > 0 && input.requiresRestart
+            ? visualizerSettings.localState[`${key}`].state
+            : input.state
+            ? 'toggle--on'
+            : 'toggle--off'
         "
-        @input="visualizerSettings.onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
-      />
-      <input
-        v-else-if="input.type === 'checkbox'"
-        :class="input.type"
-        :type="input.type"
-        :name="input.label"
-        :true-value="input.trueValue"
-        :false-value="input.falseValue"
-        :checked="
-          timeline.currStep > 0 && input.requiresRestart ? visualizerSettings.localState[`${key}`].state : input.state
-        "
-        @input="visualizerSettings.onInput(key, input.requiresRestart, $event.target.checked)"
-      />
+      >
+        <span class="toggle-value toggle-value--false">{{ input.falseValue }}</span>
+        <span class="toggle-value toggle-value--true">{{ input.trueValue }}</span>
+        <input
+          :ref="
+            (el) => {
+              settingsRefs.inputs[`${key}`] = el;
+            }
+          "
+          class="toggle-checkbox"
+          type="checkbox"
+          :name="input.label"
+          :false-value="input.falseValue"
+          :true-value="input.trueValue"
+          :data-before="input.falseValue"
+          :data-after="input.trueValue"
+          :checked="
+            timeline.currStep > 0 && input.requiresRestart ? visualizerSettings.localState[`${key}`].state : input.state
+          "
+          @input="visualizerSettings.onInput(key, input.requiresRestart, $event.target.checked)"
+        />
+      </div>
     </li>
-    <li class="input">
-      <transition name="" appear>
-        <button
-          class="settings-buttons"
-          @click="visualizerSettings.reset()"
-          v-show="!isEqual(visualizerSettings.settings, visualizerSettings.initial)"
-        >
-          Reset
+    <li class="settings-buttons">
+      <transition-group name="settings-buttons" appear>
+        <button v-for="button of activeButtons" :key="button.text" class="settings-button" @click="button.click">
+          {{ button.text }}
         </button>
-      </transition>
-      <transition name="" appear>
-        <button
-          class="settings-buttons"
-          @click="emit('restart')"
-          v-show="timeline.currStep > 0 && !isEqual(visualizerSettings.localState, visualizerSettings.selected)"
-        >
-          Restart
-        </button>
-      </transition>
+      </transition-group>
     </li>
   </ul>
 </template>
 
 <script setup>
-import { onBeforeMount } from 'vue';
+import { onBeforeMount, computed, reactive, ref } from 'vue';
 import isEqual from 'lodash.isequal';
 import { timelineStore } from '../stores/timeline';
 import { visualizerSettingsStore } from '../stores/visualizerSettings';
+
+import Polygon from '../assets/svgs/polygon.svg';
 
 const emit = defineEmits(['restart']);
 
 const visualizerSettings = visualizerSettingsStore();
 const timeline = timelineStore();
 
-onBeforeMount(() => {
-  visualizerSettings.selected = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
-  visualizerSettings.localState = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
+const keydown = ref(false);
+const settingsRefs = reactive({
+  parents: {},
+  inputs: {},
 });
+
+const activeButtons = computed(() => {
+  const buttons = {
+    reset: {
+      active: !isEqual(visualizerSettings.settings, visualizerSettings.initial),
+      click: () => {
+        visualizerSettings.reset();
+      },
+      text: 'Reset',
+    },
+    restart: {
+      active: timeline.currStep > 0 && !isEqual(visualizerSettings.localState, visualizerSettings.selected),
+      click: () => {
+        emit('restart');
+      },
+      text: 'Restart',
+    },
+  };
+
+  Object.keys(buttons).forEach((button) => {
+    if (!buttons[`${button}`].active) {
+      delete buttons[`${button}`];
+    }
+  });
+  return buttons;
+});
+
+onBeforeMount(() => {
+  Object.assign(visualizerSettings.selected, visualizerSettings.settings);
+  Object.assign(visualizerSettings.localState, visualizerSettings.settings);
+});
+
+function onKeydown() {
+  keydown.value = true;
+  console.log('here');
+}
+
+function onKeyup(inputRef, setting, inputParams) {
+  // dont need the old value cuz if the value is invalid and there needs to be a reset (on the invalid input field) the reset
+  // function can just be called with a parameter(?) changing only that input back to it's local/current state.
+  // since the actual state never changed and the old value can be gotten through there
+  console.log(setting);
+  if (setting.validateInput(parseInt(inputRef.value, 10))) {
+    console.log('here');
+    visualizerSettings.onInput(...inputParams);
+    keydown.value = false;
+  } else {
+    console.log('here1');
+    // enable invalid style
+    // add reset button to input div
+    // make sure reset/restart buttons acknoledge for this (state variable saying there is an current invalid input field?)
+    // show error messege
+
+    // TODO: subtle style if the input is still in focus (user is still typing), error message if input blurred
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 1em;
-  list-style: none;
-  text-decoration: none;
+  gap: 1.5em;
   padding: 0;
   margin: 0;
+  text-decoration: none;
+  list-style: none;
 
-  .input {
+  .settings-buttons-move,
+  .settings-buttons-enter-active,
+  .settings-buttons-leave-active {
+    transition: all 150ms ease, opacity 200ms ease;
+  }
+
+  .settings-buttons-enter-from,
+  .settings-buttons-leave-to {
+    opacity: 0;
+    transform: translateX(1.5em);
+  }
+
+  &-buttons {
     display: flex;
-    align-items: center;
     gap: 1em;
+    justify-content: flex-end;
+    padding: 0.5em;
+  }
+
+  &-button {
+    height: 1.9em;
+    padding: 0.2em 1em;
+    font-family: $secondary-font-stack;
+    font-size: 1.375em;
+    font-weight: 400;
+    color: $primary-white;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    background: $primary-darker-light;
+    border: 0;
+    border-radius: 11px;
+    transition: background 75ms ease-in;
+
+    &:hover {
+      background: #cec8a6;
+    }
+
+    &:active {
+      background: #c5bf9e;
+    }
+  }
+
+  .input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6em;
+    width: 65%;
+
+    .setting-label {
+      border-bottom: solid 1px $primary-light-grey;
+    }
 
     .label {
       font-family: $secondary-font-stack;
-      font-weight: 400;
-      font-size: 15px;
+      font-size: 1.25em;
+      font-weight: 300;
       color: $primary-black;
+
+      &--setting {
+        font-size: 1.1em;
+        color: $primary-light-dark;
+      }
     }
 
-    .number {
-      background: transparent;
-      border: 0;
-      border-bottom: solid $primary-dark 2px;
-      text-align: center;
-      font-family: $secondary-font-stack;
-      font-weight: 400;
-      font-size: 15px;
-      color: $primary-black;
+    input {
+      cursor: pointer;
+    }
 
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        opacity: 1;
-      }
-
-      &:focus {
-        outline: none;
-      }
+    .input {
+      margin: 0 0.5em;
     }
 
     .radio {
       display: flex;
+      gap: 1em;
       align-items: center;
 
       .radio-input {
         display: flex;
+        gap: 0.5em;
         align-items: center;
+
+        input[type='radio'] {
+          width: 1.25em;
+          height: 1.25em;
+          margin: 0;
+          background-color: $primary-white;
+          border: solid 1px $primary-dark-grey;
+          border-radius: 100%;
+          appearance: none;
+
+          &:checked {
+            background-color: $primary-dark-grey;
+            box-shadow: inset 0 0 0 2px $primary-white;
+          }
+        }
+      }
+    }
+
+    .range {
+      width: 80%;
+      height: 0.5em;
+      margin: 0.6em auto 0;
+      background: $primary-light-grey;
+      border-radius: 10px;
+      appearance: none;
+
+      &::-webkit-slider-thumb {
+        width: 1em;
+        height: 1em;
+        cursor: grab;
+        background: $primary-dark;
+        border-radius: 50%;
+        appearance: none;
+
+        &:active {
+          cursor: grabbing;
+        }
+      }
+    }
+
+    .number {
+      display: flex;
+      align-items: center;
+
+      &-input {
+        font-family: $secondary-font-stack;
+        font-size: 16px;
+        font-weight: 300;
+        color: $primary-black;
+        text-align: center;
+        background: transparent;
+        border: 0;
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+          appearance: none;
+          margin: 0;
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      &-step {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 0.8em;
+        height: 0.8em;
+        padding: 0;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+
+        &-svg {
+          width: 1em;
+          height: 1em;
+          fill: $primary-light-dark;
+        }
+
+        &--up {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    .toggle {
+      position: relative;
+      display: flex;
+      gap: 0.05em;
+      width: fit-content;
+      height: 1.9em;
+      padding: 0 0.1em;
+      color: $primary-white;
+      border-radius: 0.8em;
+
+      &-value {
+        position: relative;
+        z-index: 1;
+        padding: 0 0.55em;
+        margin-top: 1px;
+        margin-bottom: 1px;
+        font-family: $secondary-font-stack;
+        font-size: 15px;
+        font-weight: 300;
+        border-radius: 0.6em;
+
+        &--true {
+          background: $primary-light-dark;
+        }
+
+        &--false {
+          background: $primary-dark-bright;
+        }
+      }
+
+      &--on .toggle-value {
+        &--false {
+          background: transparent;
+        }
+      }
+
+      &--off .toggle-value {
+        &--true {
+          background: transparent;
+        }
+      }
+
+      &--on {
+        background-color: $primary-light-grey;
+      }
+
+      &--off {
+        background-color: $primary-grey;
+      }
+
+      &-checkbox {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border-radius: 9px;
+        appearance: none;
       }
     }
   }

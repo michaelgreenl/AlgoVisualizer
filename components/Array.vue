@@ -8,7 +8,10 @@
         :key="pointer"
         ref="pointers"
         class="pointer-wrapper"
-        :style="{ opacity: timeline.currStep > 0 ? '1' : '0', width: `${elementWidth}px` }"
+        :style="{
+          opacity: timeline.currStep > 0 ? '1' : '0',
+          width: `${elementWidth}px`,
+        }"
       >
         <Pointer class="pointer" />
       </div>
@@ -60,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue';
 import { timelineStore } from '../stores/timeline';
 import { visualizerSettingsStore } from '../stores/visualizerSettings';
 import gsap from 'gsap';
@@ -330,12 +333,12 @@ defineExpose({
 
 .array {
   position: relative;
-  margin: auto 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 90%;
   max-width: 90em;
+  margin: auto 0;
 
   @include bp-xxl-desktop-large {
     max-width: 80em;
@@ -354,8 +357,9 @@ defineExpose({
 
     .pointer {
       width: 25%;
-      max-width: 25px;
       min-width: 12px;
+      max-width: 25px;
+
       // transform: translateX(-250%);
     }
   }
@@ -375,17 +379,17 @@ defineExpose({
   .elements {
     position: relative;
     display: flex;
-    border: solid $primary-black 2px;
-    overflow: hidden;
     flex: 4;
     gap: 2px;
     max-height: 16vh;
+    overflow: hidden;
+    border: solid $primary-black 2px;
 
     .element {
-      flex: 1;
       display: flex;
-      justify-content: center;
+      flex: 1;
       align-items: center;
+      justify-content: center;
 
       .value {
         font-family: $secondary-font-stack;
@@ -431,10 +435,10 @@ defineExpose({
     flex: 1.65;
 
     .index {
-      flex: 1;
       display: flex;
-      justify-content: center;
+      flex: 1;
       align-items: center;
+      justify-content: center;
 
       .value {
         font-family: $secondary-font-stack;

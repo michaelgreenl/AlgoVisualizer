@@ -5,7 +5,7 @@ $breakpoints: (
   lg: 992px,
   xl: 1200px,
   xxl: 1600px,
-  ) !default;
+) !default;
 
 @mixin bp-sm-phone-landscape {
   @media (max-width: map-get($breakpoints, 'sm')) {

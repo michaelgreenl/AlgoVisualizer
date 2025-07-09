@@ -4,7 +4,7 @@
       <h1 class="title">{{ title }}</h1>
       <nav class="sidebar-nav">
         <transition name="close-button" appear :duration="300">
-          <button class="close-button" @click="closeSidebar" v-if="Object.values(sidebarTabs).includes(true)">
+          <button v-if="Object.values(sidebarTabs).includes(true)" class="close-button" @click="closeSidebar">
             <svg class="close-icon" width="12" height="12" viewBox="0 0 12 11" xmlns="http://www.w3.org/2000/svg">
               <line
                 class="line-one"
@@ -55,9 +55,9 @@
         <div class="explanations">
           <Transition name="fade-in-out">
             <span
+              v-show="timeline.currStep === 0 || visualizerSettings.settings.explanation.state"
               ref="explanation"
               class="explanation"
-              v-show="timeline.currStep === 0 || visualizerSettings.settings.explanation.state"
             >
               To start, hit play
             </span>
@@ -65,27 +65,27 @@
         </div>
         <slot name="visual"></slot>
         <div class="controls">
-          <button class="control-button" @click="restart" :disabled="timeline.currStep === 0">
+          <button class="control-button" :disabled="timeline.currStep === 0" @click="restart">
             <RestartIcon class="icon restart" />
           </button>
           <button
             class="control-button"
-            @click="timeline.currStep > 0 ? seek(-1) : null"
             :disabled="timeline.currStep === 1"
+            @click="timeline.currStep > 0 ? seek(-1) : null"
           >
             <SkipLeftIcon class="icon" />
           </button>
           <button class="control-button" @click="!timeline.restarting ? playClick() : null">
-            <PauseIcon class="icon" v-if="visualPlaying" />
-            <PlayIcon class="icon play" v-else />
+            <PauseIcon v-if="visualPlaying" class="icon" />
+            <PlayIcon v-else class="icon play" />
           </button>
           <button
             class="control-button"
-            @click="timeline.currStep > 0 ? seek(1) : null"
             :disabled="
               timeline.currStep > 0 &&
               timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length
             "
+            @click="timeline.currStep > 0 ? seek(1) : null"
           >
             <SkipRightIcon class="icon" />
           </button>
@@ -393,9 +393,9 @@ defineExpose({ visualPlaying, changeExplanation });
 }
 
 .fade-in-out-enter-from {
+  position: absolute;
   opacity: 0;
   transform: translateX(-100%);
-  position: absolute;
 }
 
 .fade-in-out-leave-to {
@@ -408,38 +408,38 @@ $sidebar-width: 43.2em;
 .visualizer {
   display: flex;
   flex-direction: column;
-  font-size: 12px;
   width: 100%;
   height: 100%;
+  font-size: 12px;
 
   .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    height: 6rem;
+    justify-content: space-between;
     width: 100%;
+    height: 6rem;
 
     .title {
-      font-family: $primary-font-stack;
-      font-weight: 400;
-      letter-spacing: 0.09ch;
-      margin: 0 2.25rem;
-      color: $primary-dark;
-      font-size: 4em;
-      border-bottom: solid 1px $primary-light;
-      margin: 0;
-      padding: 10px 25px;
       width: 45%;
+      padding: 10px 25px;
+      margin: 0 2.25rem;
+      margin: 0;
+      font-family: $primary-font-stack;
+      font-size: 4em;
+      font-weight: 400;
+      color: $primary-dark;
+      letter-spacing: 0.09ch;
+      border-bottom: solid 1px $primary-light;
     }
 
     .sidebar-nav {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-top: 0.5rem;
-      height: 2.5rem;
+      justify-content: space-between;
       width: $sidebar-width;
+      height: 2.5rem;
       padding: 0 1.25em;
+      margin-top: 0.5rem;
       box-shadow: 2px 0.75px 1px $primary-light-grey;
 
       .close-button-enter-active .close-icon .line-one,
@@ -466,11 +466,11 @@ $sidebar-width: 43.2em;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 1.75em;
+        height: 1.75em;
+        padding: 0;
         background: transparent;
         border: 0;
-        padding: 0;
-        height: 1.75em;
-        width: 1.75em;
         border-radius: 7px;
 
         &:hover {
@@ -480,32 +480,32 @@ $sidebar-width: 43.2em;
 
       .tab-buttons {
         display: flex;
-        margin-left: auto;
         gap: 1em;
+        margin-left: auto;
 
         .tab-button {
+          padding: 3px 1em;
           font-size: inherit;
           background: transparent;
           border: 0;
-          outline: solid $primary-white 1px;
-          padding: 3px 1em;
           border-radius: 7px;
+          outline: solid $primary-white 1px;
           transition: all 75ms ease;
-
-          &:hover:not(.selected) {
-            outline: #eff1f1 solid 2px;
-            outline-offset: -1px;
-          }
 
           &:active,
           &.selected {
             background: $primary-bright;
           }
 
+          &:hover:not(.selected) {
+            outline: #eff1f1 solid 2px;
+            outline-offset: -1px;
+          }
+
           .tab-button-text {
-            color: $primary-dark;
-            font-size: 15px;
             font-family: $secondary-font-stack;
+            font-size: 15px;
+            color: $primary-dark;
           }
         }
       }
@@ -513,36 +513,22 @@ $sidebar-width: 43.2em;
   }
 
   .main {
-    flex: 1;
     display: flex;
+    flex: 1;
     justify-content: space-around;
 
     .visual {
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 10vh 1em 20vh;
-      margin-left: auto;
+      justify-content: center;
+      width: 57%;
 
       // better than this
       height: 100%;
-      width: 57%;
+      padding: 10vh 1em 20vh;
+      margin-left: auto;
       transition: width 200ms ease-out;
-
-      &.center {
-        // Length of navbar + current padding
-        padding-right: 6.33em;
-        width: 100%;
-
-        .explanations {
-          max-width: none;
-
-          @include bp-lg-laptop {
-            max-width: 50em;
-          }
-        }
-      }
 
       .explanations {
         position: relative;
@@ -556,14 +542,14 @@ $sidebar-width: 43.2em;
         }
 
         .explanation {
-          text-align: center;
-          color: $primary-dark;
-          font-size: 22px;
-          font-family: $secondary-font-stack;
-          font-weight: 400;
-          letter-spacing: 0.05ch;
           height: 2em;
           margin-bottom: 2vh;
+          font-family: $secondary-font-stack;
+          font-size: 22px;
+          font-weight: 300;
+          color: $primary-dark;
+          text-align: center;
+          letter-spacing: 0.05ch;
 
           .underline {
             text-decoration: underline $primary-light;
@@ -571,27 +557,43 @@ $sidebar-width: 43.2em;
         }
       }
 
+      &.center {
+        width: 100%;
+
+        // Length of navbar + current padding
+        padding-right: 6.33em;
+
+        .explanations {
+          max-width: none;
+
+          @include bp-lg-laptop {
+            max-width: 50em;
+          }
+        }
+      }
+
       .controls {
         display: flex;
-        justify-content: flex-end;
         gap: 3em;
-        margin: 0 auto;
-        padding-right: 9em;
+        justify-content: flex-end;
         width: 90%;
+        padding-right: 9em;
+        margin: 0 auto;
 
         .control-button {
-          padding: 0;
-          border: 0;
-          outline: solid 0px $primary-white;
-          background: $primary-light;
           display: flex;
-          justify-content: center;
           align-items: center;
-          height: 100%;
+          justify-content: center;
           width: 12.5%;
           max-width: 5em;
+          height: 100%;
           aspect-ratio: 1;
+          padding: 0;
+          cursor: pointer;
+          background: $primary-light;
+          border: 0;
           border-radius: 100%;
+          outline: solid 0 $primary-white;
           transition: all 50ms ease-out;
 
           &:first-child {
@@ -607,8 +609,8 @@ $sidebar-width: 43.2em;
           }
 
           &:active {
-            outline: solid 3px $primary-white;
             background: #cbbf9b;
+            outline: solid 3px $primary-white;
             outline-offset: -2px;
           }
 
@@ -617,15 +619,15 @@ $sidebar-width: 43.2em;
           }
 
           .icon {
-            aspect-ratio: 1;
-            filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.08));
-            height: 40%;
             width: 40%;
+            height: 40%;
+            aspect-ratio: 1;
+            filter: drop-shadow(0 2px 1px rgb(0 0 0 / 8%));
 
             &.restart {
-              transform: translateX(-1px);
-              height: 53.5%;
               width: 53.5%;
+              height: 53.5%;
+              transform: translateX(-1px);
             }
 
             &.play {
@@ -639,10 +641,10 @@ $sidebar-width: 43.2em;
     .sidebar {
       position: relative;
       display: flex;
-      overflow: hidden;
+      width: 0;
       margin-right: 0;
       margin-left: auto;
-      width: 0;
+      overflow: hidden;
       transition: width 200ms ease-out;
 
       &.open {

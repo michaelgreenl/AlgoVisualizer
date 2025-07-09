@@ -5,16 +5,16 @@
     <div class="search">
       <SearchIcon class="search-icon" />
       <input
+        v-model="userInput"
         class="search-input"
         :placeholder="`Search ${title}`"
         spellcheck="false"
-        v-model="userInput"
         @input="filterSearch"
       />
     </div>
 
-    <div class="search-results" v-if="userInput">
-      <ul class="result-list" v-if="Object.keys(searchResults).length">
+    <div v-if="userInput" class="search-results">
+      <ul v-if="Object.keys(searchResults).length" class="result-list">
         <li v-for="content in Object.keys(searchResults)" :key="content">
           <button
             class="result"
@@ -23,19 +23,19 @@
           >
             <div class="item">
               <span
-                class="item-text"
                 v-for="(contentIndex, index) in searchResults[content].indices"
                 :key="contentIndex"
+                class="item-text"
               >
                 <span v-if="!index">
-                  <mark class="highlight" v-if="content.toLowerCase().startsWith(userInput.toLowerCase())">
+                  <mark v-if="content.toLowerCase().startsWith(userInput.toLowerCase())" class="highlight">
                     {{ content.substring(0, userInput.length) }}
                   </mark>
                   <span v-else>
                     {{ content.substring(0, contentIndex) }}
                   </span>
                 </span>
-                <mark class="highlight" v-if="index || !content.toLowerCase().startsWith(userInput.toLowerCase())">
+                <mark v-if="index || !content.toLowerCase().startsWith(userInput.toLowerCase())" class="highlight">
                   {{ content.substring(contentIndex, contentIndex + userInput.length) }}
                 </mark>
                 <span v-if="searchResults[content].indices.length - 1 === index" class="item">
@@ -54,10 +54,10 @@
           </button>
         </li>
       </ul>
-      <h2 class="no-results" v-else>No results match your search</h2>
+      <h2 v-else class="no-results">No results match your search</h2>
     </div>
 
-    <ul class="categories" v-if="!userInput">
+    <ul v-if="!userInput" class="categories">
       <li v-for="category in Object.keys(dropdownContent)" :key="category">
         <button class="category" :class="{ selected: openDropdowns.has(category) }" @click="categoryClick(category)">
           <!-- Changing capital first letter to capital letters and putting space before any other capital letter -->
@@ -99,10 +99,10 @@
 </template>
 
 <script setup>
+import { ref, reactive } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import ArrowDownIcon from '../assets/svgs/arrowDown.svg';
 import SearchIcon from '../assets/svgs/search.svg';
-
-import { ref, reactive } from 'vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -167,7 +167,6 @@ defineExpose({ openDropdowns, userInput });
 
 <style lang="scss" scoped>
 .visualizer-sidebar {
-  font-size: inherit;
   position: absolute;
   top: 0;
   left: -24em;
@@ -176,6 +175,7 @@ defineExpose({ openDropdowns, userInput });
   gap: 1.66em;
   width: 28.42em;
   padding: 0.66em 1.33em;
+  font-size: inherit;
   color: $primary-black;
   transition: transform 150ms ease-in-out;
 
@@ -184,36 +184,149 @@ defineExpose({ openDropdowns, userInput });
   }
 
   .header {
-    font-size: 20px;
-    font-family: $primary-font-stack;
-    font-weight: 300;
     margin-bottom: 0;
+    font-family: $primary-font-stack;
+    font-size: 20px;
+    font-weight: 300;
+  }
+
+  .categories {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7em;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    margin-right: -1.33em;
+    overflow-y: auto;
+    text-decoration: none;
+    list-style: none;
+
+    .category {
+      display: flex;
+      gap: 0.33em;
+      align-items: center;
+      padding: 0;
+      font-family: $secondary-font-stack;
+      font-size: 14px;
+      font-weight: 400;
+      color: $primary-black;
+      letter-spacing: 0.09ch;
+      background: transparent;
+      border: 0;
+      transition: color 100ms ease;
+
+      .arrow-icon {
+        width: 9px;
+        height: 6px;
+        opacity: 0;
+        transition: opacity 100ms ease, transform 125ms ease-in-out;
+        transform: rotate(180deg);
+      }
+
+      &:hover {
+        color: $primary-dark;
+
+        .arrow-icon {
+          opacity: 1;
+        }
+      }
+
+      &:active,
+      &.selected {
+        color: $primary-dark;
+
+        .arrow-icon {
+          transform: rotate(0deg);
+        }
+      }
+
+      &.selected:active {
+        .arrow-icon {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    .items {
+      height: auto;
+      max-height: 0;
+      padding: 0;
+      margin-left: 0.625rem;
+      overflow: hidden;
+      text-decoration: none;
+      list-style: none;
+      border-left: 2px solid $primary-light;
+      transition: max-height 200ms ease-out, margin 0ms 200ms;
+
+      &.selected {
+        margin: 0.4em 0 0.4em 0.75em;
+        margin-bottom: -4px;
+        transition: max-height 200ms ease-out, margin 0ms;
+      }
+
+      .item {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        width: 100%;
+        padding: 0.35em 0;
+        padding-left: 1em;
+        font-family: $secondary-font-stack;
+        font-size: inherit;
+        font-weight: 400;
+        background: transparent;
+        border: 0;
+        transition: all 100ms ease;
+
+        &:hover {
+          background: #f3f3f3;
+        }
+
+        &:active {
+          background: #ededed;
+        }
+
+        .content {
+          font-size: 14px;
+          color: $primary-black;
+          letter-spacing: 0.09ch;
+          white-space: nowrap;
+        }
+
+        &:disabled {
+          .content {
+            text-decoration: line-through;
+          }
+        }
+      }
+    }
   }
 
   .search {
     display: flex;
-    align-items: center;
     gap: 0.75em;
-    min-height: 2.5em;
+    align-items: center;
     width: 100%;
+    min-height: 2.5em;
     padding: 0 1em;
-    border-radius: 8px;
-    background-color: $primary-bright;
     color: $primary-black;
+    background-color: $primary-bright;
+    border-radius: 8px;
 
     .search-icon {
-      height: 12px;
       width: 12px;
+      height: 12px;
     }
 
     .search-input {
-      border: 0;
-      background: transparent;
       flex: 1;
       height: 100%;
+      padding: 3px 0;
       font-family: $secondary-font-stack;
       color: $primary-black;
-      padding: 3px 0;
+      background: transparent;
+      border: 0;
 
       &::placeholder {
         color: $primary-black;
@@ -227,34 +340,34 @@ defineExpose({ openDropdowns, userInput });
   }
 
   .search-results {
-    height: 100%;
     display: flex;
     flex-direction: column;
     width: 108.5%;
-    overflow-y: scroll;
+    height: 100%;
     overflow-x: hidden;
+    overflow-y: scroll;
 
     .result-list {
-      list-style: none;
-      text-decoration: none;
+      width: 100%;
+      height: fit-content;
       padding: 0;
       margin: 0;
-      height: fit-content;
-      width: 100%;
+      text-decoration: none;
+      list-style: none;
       border-left: 2px solid $primary-light;
 
       .result {
-        background: transparent;
-        border: 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 2.5em;
         width: 100%;
-        margin-right: -1.33em;
-        padding-left: 0.9em;
+        height: 2.5em;
         padding-right: 1.33em;
+        padding-left: 0.9em;
+        margin-right: -1.33em;
         font-family: $secondary-font-stack;
+        background: transparent;
+        border: 0;
 
         &:hover {
           background: #f3f3f3;
@@ -286,124 +399,11 @@ defineExpose({ openDropdowns, userInput });
     }
 
     .no-results {
-      font-size: 1em;
-      font-family: $secondary-font-stack;
-      font-weight: 400;
       align-self: center;
       margin: 0 auto;
-    }
-  }
-
-  .categories {
-    list-style: none;
-    text-decoration: none;
-    padding: 0;
-    margin: 0;
-    margin-right: -1.33em;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7em;
-    height: 100%;
-    overflow-y: auto;
-
-    .category {
-      background: transparent;
-      border: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.33em;
-      font-size: 14px;
       font-family: $secondary-font-stack;
+      font-size: 1em;
       font-weight: 400;
-      letter-spacing: 0.09ch;
-      color: $primary-black;
-      transition: color 100ms ease;
-
-      .arrow-icon {
-        width: 9px;
-        height: 6px;
-        opacity: 0;
-        transform: rotate(180deg);
-        transition: opacity 100ms ease, transform 125ms ease-in-out;
-      }
-
-      &:hover {
-        color: $primary-dark;
-
-        .arrow-icon {
-          opacity: 1;
-        }
-      }
-
-      &:active,
-      &.selected {
-        color: $primary-dark;
-
-        .arrow-icon {
-          transform: rotate(0deg);
-        }
-      }
-
-      &.selected:active {
-        .arrow-icon {
-          transform: rotate(180deg);
-        }
-      }
-    }
-
-    .items {
-      list-style: none;
-      text-decoration: none;
-      padding: 0;
-      overflow: hidden;
-      height: auto;
-      max-height: 0;
-      margin-left: 0.625rem;
-      border-left: 2px solid $primary-light;
-      transition: max-height 200ms ease-out, margin 0ms 200ms;
-
-      &.selected {
-        transition: max-height 200ms ease-out, margin 0ms;
-        margin: 0.4em 0 0.4em 0.75em;
-        margin-bottom: -4px;
-      }
-
-      .item {
-        font-size: inherit;
-        background: transparent;
-        border: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5em;
-        padding: 0.35em 0;
-        padding-left: 1em;
-        width: 100%;
-        font-family: $secondary-font-stack;
-        font-weight: 400;
-        transition: all 100ms ease;
-
-        &:hover {
-          background: #f3f3f3;
-        }
-
-        &:active {
-          background: #ededed;
-        }
-
-        .content {
-          font-size: 14px;
-          letter-spacing: 0.09ch;
-          white-space: nowrap;
-          color: $primary-black;
-        }
-
-        &:disabled {
-          .content {
-            text-decoration: line-through;
-          }
-        }
-      }
     }
   }
 }

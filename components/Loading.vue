@@ -16,28 +16,28 @@ import Node from '../assets/svgs/node.svg';
 <style lang="scss" scoped>
 .loading {
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100%;
+  justify-content: center;
   width: 100%;
+  height: 100%;
 
   .content {
     display: flex;
     align-items: flex-end;
 
     .text {
-      font-family: $secondary-font-stack;
-      font-weight: 400;
-      color: $primary-dark;
       margin: 0;
       margin-right: 2px;
+      font-family: $secondary-font-stack;
       font-size: 27px;
+      font-weight: 400;
+      color: $primary-dark;
     }
 
     .node {
-      margin: 12px 2px;
-      height: 10px;
       width: 10px;
+      height: 10px;
+      margin: 12px 2px;
       fill: $primary-dark;
 
       $animation-speed: 1s;
@@ -59,9 +59,11 @@ import Node from '../assets/svgs/node.svg';
       0% {
         transform: translateY(0);
       }
+
       10% {
         transform: translateY(-50%);
       }
+
       25% {
         transform: translateY(0);
       }

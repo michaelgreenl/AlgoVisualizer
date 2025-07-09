@@ -11,6 +11,8 @@ export default defineNuxtConfig({
     },
   },
 
+  compatibilityDate: '2024-07-03',
+
   modules: ['@pinia/nuxt', 'lodash'],
 
   // FIXME: Temporary while dynamic imports don't work with vite

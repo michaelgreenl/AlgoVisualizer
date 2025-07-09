@@ -1,6 +1,11 @@
 <template>
   <transition name="fade" appear>
-    <div ref="tooltipDiv" class="tooltip" @mouseenter="mouseEntered = false" v-show="mouseEntered && !itemToggled">
+    <div
+      v-show="mouseEntered && !props.itemToggled"
+      ref="tooltipDiv"
+      class="tooltip"
+      @mouseenter="mouseEntered = false"
+    >
       <PolygonTT class="polygon" />
       <span class="tooltip-text">
         {{ tooltip }}
@@ -10,9 +15,8 @@
 </template>
 
 <script setup>
-import PolygonTT from '../assets/svgs/polygon.svg';
-
 import { ref, onMounted } from 'vue';
+import PolygonTT from '../assets/svgs/polygon.svg';
 
 const props = defineProps({
   tooltip: {
@@ -42,14 +46,14 @@ defineExpose({ mouseEntered });
 
 <style lang="scss" scoped>
 .nav-item {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  font-size: inherit;
   position: relative;
   display: flex;
   justify-content: center;
   width: 100%;
+  padding: 0;
+  font-size: inherit;
+  background: transparent;
+  border: 0;
 
   .fade-enter-active {
     transition: all 100ms ease;
@@ -68,20 +72,20 @@ defineExpose({ mouseEntered });
     align-items: center;
     height: 24px;
     padding: 12px;
-    border-radius: 7px;
     background: $primary-black;
+    border-radius: 7px;
 
     .polygon {
       position: absolute;
       top: 6px;
       left: -4px;
-      height: 12px;
       width: 6px;
+      height: 12px;
     }
 
     .tooltip-text {
-      font-size: 14px;
       font-family: $secondary-font-stack;
+      font-size: 14px;
       font-weight: 400;
       color: $primary-white;
       white-space: nowrap;

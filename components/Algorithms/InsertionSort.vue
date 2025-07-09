@@ -3,7 +3,7 @@
     <VisualizerDSA
       ref="visualizer"
       title="Insertion Sort"
-      :transitionSpeed="transitionSpeed"
+      :transition-speed="transitionSpeed"
       @start="start"
       @restart="restart"
     >
@@ -11,8 +11,8 @@
         <Array
           v-if="visualizerSettings.settings.visual.state === 'Array'"
           ref="array"
-          :transitionSpeed="transitionSpeed"
-          :numPointers="2"
+          :transition-speed="transitionSpeed"
+          :num-pointers="2"
         >
           <template #borderSvg>
             <div class="icon-wrapper">
@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, nextTick, onBeforeMount, onMounted } from 'vue';
+import { computed, ref, reactive, nextTick, onBeforeMount } from 'vue';
 
 import { timelineStore } from '../../stores/timeline';
 import { visualizerSettingsStore } from '../../stores/visualizerSettings';
@@ -51,17 +51,17 @@ const transitionSpeed = reactive({
 const arrayHeight = computed(() => array.value.arrayHeight * 0.675 + 'px');
 
 onBeforeMount(() => {
-  // In the future (after adding backend and users) give ability for users to set their own default settings?
   visualizerSettings.initial = {
-    visual: {
-      label: 'Visual',
-      type: 'radio',
-      options: ['Array', 'Bar Graph'],
-      state: 'Array',
+    explanation: {
+      label: 'Explanation in Visual',
+      type: 'toggle',
+      trueValue: 'On',
+      falseValue: 'Off',
+      state: true,
       requiresRestart: false,
     },
     speed: {
-      label: 'Speed',
+      label: 'Animation Speed',
       type: 'range',
       min: 30,
       max: 70,
@@ -80,6 +80,19 @@ onBeforeMount(() => {
       },
       state: 8,
       requiresRestart: true,
+      validateInput: (input) => {
+        if (input > visualizerSettings.settings.arraySize.max || input < visualizerSettings.settings.arraySize.min) {
+          return false;
+        }
+        return true;
+      },
+    },
+    visual: {
+      label: 'Visual Type',
+      type: 'radio',
+      options: ['Array', 'Bar Graph'],
+      state: 'Array',
+      requiresRestart: false,
     },
     elementType: {
       label: 'Element Type',
@@ -88,18 +101,11 @@ onBeforeMount(() => {
       state: 'Range',
       requiresRestart: true,
     },
-    explanation: {
-      label: 'Show Explanation',
-      type: 'checkbox',
-      trueValue: true,
-      falseValue: false,
-      state: true,
-      requiresRestart: false,
-    },
   };
 
+  // Object.assign(visualizerSettings.settings, visualizerSettings.initial);
   if (Object.keys(visualizerSettings.settings).length === 0) {
-    visualizerSettings.settings = { ...JSON.parse(JSON.stringify(visualizerSettings.initial)) };
+    Object.assign(visualizerSettings.settings, visualizerSettings.initial);
   }
 });
 
@@ -296,9 +302,9 @@ function explanations(tl, explanation, j, i) {
 
 <style lang="scss" scoped>
 .insertion-sort {
-  font-size: 12px;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  font-size: 12px;
 
   .icon-wrapper {
     display: flex;
@@ -307,10 +313,11 @@ function explanations(tl, explanation, j, i) {
     opacity: 0;
 
     .compare-icon {
-      // fill slightly darker than $primary-bright since icon is thin and to make it more visible
-      fill: #bfb47c;
       width: 23%;
       margin-left: -15%;
+
+      // fill slightly darker than $primary-bright since icon is thin and to make it more visible
+      fill: #bfb47c;
     }
   }
 }
