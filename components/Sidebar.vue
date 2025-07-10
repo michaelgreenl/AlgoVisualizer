@@ -13,9 +13,9 @@
         <AlgorithmsIcon class="icon algorithms" />
         <Tooltip
           class="tooltip"
-          :addMouseListener="true"
+          :add-mouse-listener="true"
           :class="{ hidden: openSidebars.algorithms }"
-          :itemToggled="openSidebars.algorithms"
+          :item-toggled="openSidebars.algorithms"
           tooltip="Algorithms"
         />
       </button>
@@ -27,9 +27,9 @@
         <DataStructuresIcon class="icon data-structures" />
         <Tooltip
           class="tooltip"
-          :addMouseListener="true"
+          :add-mouse-listener="true"
           :class="{ hidden: openSidebars.dataStructures }"
-          :itemToggled="openSidebars.dataStructures"
+          :item-toggled="openSidebars.dataStructures"
           tooltip="Data Structures"
         />
       </button>
@@ -41,14 +41,14 @@
     <VisualizerSidebar
       ref="algoSidebar"
       class="sidebar-open"
-      :dropdownContent="algorithms"
+      :dropdown-content="algorithms"
       :open="openSidebars.algorithms"
       title="Algorithms"
     />
     <VisualizerSidebar
       ref="dataSidebar"
       class="sidebar-open"
-      :dropdownContent="dataStructures"
+      :dropdown-content="dataStructures"
       :open="openSidebars.dataStructures"
       title="Data Structures"
     />
@@ -65,7 +65,7 @@ import { ref, reactive } from 'vue';
 
 const router = useRouter();
 
-const emit = defineEmits(['sidebarToggled']);
+const emit = defineEmits(['sidebartoggled']);
 
 const sidebar = ref();
 const algoSidebar = ref();
@@ -152,7 +152,7 @@ const toggleSidebar = (sidebar) => {
     algoSidebar.value.userInput = '';
     dataSidebar.value.userInput = '';
   }
-  emit('sidebarToggled', { sidebar });
+  emit('sidebartoggled', { sidebar });
 };
 
 defineExpose({ sidebar, opened, toggleSidebar });
@@ -160,32 +160,32 @@ defineExpose({ sidebar, opened, toggleSidebar });
 
 <style lang="scss" scoped>
 .sidebar {
-  font-size: 12px;
   left: 0;
   height: 100%;
+  font-size: 12px;
 
   .sidebar-nav {
     position: relative;
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 2.5em;
-    height: 100%;
+    align-items: center;
     width: 5.33em;
+    height: 100%;
     padding: 1.75em 0;
-    box-shadow: 1px 0 1px $primary-light-grey;
     background: $secondary-white;
+    box-shadow: 1px 0 1px $primary-light-grey;
 
     .nav-item {
-      border: 0;
-      background: transparent;
-      padding: 0;
-      font-size: inherit;
       position: relative;
       display: flex;
       justify-content: center;
       width: 100%;
+      padding: 0;
+      font-size: inherit;
+      background: transparent;
+      border: 0;
 
       &.greyscale {
         filter: grayscale(0.8);
@@ -193,22 +193,23 @@ defineExpose({ sidebar, opened, toggleSidebar });
 
       .icon {
         &.logo {
-          height: 33px;
           width: 41px;
+          height: 33px;
         }
+
         &.algorithms {
-          height: 34px;
           width: 34px;
+          height: 34px;
         }
 
         &.data-structures {
-          height: 28px;
           width: 29px;
+          height: 28px;
         }
 
         &.contact {
-          height: 30px;
           width: 27px;
+          height: 30px;
         }
       }
 

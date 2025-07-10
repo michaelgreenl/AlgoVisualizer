@@ -2,7 +2,7 @@
   <div>
     <NuxtLayout>
       <main class="app" @click="sidebarOpen ? closeSidebar($event) : null">
-        <Sidebar ref="sidebar" @sidebarToggled="sidebarToggled" />
+        <Sidebar ref="sidebar" @sidebartoggled="sidebarToggled" />
         <NuxtPage />
       </main>
     </NuxtLayout>
@@ -42,25 +42,27 @@ function sidebarToggled(currSidebar) {
   box-sizing: border-box;
 }
 
+/* stylelint-disable selector-max-type */
 html,
 body {
   height: 100% !important;
-  margin: 0;
   padding: 0;
+  margin: 0;
 }
 
+/* stylelint-disable-next-line selector-id-pattern */
 #__nuxt {
   min-height: 100% !important;
   background: $primary-white;
 }
 
 .app {
-  font-size: 12px;
   position: relative;
   z-index: 1;
   display: flex;
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
+  font-size: 12px;
   background: $primary-white;
 }
 </style>

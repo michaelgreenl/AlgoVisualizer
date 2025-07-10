@@ -4,7 +4,7 @@
       <h1 class="title">{{ title }}</h1>
       <nav class="sidebar-nav">
         <transition name="close-button" appear :duration="300">
-          <button class="close-button" @click="closeSidebar" v-if="Object.values(sidebarTabs).includes(true)">
+          <button v-if="Object.values(sidebarTabs).includes(true)" class="close-button" @click="closeSidebar">
             <svg class="close-icon" width="12" height="12" viewBox="0 0 12 11" xmlns="http://www.w3.org/2000/svg">
               <line
                 class="line-one"
@@ -55,9 +55,9 @@
         <div class="explanations">
           <Transition name="fade-in-out">
             <span
+              v-show="timeline.currStep === 0 || visualizerSettings.settings.explanation.state"
               ref="explanation"
               class="explanation"
-              v-show="currStep === 0 || visualizerSettings.explanation.state.value"
             >
               To start, hit play
             </span>
@@ -65,33 +65,41 @@
         </div>
         <slot name="visual"></slot>
         <div class="controls">
-          <button class="control-button" @click="restart">
+          <button class="control-button" :disabled="timeline.currStep === 0" @click="restart">
             <RestartIcon class="icon restart" />
-          </button>
-          <button class="control-button" @click="emit('setCurrStep', currStep - 1)" :disabled="currStep < 1">
-            <SkipLeftIcon class="icon" />
-          </button>
-          <button class="control-button" @click="playClick">
-            <PauseIcon class="icon" v-if="visualPlaying" />
-            <PlayIcon class="icon play" v-else />
           </button>
           <button
             class="control-button"
-            @click="emit('setCurrStep', currStep + 1)"
-            :disabled="currStep === Object.keys(timeline.labels).filter((key) => !isNaN(key)).length"
+            :disabled="timeline.currStep === 1"
+            @click="timeline.currStep > 0 ? seek(-1) : null"
+          >
+            <SkipLeftIcon class="icon" />
+          </button>
+          <button class="control-button" @click="!timeline.restarting ? playClick() : null">
+            <PauseIcon v-if="visualPlaying" class="icon" />
+            <PlayIcon v-else class="icon play" />
+          </button>
+          <button
+            class="control-button"
+            :disabled="
+              timeline.currStep > 0 &&
+              timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length
+            "
+            @click="timeline.currStep > 0 ? seek(1) : null"
           >
             <SkipRightIcon class="icon" />
           </button>
         </div>
       </div>
       <div class="sidebar" :class="{ open: sidebarOpen }">
+        <!-- TODO: add vue-agile  -->
         <div
           class="tabs"
           :class="{ one: sidebarTabs.settings, two: sidebarTabs.explanation, three: sidebarTabs.description }"
         >
           <div class="tab" :class="{ open: sidebarTabs.settings }">
             <slot name="settings">
-              <VisualizerSettings ref="settings" :currStep="currStep" @restart="restart" />
+              <VisualizerSettings ref="settings" @restart="restart" />
             </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
@@ -107,15 +115,18 @@
 </template>
 
 <script setup>
+import { ref, reactive } from 'vue';
+import { timelineStore } from '../stores/timeline';
+import { visualizerSettingsStore } from '../stores/visualizerSettings';
+import isEqual from 'lodash.isequal';
+import gsap from 'gsap';
+import { TextPlugin } from 'gsap/dist/TextPlugin';
+
 import RestartIcon from '../assets/svgs/restart.svg';
 import PauseIcon from '../assets/svgs/pause.svg';
 import PlayIcon from '../assets/svgs/play.svg';
 import SkipLeftIcon from '../assets/svgs/skipLeft.svg';
 import SkipRightIcon from '../assets/svgs/skipRight.svg';
-
-import { ref, reactive } from 'vue';
-import gsap from 'gsap';
-import { TextPlugin } from 'gsap/dist/TextPlugin';
 
 gsap.registerPlugin(TextPlugin);
 
@@ -124,23 +135,27 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  currStep: {
-    type: Number,
-    required: true,
-  },
   transitionSpeed: {
     type: Object,
     required: true,
   },
 });
 
-const emit = defineEmits(['setCurrStep', 'playClick']);
+const emit = defineEmits(['start', 'restart']);
 
-const visualizerSettings = useVisualizerSettings();
-const timeline = useTimeline();
-const settings = ref();
+const timeline = timelineStore();
+const visualizerSettings = visualizerSettingsStore();
 
 const explanation = ref();
+const explanationCount = ref(0);
+const explanationTrack = reactive([]);
+const explanationOnSeek = reactive({
+  tl: null,
+  explanationCount: null,
+  tweensToKill: null,
+  textLength: null,
+  textAnimsAdded: null,
+});
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
@@ -150,14 +165,41 @@ const sidebarTabs = reactive({
 });
 
 function playClick() {
-  settings.value.setRestartSettings();
   visualPlaying.value = !visualPlaying.value;
-  emit('playClick');
+  if (timeline.currStep === 0) {
+    visualizerSettings.selected = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
+    emit('start');
+  } else if (visualPlaying.value) {
+    timeline.tl.resume();
+  } else {
+    timeline.tl.pause();
+  }
 }
 
 function restart() {
-  emit('setCurrStep', 0);
-  visualPlaying.value = false;
+  if (!isEqual(visualizerSettings.localState, visualizerSettings.selected)) {
+    timeline.restarting = true;
+    timeline.tl.clear();
+    timeline.currStep = 0;
+    visualizerSettings.restart();
+    timeline.tl
+      .to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' })
+      .to(
+        '.explanation',
+        {
+          duration: 0,
+          xPercent: 0,
+          text: '',
+          opacity: 1,
+          onComplete: () => {
+            emit('restart');
+          },
+        },
+        '>',
+      );
+  } else {
+    seek('1');
+  }
 }
 
 function tabButtonClick(tab) {
@@ -171,57 +213,161 @@ function closeSidebar() {
   setTimeout(() => Object.keys(sidebarTabs).forEach((key) => (sidebarTabs[key] = false)), 100);
 }
 
-function changeExplanation(timeline, text) {
-  timeline.to(
-    '.explanation',
-    { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' },
-    '>',
-  );
-  timeline.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
+function seek(value) {
+  if (explanationOnSeek.tl) {
+    if (
+      !explanationTrack[explanationOnSeek.explanationCount] &&
+      explanationOnSeek.textAnimsAdded === explanationOnSeek.textLength &&
+      explanationOnSeek.tweensToKill.length !== 0
+    ) {
+      /* 
+        If the explanation hasn't been ran through completely allowing the last onComplete to run,
+        and all of the text animations have been added,
+        and some of the underlining animations have been added.
+      */
 
-  const tl = gsap.timeline();
-  onCompleteExplanation(tl, text, 0);
-  timeline.add(tl);
+      // Carrying out the last onComplete that would haved ran.
+      explanationOnSeek.tweensToKill.forEach((id) => {
+        if (explanationOnSeek.tl.getById(id)) {
+          explanationOnSeek.tl.getById(id).kill();
+        }
+      });
+      explanationTrack[explanationOnSeek.explanationCount] = true;
+    } else if (
+      !explanationTrack[explanationOnSeek.explanationCount] &&
+      explanationOnSeek.textAnimsAdded !== explanationOnSeek.textLength &&
+      explanationOnSeek.tweensToKill.length !== 0
+    ) {
+      /* 
+        If the explanation hasn't been ran through completely allowing the last onComplete to run,
+        and not all of the text animations have been added,
+        and some of the underlining animations have been added. 
+      */
+
+      // Killing all the animations except the first text animation. Allowing the timeline to be recalculated when needed again.
+      for (let i = 1; i < explanationOnSeek.tl.getChildren(true).length; i++) {
+        explanationOnSeek.tl.getChildren(true)[i].kill();
+      }
+    }
+  }
+  timeline.seek(value);
 }
 
-function onCompleteExplanation(timeline, text, i) {
+function changeExplanation(tl, text, i) {
+  // Making the origninal explanation slide to the left and fade away
+  tl.to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
+
+  /*
+    For ending explanations, adding a label. Also making sure it's added after the explanation has gone off to the side
+    for the previous steps last explanation.
+  */
+  if (typeof i === 'number') {
+    timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 0.4 + 1}`);
+  }
+
+  // Making the explanation div go back to the center and have an opacity of 1
+  tl.to('.explanation', { duration: 0, xPercent: 0, text: '', opacity: 1 }, '>');
+
+  explanationTrack.push(false);
+  const util = {
+    tweensToKill: new Set([]),
+    textAnimsAdded: 0,
+  };
+
+  // Adding a different timeline so the explanation animation can play along with other animations on the global timeline
+  const tl2 = gsap.timeline();
+  onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
+  tl.add(tl2);
+  explanationCount.value += 1;
+}
+
+function onCompleteExplanation(tl, text, explanationCount, util, i) {
+  // TODO: Add comments to this function
+  // Getting the current innerHTML from the explanation div
   const prevInnerHTML = explanation.value.innerHTML;
-  timeline.to('.explanation', {
-    duration: props.transitionSpeed.int * 0.6,
-    text: { value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`, speed: 3, type: 'diff' },
-    ease: 'power1',
-    onComplete: () => {
-      if (text[i].underlined.length) {
-        let innerHTML = text[i].string;
-        for (const underlined of text[i].underlined) {
-          innerHTML = innerHTML.replace(
-            underlined.text,
-            `<span class="explanation-no-underline">${underlined.text}</span>`,
-          );
-        }
-        explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
-        for (let j = 0; j < text[i].underlined.length; j++) {
-          if (j === text[i].underlined.length - 1 && i + 1 !== text.length) {
-            timeline.to(explanation.value.children[text[i].underlined[j].i], {
-              duration: props.transitionSpeed.int * 0.4,
-              text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
-              ease: 'power1',
-              onCompleteParams: [timeline, text, i + 1],
-              onComplete: onCompleteExplanation,
-            });
-          } else {
-            timeline.to(explanation.value.children[text[i].underlined[j].i], {
-              duration: props.transitionSpeed.int * 0.4,
-              text: { value: text[i].underlined[j].text, speed: 3, newClass: 'explanation-underline' },
-              ease: 'power1',
-            });
+
+  // Only adding another text animation if the animation hasn't gone through yet
+  if (!explanationTrack[explanationCount]) {
+    util.textAnimsAdded += 1;
+    tl.to('.explanation', {
+      id: `text${i}`,
+      duration: props.transitionSpeed.int * 0.6,
+      text: {
+        value: i === 0 ? text[i].string : `${prevInnerHTML}${text[i].string}`,
+        speed: visualizerSettings.settings.speed.state * 0.01 * 6,
+        type: 'diff',
+      },
+      ease: 'power1',
+      onComplete: () => {
+        explanationOnSeek.tl = tl;
+        explanationOnSeek.explanationCount = explanationCount;
+        explanationOnSeek.tweensToKill = util.tweensToKill;
+        explanationOnSeek.textLength = text.length;
+        explanationOnSeek.textAnimsAdded = util.textAnimsAdded;
+
+        if (text[i].underlined.length) {
+          // If there is underlined animations for this text animation, surrounding the text that's going to be underlined with a span tag so it can be accessed as a child node.
+          let innerHTML = text[i].string;
+          for (const underlined of text[i].underlined) {
+            innerHTML = innerHTML.replace(
+              underlined.text,
+              `<span class="explanation-no-underline">${underlined.text}</span>`,
+            );
           }
+
+          // Combining the previous innerHTML and the newly editted text unless the previous innerHTML comes from the last explanation.
+          explanation.value.innerHTML = i === 0 ? innerHTML : `${prevInnerHTML}${innerHTML}`;
+
+          for (const [j, underlined] of text[i].underlined.entries()) {
+            // Getting the end time of the last added underline animation or text animation depending on if there are any previously added underline animations in this current loop.
+            const position = j !== 0 ? tl.getById(`underline${i}${j - 1}`)._end : tl.getById(`text${i}`)._end;
+
+            util.tweensToKill.add(`underline${i}${j}`);
+            const underline = (config) => {
+              return tl.to(
+                explanation.value.children[underlined.i],
+                {
+                  id: `underline${i}${j}`,
+                  duration: props.transitionSpeed.int * 0.4,
+                  text: {
+                    value: text[i].underlined[j].text,
+                    speed: visualizerSettings.settings.speed.state * 0.01 * 6,
+                    newClass: 'explanation-underline',
+                  },
+                  ease: 'power1',
+                  onCompleteParams: config.onCompleteParams,
+                  onComplete: config.onComplete,
+                },
+                position,
+              );
+            };
+            if (i !== text.length - 1 && j === text[i].underlined.length - 1) {
+              // If this is the last underline animation but not the last text animation, run this function again.
+              underline({
+                onCompleteParams: [tl, text, explanationCount, util, i + 1],
+                onComplete: onCompleteExplanation,
+              });
+            } else {
+              // If this is the last underline animation and the last text animation, kill the underline animations and set the explanation tracker to true.
+              underline({
+                onComplete: () => {
+                  if (i === text.length - 1 && j === text[i].underlined.length - 1) {
+                    explanationTrack[explanationCount] = true;
+                    util.tweensToKill.forEach((id) => {
+                      tl.getById(id).kill();
+                    });
+                    util.tweensToKill.clear();
+                  }
+                },
+              });
+            }
+          }
+        } else {
+          onCompleteExplanation(tl, text, explanationCount, util, i + 1);
         }
-      } else {
-        onCompleteExplanation(timeline, text, i + 1);
-      }
-    },
-  });
+      },
+    });
+  }
 }
 
 defineExpose({ visualPlaying, changeExplanation });
@@ -247,9 +393,9 @@ defineExpose({ visualPlaying, changeExplanation });
 }
 
 .fade-in-out-enter-from {
+  position: absolute;
   opacity: 0;
   transform: translateX(-100%);
-  position: absolute;
 }
 
 .fade-in-out-leave-to {
@@ -262,35 +408,39 @@ $sidebar-width: 43.2em;
 .visualizer {
   display: flex;
   flex-direction: column;
-  font-size: 12px;
   width: 100%;
   height: 100%;
+  font-size: 12px;
 
   .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    height: 6rem;
+    justify-content: space-between;
     width: 100%;
+    height: 6rem;
 
     .title {
-      font-family: $primary-font-stack;
-      font-weight: 400;
-      letter-spacing: 0.09ch;
+      width: 45%;
+      padding: 10px 25px;
       margin: 0 2.25rem;
-      color: $primary-dark;
+      margin: 0;
+      font-family: $primary-font-stack;
       font-size: 4em;
+      font-weight: 400;
+      color: $primary-dark;
+      letter-spacing: 0.09ch;
+      border-bottom: solid 1px $primary-light;
     }
 
     .sidebar-nav {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-top: 0.5rem;
-      height: 2.5rem;
+      justify-content: space-between;
       width: $sidebar-width;
+      height: 2.5rem;
       padding: 0 1.25em;
-      box-shadow: 2px 1px 1px $primary-light-grey;
+      margin-top: 0.5rem;
+      box-shadow: 2px 0.75px 1px $primary-light-grey;
 
       .close-button-enter-active .close-icon .line-one,
       .close-button-leave-active .close-icon .line-one {
@@ -316,11 +466,11 @@ $sidebar-width: 43.2em;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 1.75em;
+        height: 1.75em;
+        padding: 0;
         background: transparent;
         border: 0;
-        padding: 0;
-        height: 1.75em;
-        width: 1.75em;
         border-radius: 7px;
 
         &:hover {
@@ -330,32 +480,32 @@ $sidebar-width: 43.2em;
 
       .tab-buttons {
         display: flex;
-        margin-left: auto;
         gap: 1em;
+        margin-left: auto;
 
         .tab-button {
+          padding: 3px 1em;
           font-size: inherit;
           background: transparent;
           border: 0;
-          outline: solid $primary-white 1px;
-          padding: 3px 1em;
           border-radius: 7px;
+          outline: solid $primary-white 1px;
           transition: all 75ms ease;
-
-          &:hover:not(.selected) {
-            outline: #eff1f1 solid 2px;
-            outline-offset: -1px;
-          }
 
           &:active,
           &.selected {
             background: $primary-bright;
           }
 
+          &:hover:not(.selected) {
+            outline: #eff1f1 solid 2px;
+            outline-offset: -1px;
+          }
+
           .tab-button-text {
-            color: $primary-dark;
-            font-size: 15px;
             font-family: $secondary-font-stack;
+            font-size: 15px;
+            color: $primary-dark;
           }
         }
       }
@@ -363,36 +513,22 @@ $sidebar-width: 43.2em;
   }
 
   .main {
-    flex: 1;
     display: flex;
+    flex: 1;
     justify-content: space-around;
 
     .visual {
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 10vh 1em 20vh;
-      margin-left: auto;
+      justify-content: center;
+      width: 57%;
 
       // better than this
       height: 100%;
-      width: 57%;
+      padding: 10vh 1em 20vh;
+      margin-left: auto;
       transition: width 200ms ease-out;
-
-      &.center {
-        // Length of navbar + current padding
-        padding-right: 6.33em;
-        width: 100%;
-
-        .explanations {
-          max-width: none;
-
-          @include bp-lg-laptop {
-            max-width: 50em;
-          }
-        }
-      }
 
       .explanations {
         position: relative;
@@ -406,14 +542,14 @@ $sidebar-width: 43.2em;
         }
 
         .explanation {
-          text-align: center;
-          color: $primary-dark;
-          font-size: 22px;
-          font-family: $secondary-font-stack;
-          font-weight: 400;
-          letter-spacing: 0.05ch;
           height: 2em;
           margin-bottom: 2vh;
+          font-family: $secondary-font-stack;
+          font-size: 22px;
+          font-weight: 300;
+          color: $primary-dark;
+          text-align: center;
+          letter-spacing: 0.05ch;
 
           .underline {
             text-decoration: underline $primary-light;
@@ -421,27 +557,43 @@ $sidebar-width: 43.2em;
         }
       }
 
+      &.center {
+        width: 100%;
+
+        // Length of navbar + current padding
+        padding-right: 6.33em;
+
+        .explanations {
+          max-width: none;
+
+          @include bp-lg-laptop {
+            max-width: 50em;
+          }
+        }
+      }
+
       .controls {
         display: flex;
-        justify-content: flex-end;
         gap: 3em;
-        margin: 0 auto;
-        padding-right: 9em;
+        justify-content: flex-end;
         width: 90%;
+        padding-right: 9em;
+        margin: 0 auto;
 
         .control-button {
-          padding: 0;
-          border: 0;
-          outline: solid 0px $primary-white;
-          background: $primary-light;
           display: flex;
-          justify-content: center;
           align-items: center;
-          height: 100%;
+          justify-content: center;
           width: 12.5%;
           max-width: 5em;
+          height: 100%;
           aspect-ratio: 1;
+          padding: 0;
+          cursor: pointer;
+          background: $primary-light;
+          border: 0;
           border-radius: 100%;
+          outline: solid 0 $primary-white;
           transition: all 50ms ease-out;
 
           &:first-child {
@@ -457,21 +609,25 @@ $sidebar-width: 43.2em;
           }
 
           &:active {
+            background: #cbbf9b;
             outline: solid 3px $primary-white;
-            background: #d4cca7;
             outline-offset: -2px;
           }
 
+          &:disabled {
+            background-color: #eae8e0;
+          }
+
           .icon {
-            aspect-ratio: 1;
-            filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.08));
-            height: 40%;
             width: 40%;
+            height: 40%;
+            aspect-ratio: 1;
+            filter: drop-shadow(0 2px 1px rgb(0 0 0 / 8%));
 
             &.restart {
-              transform: translateX(-1px);
-              height: 53.5%;
               width: 53.5%;
+              height: 53.5%;
+              transform: translateX(-1px);
             }
 
             &.play {
@@ -485,15 +641,17 @@ $sidebar-width: 43.2em;
     .sidebar {
       position: relative;
       display: flex;
-      overflow: hidden;
+      width: 0;
       margin-right: 0;
       margin-left: auto;
-      width: 0;
+      overflow: hidden;
       transition: width 200ms ease-out;
 
       &.open {
         width: $sidebar-width;
       }
+
+      // TODO: add vue-agile
 
       .tabs {
         display: flex;

@@ -6,26 +6,44 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint:style": "stylelint '**/*.{vue,css,scss}' --fix",
+    "format": "prettier --write '**/*.{vue,js,jsx,cjs,mjs,css,scss}'"
   },
   "devDependencies": {
     "@babel/core": "^7.17.10",
     "@babel/eslint-parser": "^7.17.0",
+    "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@nuxtjs/eslint-module": "^3.1.0",
     "@vue/babel-preset-app": "^5.0.4",
+    "@vue/eslint-config-prettier": "^7.0.0",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-nuxt": "^3.2.0",
-    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.7.1",
-    "nuxt": "3.0.0-rc.1",
+    "lodash": "^4.17.21",
+    "nuxt": "^3.5.3",
     "prettier": "^2.6.2",
     "sass": "^1.51.0",
     "sass-loader": "^12.6.0",
-    "vite-plugin-eslint": "^1.6.0"
+    "stylelint": "^14.12.0",
+    "stylelint-config-prettier-scss": "^0.0.1",
+    "stylelint-config-recess-order": "^3.0.0",
+    "stylelint-config-standard-scss": "^5.0.0",
+    "stylelint-config-standard-vue": "^1.0.0",
+    "vite-plugin-eslint": "^1.6.0",
+    "vue-eslint-parser": "^10.2.0"
   },
   "dependencies": {
+    "@pinia/nuxt": "^0.4.2",
+    "consola": "^3.2.3",
     "gsap": "^3.10.4",
+    "lodash.isequal": "^4.5.0",
+    "pinia": "^2.0.17",
+    "pinia-plugin-persistedstate": "^2.1.0",
+    "tanagra-json": "^0.3.4",
+    "tanagra-protobuf": "^0.3.3",
     "vite-svg-loader": "^3.3.0",
     "vue": "^3.2.33"
   }
