@@ -174,10 +174,11 @@ defineExpose({ sidebar, opened, toggleSidebar });
     width: 5.33em;
     height: 100%;
     padding: 1.75em 0;
-    background: $secondary-white;
+    background: $primary-white;
     box-shadow: 1px 0 1px $primary-light-grey;
 
     .nav-item {
+      cursor: pointer;
       position: relative;
       display: flex;
       justify-content: center;

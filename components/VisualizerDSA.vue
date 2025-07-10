@@ -92,7 +92,6 @@
         </div>
       </div>
       <div class="sidebar" :class="{ open: sidebarOpen }">
-        <!-- TODO: add vue-agile  -->
         <div
           class="tabs"
           :class="{ one: sidebarTabs.settings, two: sidebarTabs.explanation, three: sidebarTabs.description }"
@@ -463,6 +462,7 @@ $sidebar-width: 43.2em;
       }
 
       .close-button {
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -484,6 +484,7 @@ $sidebar-width: 43.2em;
         margin-left: auto;
 
         .tab-button {
+          cursor: pointer;
           padding: 3px 1em;
           font-size: inherit;
           background: transparent;
@@ -650,8 +651,6 @@ $sidebar-width: 43.2em;
       &.open {
         width: $sidebar-width;
       }
-
-      // TODO: add vue-agile
 
       .tabs {
         display: flex;

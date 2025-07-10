@@ -203,6 +203,7 @@ defineExpose({ openDropdowns, userInput });
     list-style: none;
 
     .category {
+      cursor: pointer;
       display: flex;
       gap: 0.33em;
       align-items: center;
@@ -266,6 +267,7 @@ defineExpose({ openDropdowns, userInput });
       }
 
       .item {
+        cursor: pointer;
         display: flex;
         gap: 0.5em;
         align-items: center;
@@ -357,6 +359,7 @@ defineExpose({ openDropdowns, userInput });
       border-left: 2px solid $primary-light;
 
       .result {
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: space-between;
