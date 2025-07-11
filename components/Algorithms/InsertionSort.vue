@@ -8,12 +8,7 @@
       @restart="restart"
     >
       <template #visual>
-        <Array
-          v-if="visualizerSettings.settings.visual.state === 'Array'"
-          ref="array"
-          :transition-speed="transitionSpeed"
-          :num-pointers="2"
-        >
+        <Array ref="array" :transition-speed="transitionSpeed" :num-pointers="2">
           <template #borderSvg>
             <div class="icon-wrapper">
               <CompareIcon class="compare-icon" />
@@ -72,12 +67,7 @@ onBeforeMount(() => {
       label: 'Elements',
       type: 'number',
       min: 8,
-      get max() {
-        if (Object.keys(visualizerSettings.settings).length === 0) {
-          return 15;
-        }
-        return visualizerSettings.settings.visual.state === 'Array' ? 15 : 200;
-      },
+      max: 15,
       state: 8,
       requiresRestart: true,
       validateInput: (input) => {
@@ -86,13 +76,6 @@ onBeforeMount(() => {
         }
         return true;
       },
-    },
-    visual: {
-      label: 'Visual Type',
-      type: 'radio',
-      options: ['Array', 'Bar Graph'],
-      state: 'Array',
-      requiresRestart: false,
     },
     elementType: {
       label: 'Element Type',
@@ -103,7 +86,6 @@ onBeforeMount(() => {
     },
   };
 
-  // Object.assign(visualizerSettings.settings, visualizerSettings.initial);
   if (Object.keys(visualizerSettings.settings).length === 0) {
     Object.assign(visualizerSettings.settings, visualizerSettings.initial);
   }
