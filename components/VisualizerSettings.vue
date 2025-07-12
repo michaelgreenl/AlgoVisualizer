@@ -184,7 +184,7 @@ function onKeydown() {
 
 function hasSettingsChanges() {
   // Check if any settings have changed from their initial state
-  for (const key in visualizerSettings.settings) {
+  for (const key of Object.keys(visualizerSettings.settings)) {
     const setting = visualizerSettings.settings[key];
     const initialValue = visualizerSettings.initial[key]?.state;
 
@@ -207,7 +207,7 @@ function hasSettingsChanges() {
 
 function hasRestartChanges() {
   // Check if any settings with requiresRestart: true have been changed
-  for (const key in visualizerSettings.settings) {
+  for (const key of Object.keys(visualizerSettings.settings)) {
     const setting = visualizerSettings.settings[key];
     if (setting.requiresRestart) {
       const localValue = visualizerSettings.localState[key]?.state;
