@@ -36,6 +36,8 @@ export const visualizerSettingsStore = defineStore('visualizerSettings', () => {
         this.localState[`${key}`].state = this.initial[`${key}`].state;
       });
     }
+    // Update selected to match the current settings after reset
+    this.selected = { ...JSON.parse(JSON.stringify(this.settings)) };
   }
 
   function restart() {
@@ -46,7 +48,7 @@ export const visualizerSettingsStore = defineStore('visualizerSettings', () => {
         this.localState[`${key}`] = { ...JSON.parse(JSON.stringify(this.settings[`${key}`])) };
       }
     });
-    Object.assign(this.selected, this.settings);
+    // Update selected to match the current settings after restart
     this.selected = { ...JSON.parse(JSON.stringify(this.settings)) };
   }
 

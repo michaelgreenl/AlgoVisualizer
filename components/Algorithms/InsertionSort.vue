@@ -46,7 +46,8 @@ const transitionSpeed = reactive({
 const arrayHeight = computed(() => array.value.arrayHeight * 0.675 + 'px');
 
 onBeforeMount(() => {
-  visualizerSettings.initial = {
+  // Define the initial settings
+  const initialSettings = {
     explanation: {
       label: 'Explanation in Visual',
       type: 'toggle',
@@ -61,7 +62,7 @@ onBeforeMount(() => {
       min: 30,
       max: 70,
       state: 50,
-      requiresRestart: false,
+      requiresRestart: true,
     },
     arraySize: {
       label: 'Elements',
@@ -86,9 +87,17 @@ onBeforeMount(() => {
     },
   };
 
+  // Set the initial state
+  visualizerSettings.initial = { ...JSON.parse(JSON.stringify(initialSettings)) };
+
+  // Initialize settings if empty
   if (Object.keys(visualizerSettings.settings).length === 0) {
-    Object.assign(visualizerSettings.settings, visualizerSettings.initial);
+    visualizerSettings.settings = { ...JSON.parse(JSON.stringify(initialSettings)) };
   }
+
+  // Always ensure selected and localState are properly initialized
+  visualizerSettings.selected = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
+  visualizerSettings.localState = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
 });
 
 function start() {
@@ -98,15 +107,21 @@ function start() {
 }
 
 async function restart() {
+  // Clear any visible SVG elements first
+  array.value.clearSvgs();
+  
+  // Reset array to initial state
   array.value.setPointerPosition(timeline.tl, 'all', 0);
   await nextTick();
+  
+  // Reset array elements to their initial shuffled state
   array.value.setElementsAnim(true).then(async () => {
-    timeline.restart();
     await nextTick();
+    
+    // Start the animation with new settings
     array.value.setElementsAnim().then(() => {
       timeline.currStep += 1;
       insertionSort();
-      timeline.restarting = false;
     });
   });
 }
