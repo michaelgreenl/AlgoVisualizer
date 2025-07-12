@@ -179,17 +179,17 @@ function playClick() {
 function restart() {
   if (!isEqual(visualizerSettings.localState, visualizerSettings.selected)) {
     timeline.restarting = true;
-    
+
     // Stop any current animations
     timeline.tl.kill();
-    
+
     // Reset timeline state
     timeline.tl.clear(true);
     timeline.currStep = 0;
-    
+
     // Reset visual state - set to playing since restart will start the animation
     visualPlaying.value = true;
-    
+
     // Reset explanation state
     explanationCount.value = 0;
     explanationTrack.length = 0;
@@ -198,21 +198,21 @@ function restart() {
     explanationOnSeek.tweensToKill = null;
     explanationOnSeek.textLength = null;
     explanationOnSeek.textAnimsAdded = null;
-    
+
     // Apply the new settings
     visualizerSettings.restart();
-    
+
     // Clear explanation text
     if (explanation.value) {
       explanation.value.innerHTML = '';
     }
-    
+
     // Clear any visible SVG elements (comparison icons)
     // This will be handled by the algorithm component's restart function
-    
+
     // Emit restart to the algorithm component
     emit('restart');
-    
+
     timeline.restarting = false;
   } else {
     seek('1');

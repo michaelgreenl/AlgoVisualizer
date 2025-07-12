@@ -310,7 +310,7 @@ function setPointerPosition(tl, pointer, positionIndex, timing) {
 function clearSvgs() {
   // Clear all SVG elements (comparison icons) by setting their opacity to 0
   if (borders.value) {
-    borders.value.forEach(border => {
+    borders.value.forEach((border) => {
       const svg = border.children[0];
       if (svg && svg.style) {
         svg.style.opacity = '0';

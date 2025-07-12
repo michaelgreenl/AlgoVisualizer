@@ -109,15 +109,15 @@ function start() {
 async function restart() {
   // Clear any visible SVG elements first
   array.value.clearSvgs();
-  
+
   // Reset array to initial state
   array.value.setPointerPosition(timeline.tl, 'all', 0);
   await nextTick();
-  
+
   // Reset array elements to their initial shuffled state
   array.value.setElementsAnim(true).then(async () => {
     await nextTick();
-    
+
     // Start the animation with new settings
     array.value.setElementsAnim().then(() => {
       timeline.currStep += 1;
