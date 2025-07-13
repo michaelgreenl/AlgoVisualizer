@@ -207,10 +207,6 @@ function restart() {
       explanation.value.innerHTML = '';
     }
 
-    // Clear any visible SVG elements (comparison icons)
-    // This will be handled by the algorithm component's restart function
-
-    // Emit restart to the algorithm component
     emit('restart');
 
     timeline.restarting = false;
@@ -299,8 +295,6 @@ function changeExplanation(tl, text, i) {
 }
 
 function onCompleteExplanation(tl, text, explanationCount, util, i) {
-  // TODO: Add comments to this function
-  // Getting the current innerHTML from the explanation div
   const prevInnerHTML = explanation.value.innerHTML;
 
   // Only adding another text animation if the animation hasn't gone through yet
@@ -396,7 +390,7 @@ defineExpose({ visualPlaying, changeExplanation });
 }
 
 .explanation-underline {
-  text-decoration: underline #d7d0ae;
+  text-decoration: underline var(--underline-color);
 }
 </style>
 
@@ -446,7 +440,7 @@ $sidebar-width: 43.2em;
       font-weight: 400;
       color: $primary-dark;
       letter-spacing: 0.09ch;
-      border-bottom: solid 1px $primary-light;
+      border-bottom: solid 1px var(--border-primary);
     }
 
     .sidebar-nav {
@@ -517,7 +511,7 @@ $sidebar-width: 43.2em;
           }
 
           &:hover:not(.selected) {
-            outline: #eff1f1 solid 2px;
+            outline: $primary-dark-bright solid 1px;
             outline-offset: -1px;
           }
 
@@ -557,7 +551,7 @@ $sidebar-width: 43.2em;
         max-width: 50em;
 
         .underline {
-          text-decoration: underline $primary-light;
+          text-decoration: underline var(--underline-color);
         }
 
         .explanation {
@@ -566,12 +560,12 @@ $sidebar-width: 43.2em;
           font-family: $secondary-font-stack;
           font-size: 22px;
           font-weight: 300;
-          color: $primary-dark;
+          color: var(--text-explanation);
           text-align: center;
           letter-spacing: 0.05ch;
 
           .underline {
-            text-decoration: underline $primary-light;
+            text-decoration: underline var(--underline-color);
           }
         }
       }

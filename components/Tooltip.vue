@@ -72,7 +72,7 @@ defineExpose({ mouseEntered });
     align-items: center;
     height: 24px;
     padding: 12px;
-    background: $primary-black;
+    background: var(--text-primary);
     border-radius: 7px;
 
     .polygon {
@@ -81,13 +81,14 @@ defineExpose({ mouseEntered });
       left: -4px;
       width: 6px;
       height: 12px;
+      fill: var(--text-primary);
     }
 
     .tooltip-text {
       font-family: $secondary-font-stack;
       font-size: 14px;
       font-weight: 400;
-      color: $primary-white;
+      color: var(--bg-primary);
       white-space: nowrap;
     }
   }

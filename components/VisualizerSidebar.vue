@@ -176,7 +176,7 @@ defineExpose({ openDropdowns, userInput });
   width: 28.42em;
   padding: 0.66em 1.33em;
   font-size: inherit;
-  color: $primary-black;
+  color: var(--text-primary);
   transition: transform 150ms ease-in-out;
 
   &.open {
@@ -211,7 +211,7 @@ defineExpose({ openDropdowns, userInput });
       font-family: $secondary-font-stack;
       font-size: 14px;
       font-weight: 400;
-      color: $primary-black;
+      color: var(--text-primary);
       letter-spacing: 0.09ch;
       background: transparent;
       border: 0;
@@ -282,16 +282,16 @@ defineExpose({ openDropdowns, userInput });
         transition: all 100ms ease;
 
         &:hover {
-          background: #f3f3f3;
+          background: var(--bg-secondary);
         }
 
         &:active {
-          background: #ededed;
+          background: var(--primary-light-grey);
         }
 
         .content {
           font-size: 14px;
-          color: $primary-black;
+          color: var(--text-primary);
           letter-spacing: 0.09ch;
           white-space: nowrap;
         }
@@ -312,11 +312,12 @@ defineExpose({ openDropdowns, userInput });
     width: 100%;
     min-height: 2.5em;
     padding: 0 1em;
-    color: $primary-black;
-    background-color: $primary-bright;
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
     border-radius: 8px;
 
     .search-icon {
+      fill: var(--text-muted);
       width: 12px;
       height: 12px;
     }
@@ -326,12 +327,12 @@ defineExpose({ openDropdowns, userInput });
       height: 100%;
       padding: 3px 0;
       font-family: $secondary-font-stack;
-      color: $primary-black;
+      color: var(--text-primary);
       background: transparent;
       border: 0;
 
       &::placeholder {
-        color: $primary-black;
+        color: var(--text-muted);
       }
 
       &:focus {
@@ -373,20 +374,20 @@ defineExpose({ openDropdowns, userInput });
         border: 0;
 
         &:hover {
-          background: #f3f3f3;
+          background: var(--bg-secondary);
         }
 
         &:active {
-          background: #ededed;
+          background: var(--primary-light-grey);
         }
 
         .item {
           font-size: 14px;
-          color: $primary-black;
+          color: var(--text-primary);
 
           .highlight {
-            color: $primary-black;
-            background-color: #dfe3e3;
+            color: var(--text-primary);
+            background-color: var(--primary-dark-bright);
           }
         }
 

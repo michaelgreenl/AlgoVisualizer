@@ -33,9 +33,10 @@
           tooltip="Data Structures"
         />
       </button>
-      <button class="nav-item" :class="{ greyscale: opened }" @click="router.push('/contact')">
-        <Tooltip tooltip="Contact" />
-        <ContactIcon class="icon contact" />
+      <button class="nav-item theme-toggle-wrapper" @click="themeStore.toggleTheme()">
+        <MoonIcon v-if="themeStore.theme === 'dark'" class="icon moon" />
+        <SunIcon v-else class="icon sun" />
+        <Tooltip :tooltip="themeStore.theme === 'dark' ? 'Light Mode' : 'Dark Mode'" />
       </button>
     </nav>
     <VisualizerSidebar
@@ -56,12 +57,16 @@
 </template>
 
 <script setup>
+import { ref, reactive } from 'vue';
+import { useThemeStore } from '../stores/theme.js';
+
 import LogoIcon from '../assets/svgs/logo.svg';
 import AlgorithmsIcon from '../assets/svgs/algorithms.svg';
 import DataStructuresIcon from '../assets/svgs/dataStructures.svg';
-import ContactIcon from '../assets/svgs/contact.svg';
+import MoonIcon from '../assets/svgs/moon.svg';
+import SunIcon from '../assets/svgs/sun.svg';
 
-import { ref, reactive } from 'vue';
+const themeStore = useThemeStore();
 
 const router = useRouter();
 
@@ -174,8 +179,8 @@ defineExpose({ sidebar, opened, toggleSidebar });
     width: 5.33em;
     height: 100%;
     padding: 1.75em 0;
-    background: $primary-white;
-    box-shadow: 1px 0 1px $primary-light-grey;
+    background: var(--bg-primary);
+    box-shadow: 1px 0 1px var(--border-primary);
 
     .nav-item {
       cursor: pointer;
@@ -212,6 +217,16 @@ defineExpose({ sidebar, opened, toggleSidebar });
           width: 27px;
           height: 30px;
         }
+
+        &.moon {
+          width: 27px;
+          height: 30px;
+        }
+
+        &.sun {
+          width: 27px;
+          height: 30px;
+        }
       }
 
       .tooltip {
@@ -230,8 +245,8 @@ defineExpose({ sidebar, opened, toggleSidebar });
     position: absolute;
     z-index: 999;
     height: 100%;
-    background-color: $primary-white;
-    box-shadow: 1px 0 1px $primary-light-grey;
+    background-color: var(--bg-primary);
+    box-shadow: 1px 0 1px var(--border-primary);
   }
 }
 </style>

@@ -53,7 +53,7 @@ body {
 /* stylelint-disable-next-line selector-id-pattern */
 #__nuxt {
   min-height: 100% !important;
-  background: $primary-white;
+  background: var(--bg-primary);
 }
 
 .app {
@@ -63,6 +63,6 @@ body {
   width: 100vw;
   height: 100vh;
   font-size: 12px;
-  background: $primary-white;
+  background: var(--bg-primary);
 }
 </style>

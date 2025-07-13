@@ -1,5 +1,11 @@
 @import 'mixins', 'variables', 'fonts';
 
+// Theme transitions
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, fill 0.3s ease;
+}
+
+// Scrollbar styling
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -10,13 +16,37 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(82 112 124 / 40%);
+  background: var(--primary-dark);
   background-clip: content-box;
   border: 2px solid transparent;
-  border-radius: 4px;
   border-radius: 5px;
+  opacity: 0.4;
 }
 
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+  opacity: 0.6;
+}
+
+// Focus styles
 button:focus-visible {
-  outline: none;
+  outline: 2px solid var(--primary-dark);
+  outline-offset: 2px;
+}
+
+// Global theme-aware styles
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+// Theme-aware selection
+::selection {
+  background-color: var(--primary-dark);
+  color: var(--primary-white);
+}
+
+::-moz-selection {
+  background-color: var(--primary-dark);
+  color: var(--primary-white);
 }

@@ -289,7 +289,7 @@ function onKeyup(inputRef, setting, inputParams) {
     font-family: $secondary-font-stack;
     font-size: 1.375em;
     font-weight: 400;
-    color: $primary-white;
+    color: #f8f8f8;
     letter-spacing: 0.04em;
     cursor: pointer;
     background: $primary-darker-light;
