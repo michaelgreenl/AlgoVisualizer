@@ -28,6 +28,10 @@
   opacity: 0.6;
 }
 
+button {
+  cursor: pointer;
+}
+
 // Focus styles
 button:focus-visible {
   outline: 2px solid var(--primary-dark);
