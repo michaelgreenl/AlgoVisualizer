@@ -16,10 +16,15 @@ export const timelineStore = defineStore('timeline', () => {
     tl.seek(`${this.currStep}`);
   }
 
+  function goto(value) {
+    currStep.value = parseInt(value.substring(0, 1), 10);
+    tl.seek(`${value}`);
+  }
+
   function restart() {
     tl.clear(true);
     currStep.value = 0;
   }
 
-  return { tl, currStep, restarting, seek, restart };
+  return { tl, currStep, restarting, seek, restart, goto };
 });

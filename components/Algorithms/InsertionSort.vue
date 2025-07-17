@@ -140,7 +140,7 @@ function insertionSort() {
       },
     });
 
-    explanations(tl, i !== 1 ? 'next' : 'start', j);
+    explanations(tl, i !== 1 ? 'next' : 'start', j, i);
     while (j >= 0) {
       if (array.value.elements.arr[j].value > key) {
         // animation for comparing and swapping element's that are unsorted, and swapping the values in elements[]
@@ -158,7 +158,16 @@ function insertionSort() {
     }
     // pointers to next element, adding timeline to global timeline with label
     array.value.setPointerPosition(tl, 'all', i);
+
+    // getting duration before adding tl to timeline.tl
+    const currDuration = timeline.tl.duration();
+
     timeline.tl.add(tl);
+
+    // setting labels for each explanation step
+    Object.keys(tl.labels).forEach((key) => {
+      timeline.tl.addLabel(key, currDuration + tl.labels[`${key}`] + transitionSpeed.int * 1.4);
+    });
   }
 }
 
@@ -171,7 +180,7 @@ function compareElements(tl, i, j, elements) {
 
   if (elements) {
     // arr[j] > key
-    explanations(tl, 'invalid', j);
+    explanations(tl, 'invalid', j, i);
 
     // compareIcon appearing, compareIcon and pointer color to red
     array.value.toggleBorderSvg(tl, j, '>', 'opacity', 1);
@@ -210,44 +219,59 @@ function compareElements(tl, i, j, elements) {
 function explanations(tl, explanation, j, i) {
   switch (explanation) {
     case 'start':
-      visualizer.value.changeExplanation(tl, [
-        {
-          string: 'Starting at the beginning of the array',
-          underlined: [{ text: 'beginning of the array', i: 0 }],
-        },
-        {
-          string: `, compare element ${j} and element ${j + 1}`,
-          underlined: [
-            { text: `element ${j}`, i: 1 },
-            { text: `element ${j + 1}`, i: 2 },
-          ],
-        },
-      ]);
+      visualizer.value.changeExplanation(
+        tl,
+        [
+          {
+            string: 'Starting at the beginning of the array',
+            underlined: [{ text: 'beginning of the array', i: 0 }],
+          },
+          {
+            string: `, compare element ${j} and element ${j + 1}`,
+            underlined: [
+              { text: `element ${j}`, i: 1 },
+              { text: `element ${j + 1}`, i: 2 },
+            ],
+          },
+        ],
+        i,
+        false,
+      );
       break;
     case 'next':
-      visualizer.value.changeExplanation(tl, [
-        { string: 'Next', underlined: [] },
-        {
-          string: ` compare element ${j} and element ${j + 1}`,
-          underlined: [
-            { text: `element ${j}`, i: 0 },
-            { text: `element ${j + 1}`, i: 1 },
-          ],
-        },
-      ]);
+      visualizer.value.changeExplanation(
+        tl,
+        [
+          { string: 'Next', underlined: [] },
+          {
+            string: ` compare element ${j} and element ${j + 1}`,
+            underlined: [
+              { text: `element ${j}`, i: 0 },
+              { text: `element ${j + 1}`, i: 1 },
+            ],
+          },
+        ],
+        i,
+        false,
+      );
       break;
     case 'invalid':
-      visualizer.value.changeExplanation(tl, [
-        {
-          string: `Since element ${j} is greater than element ${j + 1}`,
-          underlined: [
-            { text: `element ${j}`, i: 0 },
-            { text: 'greater', i: 1 },
-            { text: `element ${j + 1}`, i: 2 },
-          ],
-        },
-        { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
-      ]);
+      visualizer.value.changeExplanation(
+        tl,
+        [
+          {
+            string: `Since element ${j} is greater than element ${j + 1}`,
+            underlined: [
+              { text: `element ${j}`, i: 0 },
+              { text: 'greater', i: 1 },
+              { text: `element ${j + 1}`, i: 2 },
+            ],
+          },
+          { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
+        ],
+        i,
+        false,
+      );
       break;
     case 'swapped':
       visualizer.value.changeExplanation(
@@ -266,8 +290,8 @@ function explanations(tl, explanation, j, i) {
             underlined: [{ text: 'correct position', i: 3 }],
           },
         ],
-        // adding i parameter since it's a possible last explanation of a step.
         i,
+        true,
       );
       break;
     case 'valid':
@@ -287,8 +311,8 @@ function explanations(tl, explanation, j, i) {
             underlined: [{ text: 'correct position', i: 3 }],
           },
         ],
-        // adding i parameter since it's a possible last explanation of a step.
         i,
+        true,
       );
       break;
     default:

@@ -102,7 +102,7 @@
             </slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
-            <slot name="explanation">explanation</slot>
+            <VisualizerExplanation :explanations="explanationList" />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.description }">
             <slot name="description">description</slot>
@@ -155,6 +155,7 @@ const explanationOnSeek = reactive({
   textLength: null,
   textAnimsAdded: null,
 });
+const explanationList = reactive({});
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
@@ -233,7 +234,7 @@ function seek(value) {
       explanationOnSeek.textAnimsAdded === explanationOnSeek.textLength &&
       explanationOnSeek.tweensToKill.length !== 0
     ) {
-      /* 
+      /*
         If the explanation hasn't been ran through completely allowing the last onComplete to run,
         and all of the text animations have been added,
         and some of the underlining animations have been added.
@@ -251,10 +252,10 @@ function seek(value) {
       explanationOnSeek.textAnimsAdded !== explanationOnSeek.textLength &&
       explanationOnSeek.tweensToKill.length !== 0
     ) {
-      /* 
+      /*
         If the explanation hasn't been ran through completely allowing the last onComplete to run,
         and not all of the text animations have been added,
-        and some of the underlining animations have been added. 
+        and some of the underlining animations have been added.
       */
 
       // Killing all the animations except the first text animation. Allowing the timeline to be recalculated when needed again.
@@ -266,7 +267,14 @@ function seek(value) {
   timeline.seek(value);
 }
 
-function changeExplanation(tl, text, i) {
+function changeExplanation(tl, text, i, addStepLabel) {
+  // Building the explanationList object
+  if (typeof explanationList[`${i}`] === 'undefined') {
+    explanationList[`${i}`] = [];
+  }
+  const combinedText = text[0].string + text[1].string;
+  explanationList[`${i}`].push(combinedText);
+
   // Making the origninal explanation slide to the left and fade away
   tl.to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
 
@@ -274,7 +282,7 @@ function changeExplanation(tl, text, i) {
     For ending explanations, adding a label. Also making sure it's added after the explanation has gone off to the side
     for the previous steps last explanation.
   */
-  if (typeof i === 'number') {
+  if (addStepLabel) {
     timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 0.4 + 1}`);
   }
 
@@ -291,6 +299,9 @@ function changeExplanation(tl, text, i) {
   const tl2 = gsap.timeline();
   onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
   tl.add(tl2);
+
+  // Adding labels for each explanation step to use for labels on the main timeline.tl
+  tl.addLabel(`${i}.${explanationList[`${i}`].length}`);
   explanationCount.value += 1;
 }
 
