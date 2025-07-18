@@ -10,7 +10,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useThemeStore } from './stores/theme.js';
+
+const themeStore = useThemeStore();
+
+onMounted(() => {
+  themeStore.toggleTheme();
+});
 
 const sidebar = ref();
 const sidebarOpen = ref(false);

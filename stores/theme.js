@@ -7,11 +7,7 @@ export const useThemeStore = defineStore(
     const theme = ref('light');
 
     const toggleTheme = () => {
-      if (theme.value === 'system') {
-        theme.value = isDarkMode.value ? 'light' : 'dark';
-      } else {
-        theme.value = theme.value === 'light' ? 'dark' : 'light';
-      }
+      theme.value = theme.value === 'light' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', theme.value);
     };
 
