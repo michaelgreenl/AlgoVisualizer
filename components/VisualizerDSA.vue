@@ -213,7 +213,7 @@ function restart() {
 
     timeline.restarting = false;
   } else {
-    seek('1');
+    timeline.goto('1.1');
   }
 }
 
@@ -298,7 +298,8 @@ function changeExplanation(tl, text, i, addStepLabel) {
 
   // Adding a different timeline so the explanation animation can play along with other animations on the global timeline
   const tl2 = gsap.timeline();
-  onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
+  onCompleteExplanation(tl2, text, explanationCount.value, util, 0, `${i}.${explanationList[`${i}`].length}`);
+  // onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
   tl.add(tl2);
 
   // Adding labels for each explanation step to use for labels on the main timeline.tl
@@ -308,7 +309,8 @@ function changeExplanation(tl, text, i, addStepLabel) {
   explanationCount.value += 1;
 }
 
-function onCompleteExplanation(tl, text, explanationCount, util, i) {
+function onCompleteExplanation(tl, text, explanationCount, util, i, explanationLabel) {
+  // function onCompleteExplanation(tl, text, explanationCount, util, i) {
   const prevInnerHTML = explanation.value.innerHTML;
 
   // Only adding another text animation if the animation hasn't gone through yet
@@ -323,6 +325,11 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
         type: 'diff',
       },
       ease: 'power1',
+      onStart: () => {
+        if (explanationLabel) {
+          timeline.currExplanation = explanationLabel;
+        }
+      },
       onComplete: () => {
         explanationOnSeek.tl = tl;
         explanationOnSeek.explanationCount = explanationCount;

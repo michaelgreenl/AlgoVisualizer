@@ -103,6 +103,7 @@ onBeforeMount(() => {
 function start() {
   array.value.setElementsAnim();
   timeline.currStep += 1;
+  timeline.currExplanation = '1.1';
   insertionSort();
 }
 
@@ -121,6 +122,7 @@ async function restart() {
     // Start the animation with new settings
     array.value.setElementsAnim().then(() => {
       timeline.currStep += 1;
+      timeline.currExplanation = '1.1';
       insertionSort();
     });
   });
