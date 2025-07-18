@@ -6,18 +6,16 @@ export const timelineStore = defineStore('timeline', () => {
   const tl = markRaw(gsap.timeline());
   const currStep = ref(0);
   const restarting = ref(false);
+  const numSteps = ref(0);
 
   function seek(value) {
-    if (typeof value === 'number') {
-      currStep.value += value;
-    } else if (typeof value === 'string') {
-      currStep.value = parseInt(value, 10);
-    }
+    const intValue = typeof value === 'string' ? parseInt(value, 10) : value;
+    currStep.value += intValue;
     tl.seek(`${this.currStep}`);
   }
 
   function goto(value) {
-    currStep.value = parseInt(value.substring(0, 1), 10);
+    currStep.value = Math.floor(parseFloat(value));
     tl.seek(`${value}`);
   }
 
@@ -26,5 +24,5 @@ export const timelineStore = defineStore('timeline', () => {
     currStep.value = 0;
   }
 
-  return { tl, currStep, restarting, seek, restart, goto };
+  return { tl, currStep, numSteps, restarting, seek, restart, goto };
 });

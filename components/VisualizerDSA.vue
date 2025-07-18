@@ -82,8 +82,9 @@
           <button
             class="control-button"
             :disabled="
-              timeline.currStep > 0 &&
-              timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length
+              (timeline.currStep > 0 &&
+                timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length) ||
+              timeline.currStep === timeline.numSteps
             "
             @click="timeline.currStep > 0 ? seek(1) : null"
           >
@@ -302,6 +303,8 @@ function changeExplanation(tl, text, i, addStepLabel) {
 
   // Adding labels for each explanation step to use for labels on the main timeline.tl
   tl.addLabel(`${i}.${explanationList[`${i}`].length}`);
+
+  timeline.numSteps = i;
   explanationCount.value += 1;
 }
 
