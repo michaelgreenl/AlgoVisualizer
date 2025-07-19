@@ -234,22 +234,9 @@ function stepNumber(key, direction) {
 }
 
 function onKeyup(inputRef, setting, inputParams) {
-  // dont need the old value cuz if the value is invalid and there needs to be a reset (on the invalid input field) the reset
-  // function can just be called with a parameter(?) changing only that input back to it's local/current state.
-  // since the actual state never changed and the old value can be gotten through there
-  console.log(setting);
   if (setting.validateInput(parseInt(inputRef.value, 10))) {
-    console.log('here');
     visualizerSettings.onInput(...inputParams);
     keydown.value = false;
-  } else {
-    console.log('here1');
-    // enable invalid style
-    // add reset button to input div
-    // make sure reset/restart buttons acknoledge for this (state variable saying there is an current invalid input field?)
-    // show error messege
-
-    // TODO: subtle style if the input is still in focus (user is still typing), error message if input blurred
   }
 }
 </script>
