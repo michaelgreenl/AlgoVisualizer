@@ -19,7 +19,7 @@
           <button
             class="result"
             :disabled="route.params.visualizer === content.replaceAll(/[\s\-*\']/g, '')"
-            @click="router.push(`visualizer/${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
+            @click="router.push(`${title}-${content.replaceAll(/[\s\-*\']/g, '')}`)"
           >
             <div class="item">
               <span
