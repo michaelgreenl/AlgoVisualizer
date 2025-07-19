@@ -106,18 +106,16 @@
           }"
         >
           <div class="tab" :class="{ open: sidebarTabs.code }">
-            <slot name="code">code</slot>
+            <VisualizerCode />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
             <VisualizerExplanation :explanations="explanationList" />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.description }">
-            <slot name="description">description</slot>
+            <VisualizerDescription />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.settings }">
-            <slot name="settings">
-              <VisualizerSettings ref="settings" @restart="restart" />
-            </slot>
+            <VisualizerSettings ref="settings" @restart="restart" />
           </div>
         </div>
       </div>

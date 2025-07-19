@@ -16,8 +16,6 @@
           </template>
         </Array>
       </template>
-      <template #explanation></template>
-      <template #description></template>
     </VisualizerDSA>
   </div>
 </template>
