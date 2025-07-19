@@ -39,6 +39,8 @@ const timeline = timelineStore();
 <style lang="scss" scoped>
 .explanation-container {
   font-family: $secondary-font-stack;
+  max-height: 85vh;
+  overflow-y: scroll;
 }
 
 .no-explanations-msg {
@@ -51,13 +53,11 @@ const timeline = timelineStore();
 .explanation-list {
   display: flex;
   flex-direction: column;
-  // gap: 0.5em;
+  gap: 0.5em;
   padding: 0;
   margin: 0;
   text-decoration: none;
   list-style: none;
-  max-height: 60vh;
-  overflow-y: auto;
 
   &.active {
     background: $primary-grey;
@@ -69,40 +69,4 @@ const timeline = timelineStore();
     background: red;
   }
 }
-
-// .explanation-step-group {
-//   margin-bottom: 0.5em;
-// }
-//
-// .step-label {
-//   font-weight: 600;
-//   cursor: pointer;
-//   padding: 0.5em 1em;
-//   border-radius: 6px;
-//   background: #f7f6ed;
-//   margin-bottom: 0.25em;
-//   transition: background 0.15s;
-//
-//   &:hover,
-//   &:focus {
-//     background: #f5f5e6;
-//   }
-// }
-//
-// .active-step > .step-label {
-//   background: #e6e2c7;
-//   color: #2d2d2d;
-// }
-//
-// .step-explanations {
-//   list-style: none;
-//   padding-left: 1.5em;
-//   margin: 0;
-// }
-//
-// .explanation-item {
-//   padding: 0.5em 1em;
-//   border-radius: 6px;
-//   margin-bottom: 0.25em;
-// }
 </style>
