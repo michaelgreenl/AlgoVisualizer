@@ -30,8 +30,8 @@
           </button>
         </transition>
         <div class="tab-buttons">
-          <button class="tab-button" :class="{ selected: sidebarTabs.settings }" @click="tabButtonClick('settings')">
-            <span class="tab-button-text">Settings</span>
+          <button class="tab-button" :class="{ selected: sidebarTabs.code }" @click="tabButtonClick('code')">
+            <span class="tab-button-text">Code</span>
           </button>
           <button
             class="tab-button"
@@ -46,6 +46,9 @@
             @click="tabButtonClick('description')"
           >
             <span class="tab-button-text">Description</span>
+          </button>
+          <button class="tab-button" :class="{ selected: sidebarTabs.settings }" @click="tabButtonClick('settings')">
+            <span class="tab-button-text">Settings</span>
           </button>
         </div>
       </nav>
@@ -95,18 +98,26 @@
       <div class="sidebar" :class="{ open: sidebarOpen }">
         <div
           class="tabs"
-          :class="{ one: sidebarTabs.settings, two: sidebarTabs.explanation, three: sidebarTabs.description }"
+          :class="{
+            one: sidebarTabs.code,
+            two: sidebarTabs.explanation,
+            three: sidebarTabs.description,
+            four: sidebarTabs.settings,
+          }"
         >
-          <div class="tab" :class="{ open: sidebarTabs.settings }">
-            <slot name="settings">
-              <VisualizerSettings ref="settings" @restart="restart" />
-            </slot>
+          <div class="tab" :class="{ open: sidebarTabs.code }">
+            <slot name="code">code</slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
             <VisualizerExplanation :explanations="explanationList" />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.description }">
             <slot name="description">description</slot>
+          </div>
+          <div class="tab" :class="{ open: sidebarTabs.settings }">
+            <slot name="settings">
+              <VisualizerSettings ref="settings" @restart="restart" />
+            </slot>
           </div>
         </div>
       </div>
@@ -160,9 +171,10 @@ const explanationList = reactive({});
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
-  settings: true,
+  code: true,
   explanation: false,
   description: false,
+  settings: false,
 });
 
 function playClick() {
@@ -687,7 +699,7 @@ $sidebar-width: 43.2em;
 
       .tabs {
         display: flex;
-        width: calc($sidebar-width * 3);
+        width: calc($sidebar-width * 4);
         transition: transform 200ms ease-out;
 
         &.one {
@@ -701,6 +713,10 @@ $sidebar-width: 43.2em;
 
         &.three {
           transform: translateX(calc($sidebar-width * -2));
+        }
+
+        &.four {
+          transform: translateX(calc($sidebar-width * -3));
         }
 
         .tab {
