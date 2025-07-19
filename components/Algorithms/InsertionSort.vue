@@ -139,6 +139,7 @@ function insertionSort() {
       delay: 1,
       onComplete: () => {
         timeline.currStep += 1;
+        timeline.currExplanation = `${timeline.currStep}.1`;
       },
     });
 
