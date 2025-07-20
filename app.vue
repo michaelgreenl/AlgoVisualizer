@@ -14,14 +14,21 @@ import { ref, onMounted } from 'vue';
 import { useThemeStore } from './stores/theme.js';
 
 const themeStore = useThemeStore();
-
-onMounted(() => {
-  themeStore.toggleTheme();
-});
+const router = useRouter();
 
 const sidebar = ref();
 const sidebarOpen = ref(false);
 const openedSidebar = ref();
+
+onMounted(() => {
+  themeStore.toggleTheme();
+
+  router.afterEach(() => {
+    nextTick(() => {
+      sidebar.value.toggleSidebar(openedSidebar.value);
+    });
+  });
+});
 
 // Closing Sidebar if click event was fired on the index element.
 function closeSidebar($event, forceClose) {
