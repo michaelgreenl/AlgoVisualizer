@@ -69,6 +69,7 @@ function toggleStep(i) {
   } else {
     openSteps.value.add(i);
   }
+
   // Force reactivity
   openSteps.value = new Set(openSteps.value);
 }
@@ -90,25 +91,30 @@ function beforeEnter(el) {
   el.style.height = '0';
   el.style.opacity = '0';
 }
+
 function enter(el) {
   el.style.transition = 'height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s';
   el.style.height = el.scrollHeight + 'px';
   el.style.opacity = '1';
 }
+
 function afterEnter(el) {
   el.style.height = 'auto';
   el.style.transition = '';
 }
+
 function beforeLeave(el) {
   el.style.height = el.scrollHeight + 'px';
   el.style.opacity = '1';
 }
+
 function leave(el) {
   void el.offsetHeight; // force reflow
   el.style.transition = 'height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s';
   el.style.height = '0';
   el.style.opacity = '0';
 }
+
 function afterLeave(el) {
   el.style.transition = '';
 }
