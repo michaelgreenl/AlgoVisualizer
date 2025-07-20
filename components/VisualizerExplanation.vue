@@ -10,7 +10,7 @@
       class="explanation-list"
       :class="{ active: timeline.currStep === parseInt(i, 10) }"
     >
-      <p class="list-header">Step: {{ i }}</p>
+      <button @click="timeline.goto(`${i}.1`)" class="list-header">Step {{ i }}</button>
       <li
         v-for="(text, j) in step"
         :key="j"
@@ -78,13 +78,20 @@ const timeline = timelineStore();
   }
 
   .list-header {
+    font-family: $secondary-font-stack;
+    font-weight: 600;
+    width: 100%;
     margin: 0 0 0.5em 0;
-    font-size: 1.05em;
+    padding: 0;
+    font-size: 1.15em;
     font-weight: 500;
     color: var(--text-primary);
     letter-spacing: 0.01em;
-    border-left: 3px solid $primary-dark;
     padding-left: 0.5em;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    border-left: 3px solid $primary-dark;
   }
 }
 
