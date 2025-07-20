@@ -16,6 +16,132 @@
           </template>
         </Array>
       </template>
+      <template #description>
+        <div class="description">
+          <div class="description-section">
+            <h3 class="description-header">High-Level Explanation</h3>
+            <ol class="description-list">
+              <li>
+                <span class="item-text">Start with the second element</span>
+              </li>
+              <li>
+                <span class="item-text">Compare with elements to the left</span>
+              </li>
+              <li>
+                <span class="item-text">Shift larger elements one position right</span>
+              </li>
+              <li>
+                <span class="item-text">Insert current element in correct position</span>
+              </li>
+              <li>
+                <span class="item-text">Repeat for all elements</span>
+              </li>
+            </ol>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">Algorithm Properties</h3>
+            <ul class="description-list">
+              <li>
+                <span class="item-label">In-place - </span>
+                <span class="item-text">Yes (requires only O(1) extra memory)</span>
+              </li>
+              <li>
+                <span class="item-label">Stable - </span>
+                <span class="item-text">Yes (equal elements maintain their relative order)</span>
+              </li>
+              <li>
+                <span class="item-label">Online - </span>
+                <span class="item-text">Yes (can sort elements as they arrive)</span>
+              </li>
+              <li>
+                <span class="item-label">Adaptive - </span>
+                <span class="item-text">Yes (performs better on partially sorted data)</span>
+              </li>
+              <li>
+                <span class="item-label">Comparison-based - </span>
+                <span class="item-text">Yes</span>
+              </li>
+            </ul>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">Complexity Analysis</h3>
+            <ul class="description-list">
+              <li>
+                <span class="item-label">Best Case - </span>
+                <span class="item-text">O(n) when array is already sorted</span>
+              </li>
+              <li>
+                <span class="item-label">Average Case - </span>
+                <span class="item-text">O(n²)</span>
+              </li>
+              <li>
+                <span class="item-label">Adaptive - </span>
+                <span class="item-text">O(n²) when array is sorted in reverse</span>
+              </li>
+              <li>
+                <span class="item-label">Space Complexity - </span>
+                <span class="item-text">O(1) auxiliary space</span>
+              </li>
+            </ul>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">When to Use</h3>
+            <ul class="description-list">
+              <li>
+                <span class="item-text">Small datasets</span>
+              </li>
+              <li>
+                <span class="item-text">Nearly sorted data</span>
+              </li>
+              <li>
+                <span class="item-text">As a subroutine in hybrid algorithms (like Timsort)</span>
+              </li>
+              <li>
+                <span class="item-text">When simplicity is preferred over efficiency</span>
+              </li>
+              <li>
+                <span class="item-text">Online scenarios where data arrives incrementally</span>
+              </li>
+            </ul>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">Advantages/Disadvantages</h3>
+            <h4 class="sublist-header">Advantages -</h4>
+            <ul class="description-list sublist">
+              <li>
+                <span class="item-text">Simple implementation</span>
+              </li>
+              <li>
+                <span class="item-text">Efficiant for small datasets</span>
+              </li>
+              <li>
+                <span class="item-text">Adaptive (faster on nearly sorted data)</span>
+              </li>
+              <li>
+                <span class="item-text">Stable sorting</span>
+              </li>
+              <li>
+                <span class="item-text">In-place sorting</span>
+              </li>
+              <li>
+                <span class="item-text">Online algorithm</span>
+              </li>
+            </ul>
+            <h4 class="sublist-header">Disadvantages -</h4>
+            <ul class="description-list sublist">
+              <li>
+                <span class="item-text">Inefficient for large datasets</span>
+              </li>
+              <li>
+                <span class="item-text">More writes compared to selection sort</span>
+              </li>
+              <li>
+                <span class="item-text">O(n²) time complexity in average/worst case</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </template>
     </VisualizerDSA>
   </div>
 </template>
@@ -340,6 +466,47 @@ function explanations(tl, explanation, j, i) {
 
       // fill slightly darker than $primary-bright since icon is thin and to make it more visible
       fill: #bfb47c;
+    }
+  }
+
+  .description {
+    font-family: $secondary-font-stack;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 85vh;
+
+    .description-header {
+      font-family: $primary-font-stack;
+      font-size: 1.5em;
+      margin: 0;
+      color: var(--primary-dark);
+      font-weight: 700;
+      border-bottom: solid 1px var(--primary-light-grey);
+      padding: 3px;
+    }
+
+    .description-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25em;
+      font-size: 1.2em;
+      margin-top: 0.75em;
+      padding: 0 0 0 2em;
+
+      .item-label {
+        font-weight: 600;
+      }
+    }
+
+    .sublist-header {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin: 0.8em 0 0.2em 0.4em;
+    }
+
+    .sublist {
+      margin-top: 0;
     }
   }
 }

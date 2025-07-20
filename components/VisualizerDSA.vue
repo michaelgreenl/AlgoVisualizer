@@ -112,7 +112,7 @@
             <VisualizerExplanation :explanations="explanationList" />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.description }">
-            <VisualizerDescription />
+            <slot name="description"></slot>
           </div>
           <div class="tab" :class="{ open: sidebarTabs.settings }">
             <VisualizerSettings ref="settings" @restart="restart" />
