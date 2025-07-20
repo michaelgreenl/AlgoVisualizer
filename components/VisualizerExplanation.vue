@@ -4,27 +4,46 @@
       <p>Explanations will appear here once you click play.</p>
     </div>
     <ul
-      v-else
       v-for="(step, i) in explanations"
+      v-else
       :key="i"
       class="explanation-list"
       :class="{ active: timeline.currStep === parseInt(i, 10) }"
+      @mouseenter="hoveredStep = i"
+      @mouseleave="hoveredStep = null"
     >
-      <button @click="timeline.goto(`${i}.1`)" class="list-header">Step {{ i }}</button>
-      <li
-        v-for="(text, j) in step"
-        :key="j"
-        class="explanation-item"
-        :class="{ active: timeline.currExplanation === `${i}.${j + 1}` }"
+      <button class="list-header" @click="toggleStep(i)">
+        Step {{ i }}
+        <ArrowDownIcon v-if="hoveredStep === i || isOpen(i)" class="arrow-icon" :class="{ open: isOpen(i) }" />
+      </button>
+      <Transition
+        name="dropdown"
+        @before-enter="beforeEnter"
+        @enter="enter"
+        @after-enter="afterEnter"
+        @before-leave="beforeLeave"
+        @leave="leave"
+        @after-leave="afterLeave"
       >
-        <button @click="timeline.goto(`${i}.${j + 1}`)">{{ text }}</button>
-      </li>
+        <ul v-if="isOpen(i)" class="dropdown">
+          <li
+            v-for="(text, j) in step"
+            :key="j"
+            class="explanation-item"
+            :class="{ active: timeline.currExplanation === `${i}.${j + 1}` }"
+          >
+            <button @click="timeline.goto(`${i}.${j + 1}`)">{{ text }}</button>
+          </li>
+        </ul>
+      </Transition>
     </ul>
   </div>
 </template>
 
 <script setup>
+import { ref, watch } from 'vue';
 import { timelineStore } from '../stores/timeline.js';
+import ArrowDownIcon from '../assets/svgs/arrowDown.svg';
 
 const props = defineProps({
   explanations: {
@@ -34,6 +53,65 @@ const props = defineProps({
 });
 
 const timeline = timelineStore();
+
+// Track open steps by index (as string, since keys are string)
+const openSteps = ref(new Set());
+const hoveredStep = ref(null);
+
+function isOpen(i) {
+  // Open if in openSteps or if active step
+  return openSteps.value.has(i) || timeline.currStep === parseInt(i, 10);
+}
+
+function toggleStep(i) {
+  if (openSteps.value.has(i)) {
+    openSteps.value.delete(i);
+  } else {
+    openSteps.value.add(i);
+  }
+  // Force reactivity
+  openSteps.value = new Set(openSteps.value);
+}
+
+// Watch for currStep changes and open the corresponding step
+watch(
+  () => timeline.currStep,
+  (newStep) => {
+    const stepKey = String(newStep);
+    if (!openSteps.value.has(stepKey)) {
+      openSteps.value.add(stepKey);
+      openSteps.value = new Set(openSteps.value);
+    }
+  },
+);
+
+// Dropdown transition hooks for variable height
+function beforeEnter(el) {
+  el.style.height = '0';
+  el.style.opacity = '0';
+}
+function enter(el) {
+  el.style.transition = 'height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s';
+  el.style.height = el.scrollHeight + 'px';
+  el.style.opacity = '1';
+}
+function afterEnter(el) {
+  el.style.height = 'auto';
+  el.style.transition = '';
+}
+function beforeLeave(el) {
+  el.style.height = el.scrollHeight + 'px';
+  el.style.opacity = '1';
+}
+function leave(el) {
+  void el.offsetHeight; // force reflow
+  el.style.transition = 'height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s';
+  el.style.height = '0';
+  el.style.opacity = '0';
+}
+function afterLeave(el) {
+  el.style.transition = '';
+}
 </script>
 
 <style lang="scss" scoped>
@@ -77,11 +155,15 @@ const timeline = timelineStore();
     box-shadow: 0 1px 4px var(--shadow-color);
   }
 
+  &:hover {
+    background: var(--primary-light-grey);
+  }
+
   .list-header {
     font-family: $secondary-font-stack;
     font-weight: 600;
     width: 100%;
-    margin: 0 0 0.5em 0;
+    margin: 0;
     padding: 0;
     font-size: 1.15em;
     font-weight: 500;
@@ -92,13 +174,42 @@ const timeline = timelineStore();
     border: 0;
     text-align: left;
     border-left: 3px solid $primary-dark;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+
+    .arrow-icon {
+      fill: var(--primary-dark);
+      width: 1em;
+      height: 1em;
+      margin-left: 0.5em;
+      transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      transform: rotate(90deg);
+    }
+
+    .arrow-icon.open {
+      transform: rotate(0deg);
+    }
   }
+}
+
+.dropdown {
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  transition: none;
 }
 
 .explanation-item {
   margin-bottom: 0.15em;
   border-radius: 6px;
   transition: background 0.12s, color 0.12s;
+
+  &:first-child {
+    margin-top: 0.5em;
+  }
 
   &.active {
     background: $primary-dark;
