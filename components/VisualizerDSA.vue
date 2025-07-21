@@ -30,9 +30,6 @@
           </button>
         </transition>
         <div class="tab-buttons">
-          <button class="tab-button" :class="{ selected: sidebarTabs.settings }" @click="tabButtonClick('settings')">
-            <span class="tab-button-text">Settings</span>
-          </button>
           <button
             class="tab-button"
             :class="{ selected: sidebarTabs.explanation }"
@@ -46,6 +43,9 @@
             @click="tabButtonClick('description')"
           >
             <span class="tab-button-text">Description</span>
+          </button>
+          <button class="tab-button" :class="{ selected: sidebarTabs.settings }" @click="tabButtonClick('settings')">
+            <span class="tab-button-text">Settings</span>
           </button>
         </div>
       </nav>
@@ -82,8 +82,9 @@
           <button
             class="control-button"
             :disabled="
-              timeline.currStep > 0 &&
-              timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length
+              (timeline.currStep > 0 &&
+                timeline.currStep === Object.keys(timeline.tl.labels).filter((key) => !isNaN(key)).length) ||
+              timeline.currStep === timeline.numSteps
             "
             @click="timeline.currStep > 0 ? seek(1) : null"
           >
@@ -92,21 +93,22 @@
         </div>
       </div>
       <div class="sidebar" :class="{ open: sidebarOpen }">
-        <!-- TODO: add vue-agile  -->
         <div
           class="tabs"
-          :class="{ one: sidebarTabs.settings, two: sidebarTabs.explanation, three: sidebarTabs.description }"
+          :class="{
+            one: sidebarTabs.explanation,
+            two: sidebarTabs.description,
+            three: sidebarTabs.settings,
+          }"
         >
-          <div class="tab" :class="{ open: sidebarTabs.settings }">
-            <slot name="settings">
-              <VisualizerSettings ref="settings" @restart="restart" />
-            </slot>
-          </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
-            <slot name="explanation">explanation</slot>
+            <VisualizerExplanation :explanations="explanationList" />
           </div>
           <div class="tab" :class="{ open: sidebarTabs.description }">
-            <slot name="description">description</slot>
+            <slot name="description"></slot>
+          </div>
+          <div class="tab" :class="{ open: sidebarTabs.settings }">
+            <VisualizerSettings ref="settings" @restart="restart" />
           </div>
         </div>
       </div>
@@ -156,17 +158,19 @@ const explanationOnSeek = reactive({
   textLength: null,
   textAnimsAdded: null,
 });
+const explanationList = reactive({});
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
-  settings: true,
-  explanation: false,
+  explanation: true,
   description: false,
+  settings: false,
 });
 
 function playClick() {
   visualPlaying.value = !visualPlaying.value;
   if (timeline.currStep === 0) {
+    // Always update selected when starting the animation
     visualizerSettings.selected = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
     emit('start');
   } else if (visualPlaying.value) {
@@ -179,26 +183,39 @@ function playClick() {
 function restart() {
   if (!isEqual(visualizerSettings.localState, visualizerSettings.selected)) {
     timeline.restarting = true;
-    timeline.tl.clear();
+
+    // Stop any current animations
+    timeline.tl.kill();
+
+    // Reset timeline state
+    timeline.tl.clear(true);
     timeline.currStep = 0;
+
+    // Reset visual state - set to playing since restart will start the animation
+    visualPlaying.value = true;
+
+    // Reset explanation state
+    explanationCount.value = 0;
+    explanationTrack.length = 0;
+    explanationOnSeek.tl = null;
+    explanationOnSeek.explanationCount = null;
+    explanationOnSeek.tweensToKill = null;
+    explanationOnSeek.textLength = null;
+    explanationOnSeek.textAnimsAdded = null;
+
+    // Apply the new settings
     visualizerSettings.restart();
-    timeline.tl
-      .to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' })
-      .to(
-        '.explanation',
-        {
-          duration: 0,
-          xPercent: 0,
-          text: '',
-          opacity: 1,
-          onComplete: () => {
-            emit('restart');
-          },
-        },
-        '>',
-      );
+
+    // Clear explanation text
+    if (explanation.value) {
+      explanation.value.innerHTML = '';
+    }
+
+    emit('restart');
+
+    timeline.restarting = false;
   } else {
-    seek('1');
+    timeline.goto('1.1');
   }
 }
 
@@ -220,7 +237,7 @@ function seek(value) {
       explanationOnSeek.textAnimsAdded === explanationOnSeek.textLength &&
       explanationOnSeek.tweensToKill.length !== 0
     ) {
-      /* 
+      /*
         If the explanation hasn't been ran through completely allowing the last onComplete to run,
         and all of the text animations have been added,
         and some of the underlining animations have been added.
@@ -238,10 +255,10 @@ function seek(value) {
       explanationOnSeek.textAnimsAdded !== explanationOnSeek.textLength &&
       explanationOnSeek.tweensToKill.length !== 0
     ) {
-      /* 
+      /*
         If the explanation hasn't been ran through completely allowing the last onComplete to run,
         and not all of the text animations have been added,
-        and some of the underlining animations have been added. 
+        and some of the underlining animations have been added.
       */
 
       // Killing all the animations except the first text animation. Allowing the timeline to be recalculated when needed again.
@@ -253,7 +270,14 @@ function seek(value) {
   timeline.seek(value);
 }
 
-function changeExplanation(tl, text, i) {
+function changeExplanation(tl, text, i, addStepLabel) {
+  // Building the explanationList object
+  if (typeof explanationList[`${i}`] === 'undefined') {
+    explanationList[`${i}`] = [];
+  }
+  const combinedText = text[0].string + text[1].string;
+  explanationList[`${i}`].push(combinedText);
+
   // Making the origninal explanation slide to the left and fade away
   tl.to('.explanation', { duration: props.transitionSpeed.int * 0.4, xPercent: 20, opacity: 0, ease: 'power2' }, '>');
 
@@ -261,7 +285,7 @@ function changeExplanation(tl, text, i) {
     For ending explanations, adding a label. Also making sure it's added after the explanation has gone off to the side
     for the previous steps last explanation.
   */
-  if (typeof i === 'number') {
+  if (addStepLabel) {
     timeline.tl.addLabel(`${i}`, `+=${props.transitionSpeed.int * 0.4 + 1}`);
   }
 
@@ -276,14 +300,19 @@ function changeExplanation(tl, text, i) {
 
   // Adding a different timeline so the explanation animation can play along with other animations on the global timeline
   const tl2 = gsap.timeline();
-  onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
+  onCompleteExplanation(tl2, text, explanationCount.value, util, 0, `${i}.${explanationList[`${i}`].length}`);
+  // onCompleteExplanation(tl2, text, explanationCount.value, util, 0);
   tl.add(tl2);
+
+  // Adding labels for each explanation step to use for labels on the main timeline.tl
+  tl.addLabel(`${i}.${explanationList[`${i}`].length}`);
+
+  timeline.numSteps = i;
   explanationCount.value += 1;
 }
 
-function onCompleteExplanation(tl, text, explanationCount, util, i) {
-  // TODO: Add comments to this function
-  // Getting the current innerHTML from the explanation div
+function onCompleteExplanation(tl, text, explanationCount, util, i, explanationLabel) {
+  // function onCompleteExplanation(tl, text, explanationCount, util, i) {
   const prevInnerHTML = explanation.value.innerHTML;
 
   // Only adding another text animation if the animation hasn't gone through yet
@@ -298,6 +327,11 @@ function onCompleteExplanation(tl, text, explanationCount, util, i) {
         type: 'diff',
       },
       ease: 'power1',
+      onStart: () => {
+        if (explanationLabel) {
+          timeline.currExplanation = explanationLabel;
+        }
+      },
       onComplete: () => {
         explanationOnSeek.tl = tl;
         explanationOnSeek.explanationCount = explanationCount;
@@ -379,7 +413,7 @@ defineExpose({ visualPlaying, changeExplanation });
 }
 
 .explanation-underline {
-  text-decoration: underline #d7d0ae;
+  text-decoration: underline var(--underline-color);
 }
 </style>
 
@@ -429,7 +463,7 @@ $sidebar-width: 43.2em;
       font-weight: 400;
       color: $primary-dark;
       letter-spacing: 0.09ch;
-      border-bottom: solid 1px $primary-light;
+      border-bottom: solid 1px var(--border-primary);
     }
 
     .sidebar-nav {
@@ -463,6 +497,7 @@ $sidebar-width: 43.2em;
       }
 
       .close-button {
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -484,6 +519,7 @@ $sidebar-width: 43.2em;
         margin-left: auto;
 
         .tab-button {
+          cursor: pointer;
           padding: 3px 1em;
           font-size: inherit;
           background: transparent;
@@ -498,7 +534,7 @@ $sidebar-width: 43.2em;
           }
 
           &:hover:not(.selected) {
-            outline: #eff1f1 solid 2px;
+            outline: $primary-dark-bright solid 1px;
             outline-offset: -1px;
           }
 
@@ -538,7 +574,7 @@ $sidebar-width: 43.2em;
         max-width: 50em;
 
         .underline {
-          text-decoration: underline $primary-light;
+          text-decoration: underline var(--underline-color);
         }
 
         .explanation {
@@ -547,12 +583,12 @@ $sidebar-width: 43.2em;
           font-family: $secondary-font-stack;
           font-size: 22px;
           font-weight: 300;
-          color: $primary-dark;
+          color: var(--text-explanation);
           text-align: center;
           letter-spacing: 0.05ch;
 
           .underline {
-            text-decoration: underline $primary-light;
+            text-decoration: underline var(--underline-color);
           }
         }
       }
@@ -650,8 +686,6 @@ $sidebar-width: 43.2em;
       &.open {
         width: $sidebar-width;
       }
-
-      // TODO: add vue-agile
 
       .tabs {
         display: flex;

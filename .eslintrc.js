@@ -63,6 +63,8 @@ module.exports = {
     // 'vue/key-spacing': 'error',
     // 'vue/keyword-spacing': 'error',
     'vue/multi-word-component-names': 'off',
+    'vue/attribute-hyphenation': 'off',
+    'vue/v-on-event-hyphenation': 'off',
     // 'vue/no-empty-pattern': 'error',
     // 'vue/no-boolean-default': ['error', 'default-false'],
     // 'vue/no-irregular-whitespace': 'error',

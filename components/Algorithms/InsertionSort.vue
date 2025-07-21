@@ -8,12 +8,7 @@
       @restart="restart"
     >
       <template #visual>
-        <Array
-          v-if="visualizerSettings.settings.visual.state === 'Array'"
-          ref="array"
-          :transition-speed="transitionSpeed"
-          :num-pointers="2"
-        >
+        <Array ref="array" :transition-speed="transitionSpeed" :num-pointers="2">
           <template #borderSvg>
             <div class="icon-wrapper">
               <CompareIcon class="compare-icon" />
@@ -21,8 +16,132 @@
           </template>
         </Array>
       </template>
-      <template #explanation></template>
-      <template #description></template>
+      <template #description>
+        <div class="description">
+          <div class="description-section">
+            <h3 class="description-header">High-Level Explanation</h3>
+            <ol class="description-list">
+              <li>
+                <span class="item-text">Start with the second element</span>
+              </li>
+              <li>
+                <span class="item-text">Compare with elements to the left</span>
+              </li>
+              <li>
+                <span class="item-text">Shift larger elements one position right</span>
+              </li>
+              <li>
+                <span class="item-text">Insert current element in correct position</span>
+              </li>
+              <li>
+                <span class="item-text">Repeat for all elements</span>
+              </li>
+            </ol>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">Algorithm Properties</h3>
+            <ul class="description-list">
+              <li>
+                <span class="item-label">In-place - </span>
+                <span class="item-text">Yes (requires only O(1) extra memory)</span>
+              </li>
+              <li>
+                <span class="item-label">Stable - </span>
+                <span class="item-text">Yes (equal elements maintain their relative order)</span>
+              </li>
+              <li>
+                <span class="item-label">Online - </span>
+                <span class="item-text">Yes (can sort elements as they arrive)</span>
+              </li>
+              <li>
+                <span class="item-label">Adaptive - </span>
+                <span class="item-text">Yes (performs better on partially sorted data)</span>
+              </li>
+              <li>
+                <span class="item-label">Comparison-based - </span>
+                <span class="item-text">Yes</span>
+              </li>
+            </ul>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">Complexity Analysis</h3>
+            <ul class="description-list">
+              <li>
+                <span class="item-label">Best Case - </span>
+                <span class="item-text">O(n) when array is already sorted</span>
+              </li>
+              <li>
+                <span class="item-label">Average Case - </span>
+                <span class="item-text">O(n²)</span>
+              </li>
+              <li>
+                <span class="item-label">Adaptive - </span>
+                <span class="item-text">O(n²) when array is sorted in reverse</span>
+              </li>
+              <li>
+                <span class="item-label">Space Complexity - </span>
+                <span class="item-text">O(1) auxiliary space</span>
+              </li>
+            </ul>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">When to Use</h3>
+            <ul class="description-list">
+              <li>
+                <span class="item-text">Small datasets</span>
+              </li>
+              <li>
+                <span class="item-text">Nearly sorted data</span>
+              </li>
+              <li>
+                <span class="item-text">As a subroutine in hybrid algorithms (like Timsort)</span>
+              </li>
+              <li>
+                <span class="item-text">When simplicity is preferred over efficiency</span>
+              </li>
+              <li>
+                <span class="item-text">Online scenarios where data arrives incrementally</span>
+              </li>
+            </ul>
+          </div>
+          <div class="description-section">
+            <h3 class="description-header">Advantages/Disadvantages</h3>
+            <h4 class="sublist-header">Advantages:</h4>
+            <ul class="description-list sublist">
+              <li>
+                <span class="item-text">Simple implementation</span>
+              </li>
+              <li>
+                <span class="item-text">Efficiant for small datasets</span>
+              </li>
+              <li>
+                <span class="item-text">Adaptive (faster on nearly sorted data)</span>
+              </li>
+              <li>
+                <span class="item-text">Stable sorting</span>
+              </li>
+              <li>
+                <span class="item-text">In-place sorting</span>
+              </li>
+              <li>
+                <span class="item-text">Online algorithm</span>
+              </li>
+            </ul>
+            <h4 class="sublist-header">Disadvantages:</h4>
+            <ul class="description-list sublist">
+              <li>
+                <span class="item-text">Inefficient for large datasets</span>
+              </li>
+              <li>
+                <span class="item-text">More writes compared to selection sort</span>
+              </li>
+              <li>
+                <span class="item-text">O(n²) time complexity in average/worst case</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </template>
     </VisualizerDSA>
   </div>
 </template>
@@ -51,7 +170,8 @@ const transitionSpeed = reactive({
 const arrayHeight = computed(() => array.value.arrayHeight * 0.675 + 'px');
 
 onBeforeMount(() => {
-  visualizerSettings.initial = {
+  // Define the initial settings
+  const initialSettings = {
     explanation: {
       label: 'Explanation in Visual',
       type: 'toggle',
@@ -66,18 +186,13 @@ onBeforeMount(() => {
       min: 30,
       max: 70,
       state: 50,
-      requiresRestart: false,
+      requiresRestart: true,
     },
     arraySize: {
       label: 'Elements',
       type: 'number',
       min: 8,
-      get max() {
-        if (Object.keys(visualizerSettings.settings).length === 0) {
-          return 15;
-        }
-        return visualizerSettings.settings.visual.state === 'Array' ? 15 : 200;
-      },
+      max: 15,
       state: 8,
       requiresRestart: true,
       validateInput: (input) => {
@@ -86,13 +201,6 @@ onBeforeMount(() => {
         }
         return true;
       },
-    },
-    visual: {
-      label: 'Visual Type',
-      type: 'radio',
-      options: ['Array', 'Bar Graph'],
-      state: 'Array',
-      requiresRestart: false,
     },
     elementType: {
       label: 'Element Type',
@@ -103,28 +211,43 @@ onBeforeMount(() => {
     },
   };
 
-  // Object.assign(visualizerSettings.settings, visualizerSettings.initial);
+  // Set the initial state
+  visualizerSettings.initial = { ...JSON.parse(JSON.stringify(initialSettings)) };
+
+  // Initialize settings if empty
   if (Object.keys(visualizerSettings.settings).length === 0) {
-    Object.assign(visualizerSettings.settings, visualizerSettings.initial);
+    visualizerSettings.settings = { ...JSON.parse(JSON.stringify(initialSettings)) };
   }
+
+  // Always ensure selected and localState are properly initialized
+  visualizerSettings.selected = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
+  visualizerSettings.localState = { ...JSON.parse(JSON.stringify(visualizerSettings.settings)) };
 });
 
 function start() {
   array.value.setElementsAnim();
   timeline.currStep += 1;
+  timeline.currExplanation = '1.1';
   insertionSort();
 }
 
 async function restart() {
+  // Clear any visible SVG elements first
+  array.value.clearSvgs();
+
+  // Reset array to initial state
   array.value.setPointerPosition(timeline.tl, 'all', 0);
   await nextTick();
+
+  // Reset array elements to their initial shuffled state
   array.value.setElementsAnim(true).then(async () => {
-    timeline.restart();
     await nextTick();
+
+    // Start the animation with new settings
     array.value.setElementsAnim().then(() => {
       timeline.currStep += 1;
+      timeline.currExplanation = '1.1';
       insertionSort();
-      timeline.restarting = false;
     });
   });
 }
@@ -140,10 +263,11 @@ function insertionSort() {
       delay: 1,
       onComplete: () => {
         timeline.currStep += 1;
+        timeline.currExplanation = `${timeline.currStep}.1`;
       },
     });
 
-    explanations(tl, i !== 1 ? 'next' : 'start', j);
+    explanations(tl, i !== 1 ? 'next' : 'start', j, i);
     while (j >= 0) {
       if (array.value.elements.arr[j].value > key) {
         // animation for comparing and swapping element's that are unsorted, and swapping the values in elements[]
@@ -161,7 +285,16 @@ function insertionSort() {
     }
     // pointers to next element, adding timeline to global timeline with label
     array.value.setPointerPosition(tl, 'all', i);
+
+    // getting duration before adding tl to timeline.tl
+    const currDuration = timeline.tl.duration();
+
     timeline.tl.add(tl);
+
+    // setting labels for each explanation step
+    Object.keys(tl.labels).forEach((key) => {
+      timeline.tl.addLabel(key, currDuration + tl.labels[`${key}`] + transitionSpeed.int * 1.4);
+    });
   }
 }
 
@@ -174,7 +307,7 @@ function compareElements(tl, i, j, elements) {
 
   if (elements) {
     // arr[j] > key
-    explanations(tl, 'invalid', j);
+    explanations(tl, 'invalid', j, i);
 
     // compareIcon appearing, compareIcon and pointer color to red
     array.value.toggleBorderSvg(tl, j, '>', 'opacity', 1);
@@ -213,44 +346,59 @@ function compareElements(tl, i, j, elements) {
 function explanations(tl, explanation, j, i) {
   switch (explanation) {
     case 'start':
-      visualizer.value.changeExplanation(tl, [
-        {
-          string: 'Starting at the beginning of the array',
-          underlined: [{ text: 'beginning of the array', i: 0 }],
-        },
-        {
-          string: `, compare element ${j} and element ${j + 1}`,
-          underlined: [
-            { text: `element ${j}`, i: 1 },
-            { text: `element ${j + 1}`, i: 2 },
-          ],
-        },
-      ]);
+      visualizer.value.changeExplanation(
+        tl,
+        [
+          {
+            string: 'Starting at the beginning of the array',
+            underlined: [{ text: 'beginning of the array', i: 0 }],
+          },
+          {
+            string: `, compare element ${j} and element ${j + 1}`,
+            underlined: [
+              { text: `element ${j}`, i: 1 },
+              { text: `element ${j + 1}`, i: 2 },
+            ],
+          },
+        ],
+        i,
+        false,
+      );
       break;
     case 'next':
-      visualizer.value.changeExplanation(tl, [
-        { string: 'Next', underlined: [] },
-        {
-          string: ` compare element ${j} and element ${j + 1}`,
-          underlined: [
-            { text: `element ${j}`, i: 0 },
-            { text: `element ${j + 1}`, i: 1 },
-          ],
-        },
-      ]);
+      visualizer.value.changeExplanation(
+        tl,
+        [
+          { string: 'Next', underlined: [] },
+          {
+            string: ` compare element ${j} and element ${j + 1}`,
+            underlined: [
+              { text: `element ${j}`, i: 0 },
+              { text: `element ${j + 1}`, i: 1 },
+            ],
+          },
+        ],
+        i,
+        false,
+      );
       break;
     case 'invalid':
-      visualizer.value.changeExplanation(tl, [
-        {
-          string: `Since element ${j} is greater than element ${j + 1}`,
-          underlined: [
-            { text: `element ${j}`, i: 0 },
-            { text: 'greater', i: 1 },
-            { text: `element ${j + 1}`, i: 2 },
-          ],
-        },
-        { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
-      ]);
+      visualizer.value.changeExplanation(
+        tl,
+        [
+          {
+            string: `Since element ${j} is greater than element ${j + 1}`,
+            underlined: [
+              { text: `element ${j}`, i: 0 },
+              { text: 'greater', i: 1 },
+              { text: `element ${j + 1}`, i: 2 },
+            ],
+          },
+          { string: " the element's are swapped", underlined: [{ text: 'swapped', i: 3 }] },
+        ],
+        i,
+        false,
+      );
       break;
     case 'swapped':
       visualizer.value.changeExplanation(
@@ -269,8 +417,8 @@ function explanations(tl, explanation, j, i) {
             underlined: [{ text: 'correct position', i: 3 }],
           },
         ],
-        // adding i parameter since it's a possible last explanation of a step.
         i,
+        true,
       );
       break;
     case 'valid':
@@ -290,8 +438,8 @@ function explanations(tl, explanation, j, i) {
             underlined: [{ text: 'correct position', i: 3 }],
           },
         ],
-        // adding i parameter since it's a possible last explanation of a step.
         i,
+        true,
       );
       break;
     default:
@@ -318,6 +466,47 @@ function explanations(tl, explanation, j, i) {
 
       // fill slightly darker than $primary-bright since icon is thin and to make it more visible
       fill: #bfb47c;
+    }
+  }
+
+  .description {
+    font-family: $secondary-font-stack;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 85vh;
+
+    .description-header {
+      font-family: $primary-font-stack;
+      font-size: 1.5em;
+      margin: 0;
+      color: var(--primary-dark);
+      font-weight: 700;
+      border-bottom: solid 1px var(--primary-light-grey);
+      padding: 3px;
+    }
+
+    .description-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25em;
+      font-size: 1.2em;
+      margin-top: 0.75em;
+      padding: 0 0 0 2em;
+
+      .item-label {
+        font-weight: 600;
+      }
+    }
+
+    .sublist-header {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin: 0.8em 0 0.2em 0.4em;
+    }
+
+    .sublist {
+      margin-top: 0;
     }
   }
 }

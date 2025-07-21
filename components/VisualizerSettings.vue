@@ -55,7 +55,7 @@
         @input="visualizerSettings.onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
       />
       <div v-else-if="input.type === 'number'" class="input number">
-        <button class="number-step number-step--down" @click="settingsRefs.inputs[`${key}`].stepDown()">
+        <button class="number-step number-step--down" @click="stepNumber(key, -1)">
           <Polygon class="number-step-svg" />
         </button>
         <input
@@ -85,7 +85,7 @@
             ])
           "
         />
-        <button class="number-step number-step--up" @click="settingsRefs.inputs[`${key}`].stepUp()">
+        <button class="number-step number-step--up" @click="stepNumber(key, 1)">
           <Polygon class="number-step-svg" />
         </button>
       </div>
@@ -133,8 +133,8 @@
 </template>
 
 <script setup>
-import { onBeforeMount, computed, reactive, ref } from 'vue';
-import isEqual from 'lodash.isequal';
+import { computed, reactive, ref } from 'vue';
+// import isEqual from 'lodash.isequal';
 import { timelineStore } from '../stores/timeline';
 import { visualizerSettingsStore } from '../stores/visualizerSettings';
 
@@ -154,14 +154,14 @@ const settingsRefs = reactive({
 const activeButtons = computed(() => {
   const buttons = {
     reset: {
-      active: !isEqual(visualizerSettings.settings, visualizerSettings.initial),
+      active: hasSettingsChanges(),
       click: () => {
         visualizerSettings.reset();
       },
       text: 'Reset',
     },
     restart: {
-      active: timeline.currStep > 0 && !isEqual(visualizerSettings.localState, visualizerSettings.selected),
+      active: timeline.currStep > 0 && hasRestartChanges(),
       click: () => {
         emit('restart');
       },
@@ -177,33 +177,66 @@ const activeButtons = computed(() => {
   return buttons;
 });
 
-onBeforeMount(() => {
-  Object.assign(visualizerSettings.selected, visualizerSettings.settings);
-  Object.assign(visualizerSettings.localState, visualizerSettings.settings);
-});
-
 function onKeydown() {
   keydown.value = true;
   console.log('here');
 }
 
+function hasSettingsChanges() {
+  // Check if any settings have changed from their initial state
+  for (const key of Object.keys(visualizerSettings.settings)) {
+    const setting = visualizerSettings.settings[key];
+    const initialValue = visualizerSettings.initial[key]?.state;
+
+    if (timeline.currStep > 0 && setting.requiresRestart) {
+      // For settings that require restart during animation, check localState
+      const currentValue = visualizerSettings.localState[key]?.state;
+      if (currentValue !== initialValue) {
+        return true;
+      }
+    } else {
+      // For other settings, check the main settings state
+      const currentValue = visualizerSettings.settings[key]?.state;
+      if (currentValue !== initialValue) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function hasRestartChanges() {
+  // Check if any settings with requiresRestart: true have been changed
+  for (const key of Object.keys(visualizerSettings.settings)) {
+    const setting = visualizerSettings.settings[key];
+    if (setting.requiresRestart) {
+      const localValue = visualizerSettings.localState[key]?.state;
+      const selectedValue = visualizerSettings.selected[key]?.state;
+      if (localValue !== selectedValue) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function stepNumber(key, direction) {
+  const input = visualizerSettings.settings[key];
+  const currentValue =
+    timeline.currStep > 0 && input.requiresRestart ? visualizerSettings.localState[key].state : input.state;
+
+  const newValue = currentValue + direction;
+
+  // Check bounds
+  if (newValue >= input.min && newValue <= input.max) {
+    visualizerSettings.onInput(key, input.requiresRestart, newValue);
+  }
+}
+
 function onKeyup(inputRef, setting, inputParams) {
-  // dont need the old value cuz if the value is invalid and there needs to be a reset (on the invalid input field) the reset
-  // function can just be called with a parameter(?) changing only that input back to it's local/current state.
-  // since the actual state never changed and the old value can be gotten through there
-  console.log(setting);
   if (setting.validateInput(parseInt(inputRef.value, 10))) {
-    console.log('here');
     visualizerSettings.onInput(...inputParams);
     keydown.value = false;
-  } else {
-    console.log('here1');
-    // enable invalid style
-    // add reset button to input div
-    // make sure reset/restart buttons acknoledge for this (state variable saying there is an current invalid input field?)
-    // show error messege
-
-    // TODO: subtle style if the input is still in focus (user is still typing), error message if input blurred
   }
 }
 </script>
@@ -243,7 +276,7 @@ function onKeyup(inputRef, setting, inputParams) {
     font-family: $secondary-font-stack;
     font-size: 1.375em;
     font-weight: 400;
-    color: $primary-white;
+    color: #f8f8f8;
     letter-spacing: 0.04em;
     cursor: pointer;
     background: $primary-darker-light;

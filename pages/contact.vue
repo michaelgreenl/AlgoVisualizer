@@ -16,7 +16,7 @@
   width: 100vw;
   height: 100vh;
   font-size: 12px;
-  background: $primary-white;
+  background: var(--bg-primary);
 
   .header {
     display: flex;
@@ -27,7 +27,7 @@
       font-family: $primary-font-stack;
       font-size: 4em;
       font-weight: 400;
-      color: $primary-dark;
+      color: var(--text-primary);
       letter-spacing: 0.09ch;
     }
   }

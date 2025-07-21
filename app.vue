@@ -10,11 +10,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useThemeStore } from './stores/theme.js';
+
+const themeStore = useThemeStore();
+const router = useRouter();
 
 const sidebar = ref();
 const sidebarOpen = ref(false);
 const openedSidebar = ref();
+
+onMounted(() => {
+  themeStore.toggleTheme();
+
+  router.afterEach(() => {
+    nextTick(() => {
+      sidebar.value.toggleSidebar(openedSidebar.value);
+    });
+  });
+});
 
 // Closing Sidebar if click event was fired on the index element.
 function closeSidebar($event, forceClose) {
@@ -53,7 +67,7 @@ body {
 /* stylelint-disable-next-line selector-id-pattern */
 #__nuxt {
   min-height: 100% !important;
-  background: $primary-white;
+  background: var(--bg-primary);
 }
 
 .app {
@@ -63,6 +77,6 @@ body {
   width: 100vw;
   height: 100vh;
   font-size: 12px;
-  background: $primary-white;
+  background: var(--bg-primary);
 }
 </style>

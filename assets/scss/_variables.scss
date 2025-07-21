@@ -2,18 +2,99 @@
 $primary-font-stack: 'Futura', helvetica, arial, sans-serif;
 $secondary-font-stack: 'Poppins', helvetica, arial, sans-serif;
 
-// Colors
-$primary-white: #f8f8f8;
-$secondary-white: #fafafa;
-$primary-black: #3d3d3d;
-$primary-dark-grey: #6a6a6a;
-$primary-grey: #999;
-$primary-light-grey: #dfdfdf;
-$primary-lighter-grey: #eeeded;
-$primary-dark: #52707c;
-$primary-light-dark: #808f95;
-$primary-dark-bright: #d2dadd;
-$primary-bright: #eff1f1;
-$primary-darker-light: #d3cdad;
-$primary-light: #d7d0ae;
-$primary-lighter-light: #e9e3c9;
+// CSS Custom Properties for theming
+:root {
+  // Light theme colors
+  --primary-white: #f8f8f8;
+  --secondary-white: #fafafa;
+  --primary-black: #3d3d3d;
+  --primary-dark-grey: #6a6a6a;
+  --primary-grey: #999;
+  --primary-light-grey: #dfdfdf;
+  --primary-lighter-grey: #eeeded;
+  --primary-dark: #52707c;
+  --primary-light-dark: #808f95;
+  --primary-dark-bright: #d2dadd;
+  --primary-bright: #eff1f1;
+  --primary-darker-light: #d3cdad;
+  --primary-light: #d7d0ae;
+  --primary-lighter-light: #e9e3c9;
+
+  // Background colors
+  --bg-primary: #f8f8f8;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #ffffff;
+
+  // Text colors
+  --text-primary: #3d3d3d;
+  --text-secondary: #6a6a6a;
+  --text-muted: #999;
+  --text-explanation: #52707c;
+
+  // Border colors
+  --border-primary: #dfdfdf;
+  --border-secondary: #eeeded;
+  --border-header: #6a6a6a;
+
+  // Shadow colors
+  --shadow-color: rgba(0, 0, 0, 0.1);
+
+  // Underline colors
+  --underline-color: #d7d0ae;
+}
+
+// Dark theme colors
+[data-theme='dark'] {
+  --primary-white: #2a2a2a;
+  --secondary-white: #3a3a3a;
+  --primary-black: #eae8e0;
+  --primary-dark-grey: #b0b0b0;
+  --primary-grey: #888;
+  --primary-light-grey: #505050;
+  --primary-lighter-grey: #404040;
+  --primary-dark: #7a9ba8;
+  --primary-light-dark: #a0b0b8;
+  --primary-dark-bright: #5a6a70;
+  --primary-bright: #3a4245;
+  --primary-darker-light: #d3cdad;
+  --primary-light: #d7d0ae;
+  --primary-lighter-light: #e9e3c9;
+
+  // Background colors
+  --bg-primary: #2a2a2a;
+  --bg-secondary: #3a3a3a;
+  --bg-tertiary: #404040;
+
+  // Text colors
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888;
+  --text-explanation: #eae8e0;
+
+  // Border colors
+  --border-primary: #404040;
+  --border-secondary: #333;
+  --border-header: #b0b0b0;
+
+  // Shadow colors
+  --shadow-color: rgba(0, 0, 0, 0.3);
+
+  // Underline colors
+  --underline-color: #a0b0b8;
+}
+
+// Legacy SCSS variables for backward compatibility
+$primary-white: var(--primary-white);
+$secondary-white: var(--secondary-white);
+$primary-black: var(--primary-black);
+$primary-dark-grey: var(--primary-dark-grey);
+$primary-grey: var(--primary-grey);
+$primary-light-grey: var(--primary-light-grey);
+$primary-lighter-grey: var(--primary-lighter-grey);
+$primary-dark: var(--primary-dark);
+$primary-light-dark: var(--primary-light-dark);
+$primary-dark-bright: var(--primary-dark-bright);
+$primary-bright: var(--primary-bright);
+$primary-darker-light: var(--primary-darker-light);
+$primary-light: var(--primary-light);
+$primary-lighter-light: var(--primary-lighter-light);
