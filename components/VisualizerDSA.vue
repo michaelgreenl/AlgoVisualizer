@@ -30,9 +30,6 @@
           </button>
         </transition>
         <div class="tab-buttons">
-          <button class="tab-button" :class="{ selected: sidebarTabs.code }" @click="tabButtonClick('code')">
-            <span class="tab-button-text">Code</span>
-          </button>
           <button
             class="tab-button"
             :class="{ selected: sidebarTabs.explanation }"
@@ -99,15 +96,11 @@
         <div
           class="tabs"
           :class="{
-            one: sidebarTabs.code,
-            two: sidebarTabs.explanation,
-            three: sidebarTabs.description,
-            four: sidebarTabs.settings,
+            one: sidebarTabs.explanation,
+            two: sidebarTabs.description,
+            three: sidebarTabs.settings,
           }"
         >
-          <div class="tab" :class="{ open: sidebarTabs.code }">
-            <VisualizerCode />
-          </div>
           <div class="tab" :class="{ open: sidebarTabs.explanation }">
             <VisualizerExplanation :explanations="explanationList" />
           </div>
@@ -169,8 +162,7 @@ const explanationList = reactive({});
 const visualPlaying = ref(false);
 const sidebarOpen = ref(true);
 const sidebarTabs = reactive({
-  code: true,
-  explanation: false,
+  explanation: true,
   description: false,
   settings: false,
 });
@@ -697,7 +689,7 @@ $sidebar-width: 43.2em;
 
       .tabs {
         display: flex;
-        width: calc($sidebar-width * 4);
+        width: calc($sidebar-width * 3);
         transition: transform 200ms ease-out;
 
         &.one {
@@ -711,10 +703,6 @@ $sidebar-width: 43.2em;
 
         &.three {
           transform: translateX(calc($sidebar-width * -2));
-        }
-
-        &.four {
-          transform: translateX(calc($sidebar-width * -3));
         }
 
         .tab {
