@@ -106,7 +106,7 @@
           </div>
           <div class="description-section">
             <h3 class="description-header">Advantages/Disadvantages</h3>
-            <h4 class="sublist-header">Advantages -</h4>
+            <h4 class="sublist-header">Advantages:</h4>
             <ul class="description-list sublist">
               <li>
                 <span class="item-text">Simple implementation</span>
@@ -127,7 +127,7 @@
                 <span class="item-text">Online algorithm</span>
               </li>
             </ul>
-            <h4 class="sublist-header">Disadvantages -</h4>
+            <h4 class="sublist-header">Disadvantages:</h4>
             <ul class="description-list sublist">
               <li>
                 <span class="item-text">Inefficient for large datasets</span>
