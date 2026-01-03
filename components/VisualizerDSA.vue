@@ -4,7 +4,12 @@
             <h1 class="title">{{ title }}</h1>
             <nav class="sidebar-nav">
                 <transition name="close-button" appear :duration="300">
-                    <button v-if="Object.values(sidebarTabs).includes(true)" class="close-button" aria-label="Close Sidebar" @click="closeSidebar">
+                    <button
+                        v-if="Object.values(sidebarTabs).includes(true)"
+                        class="close-button"
+                        aria-label="Close Sidebar"
+                        @click="closeSidebar"
+                    >
                         <svg
                             class="close-icon"
                             width="12"
@@ -75,7 +80,12 @@
                 </div>
                 <slot name="visual"></slot>
                 <div class="controls">
-                    <button class="control-button" aria-label="Restart Animation" :disabled="timeline.currStep === 0" @click="restart">
+                    <button
+                        class="control-button"
+                        aria-label="Restart Animation"
+                        :disabled="timeline.currStep === 0"
+                        @click="restart"
+                    >
                         <RestartIcon class="icon restart" />
                     </button>
                     <button
@@ -86,7 +96,11 @@
                     >
                         <SkipLeftIcon class="icon" />
                     </button>
-                    <button class="control-button" :aria-label="visualPlaying ? 'Pause Animation' : 'Play Animation'" @click="!timeline.restarting ? playClick() : null">
+                    <button
+                        class="control-button"
+                        :aria-label="visualPlaying ? 'Pause Animation' : 'Play Animation'"
+                        @click="!timeline.restarting ? playClick() : null"
+                    >
                         <PauseIcon v-if="visualPlaying" class="icon" />
                         <PlayIcon v-else class="icon play" />
                     </button>

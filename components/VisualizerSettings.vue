@@ -11,27 +11,14 @@
             class="input-wrapper"
         >
             <div class="setting-label">
-                <label
-                    v-if="input.type !== 'radio'"
-                    class="label label--setting"
-                    :for="key"
-                >
+                <label v-if="input.type !== 'radio'" class="label label--setting" :for="key">
                     {{ input.label }}
                 </label>
-                <div
-                    v-else
-                    :id="`label-${key}`"
-                    class="label label--setting"
-                >
+                <div v-else :id="`label-${key}`" class="label label--setting">
                     {{ input.label }}
                 </div>
             </div>
-            <div
-                v-if="input.type === 'radio'"
-                class="input radio"
-                role="radiogroup"
-                :aria-labelledby="`label-${key}`"
-            >
+            <div v-if="input.type === 'radio'" class="input radio" role="radiogroup" :aria-labelledby="`label-${key}`">
                 <div v-for="option in input.options" :key="option" class="radio-input">
                     <input
                         :id="`${key}-${option}`"
