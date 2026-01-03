@@ -1,13 +1,14 @@
 <template>
     <div ref="sidebar" class="sidebar">
         <nav class="sidebar-nav">
-            <button class="nav-item" @click="router.push('/')">
+            <button class="nav-item" aria-label="Home" @click="router.push('/')">
                 <Tooltip tooltip="Home" />
                 <LogoIcon class="icon logo" />
             </button>
             <button
                 class="nav-item"
                 :class="{ greyscale: opened && !openSidebars.algorithms }"
+                aria-label="Algorithms"
                 @click="toggleSidebar('algorithms')"
             >
                 <AlgorithmsIcon class="icon algorithms" />
@@ -22,6 +23,7 @@
             <button
                 class="nav-item"
                 :class="{ greyscale: opened && !openSidebars.dataStructures }"
+                aria-label="Data Structures"
                 @click="toggleSidebar('dataStructures')"
             >
                 <DataStructuresIcon class="icon data-structures" />
@@ -33,7 +35,7 @@
                     tooltip="Data Structures"
                 />
             </button>
-            <button class="nav-item theme-toggle-wrapper" @click="themeStore.toggleTheme()">
+            <button class="nav-item theme-toggle-wrapper" aria-label="Toggle Theme" @click="themeStore.toggleTheme()">
                 <MoonIcon v-if="themeStore.theme === 'dark'" class="icon moon" />
                 <SunIcon v-else class="icon sun" />
                 <Tooltip :tooltip="themeStore.theme === 'dark' ? 'Light Mode' : 'Dark Mode'" />

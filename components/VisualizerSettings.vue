@@ -11,11 +11,30 @@
             class="input-wrapper"
         >
             <div class="setting-label">
-                <label class="label label--setting" :for="input.label">{{ input.label }}</label>
+                <label
+                    v-if="input.type !== 'radio'"
+                    class="label label--setting"
+                    :for="key"
+                >
+                    {{ input.label }}
+                </label>
+                <div
+                    v-else
+                    :id="`label-${key}`"
+                    class="label label--setting"
+                >
+                    {{ input.label }}
+                </div>
             </div>
-            <div v-if="input.type === 'radio'" class="input radio">
+            <div
+                v-if="input.type === 'radio'"
+                class="input radio"
+                role="radiogroup"
+                :aria-labelledby="`label-${key}`"
+            >
                 <div v-for="option in input.options" :key="option" class="radio-input">
                     <input
+                        :id="`${key}-${option}`"
                         :ref="
                             (el) => {
                                 settingsRefs.inputs[`${key}`] = el;
@@ -23,7 +42,7 @@
                         "
                         :class="input.type"
                         :type="input.type"
-                        :name="option"
+                        :name="key"
                         :value="option"
                         :checked="
                             timeline.currStep > 0 && input.requiresRestart
@@ -32,11 +51,12 @@
                         "
                         @input="visualizerSettings.onInput(key, input.requiresRestart, $event.target.value)"
                     />
-                    <label class="label" :for="option">{{ option }}</label>
+                    <label class="label" :for="`${key}-${option}`">{{ option }}</label>
                 </div>
             </div>
             <input
                 v-else-if="input.type === 'range'"
+                :id="key"
                 :ref="
                     (el) => {
                         settingsRefs.inputs[`${key}`] = el;
@@ -57,10 +77,11 @@
                 @input="visualizerSettings.onInput(key, input.requiresRestart, parseInt($event.target.value, 10))"
             />
             <div v-else-if="input.type === 'number'" class="input number">
-                <button class="number-step number-step--down" @click="stepNumber(key, -1)">
+                <button class="number-step number-step--down" aria-label="Decrease Value" @click="stepNumber(key, -1)">
                     <Polygon class="number-step-svg" />
                 </button>
                 <input
+                    :id="key"
                     :ref="
                         (el) => {
                             settingsRefs.inputs[`${key}`] = el;
@@ -91,7 +112,7 @@
                         ])
                     "
                 />
-                <button class="number-step number-step--up" @click="stepNumber(key, 1)">
+                <button class="number-step number-step--up" aria-label="Increase Value" @click="stepNumber(key, 1)">
                     <Polygon class="number-step-svg" />
                 </button>
             </div>
@@ -109,6 +130,7 @@
                 <span class="toggle-value toggle-value--false">{{ input.falseValue }}</span>
                 <span class="toggle-value toggle-value--true">{{ input.trueValue }}</span>
                 <input
+                    :id="key"
                     :ref="
                         (el) => {
                             settingsRefs.inputs[`${key}`] = el;

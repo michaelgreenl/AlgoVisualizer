@@ -8,6 +8,7 @@
                 v-model="userInput"
                 class="search-input"
                 :placeholder="`Search ${title}`"
+                aria-label="Search"
                 spellcheck="false"
                 @input="filterSearch"
             />
