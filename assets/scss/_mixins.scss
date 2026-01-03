@@ -1,45 +1,45 @@
 // Desktop-first responsive breakpoints
 $breakpoints: (
-  sm: 576px,
-  md: 768px,
-  lg: 992px,
-  xl: 1200px,
-  xxl: 1600px,
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px,
+    xxl: 1600px,
 ) !default;
 
 @mixin bp-sm-phone-landscape {
-  @media (max-width: map-get($breakpoints, 'sm')) {
-    @content;
-  }
+    @media (max-width: map-get($breakpoints, 'sm')) {
+        @content;
+    }
 }
 
 @mixin bp-md-tablet {
-  @media (max-width: map-get($breakpoints, 'md')) {
-    @content;
-  }
+    @media (max-width: map-get($breakpoints, 'md')) {
+        @content;
+    }
 }
 
 @mixin bp-lg-laptop {
-  @media (max-width: map-get($breakpoints, 'lg')) {
-    @content;
-  }
+    @media (max-width: map-get($breakpoints, 'lg')) {
+        @content;
+    }
 }
 
 @mixin bp-xl-desktop {
-  @media (max-width: map-get($breakpoints, 'xl')) {
-    @content;
-  }
+    @media (max-width: map-get($breakpoints, 'xl')) {
+        @content;
+    }
 }
 
 @mixin bp-xxl-desktop-large {
-  @media (max-width: map-get($breakpoints, 'xxl')) {
-    @content;
-  }
+    @media (max-width: map-get($breakpoints, 'xxl')) {
+        @content;
+    }
 }
 
 // Custom sizes
 @mixin bp-custom-max($max-width) {
-  @media (max-width: ($max-width + 'px')) {
-    @content;
-  }
+    @media (max-width: ($max-width + 'px')) {
+        @content;
+    }
 }
