@@ -1,32 +1,45 @@
-# AlgoVisualizer ⚛️
-> An interactive educational platform that visualizes complex algorithms and data structures with high-performance, synchronized, step-by-step animations.
+# AlgoVisualizer 
+> A Nuxt 3/Vue 3 algorithm visualization prototype centered on a polished insertion-sort visualizer.
 
 [![Vue](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D)](https://vuejs.org/) [![Nuxt](https://img.shields.io/badge/Nuxt-00DC82?style=for-the-badge&logo=nuxt&logoColor=white)](https://nuxt.com/) [![Pinia](https://img.shields.io/badge/Pinia-F1C40F?style=for-the-badge&logo=pinia&logoColor=black)](https://pinia.vuejs.org/) [![GSAP](https://img.shields.io/badge/GSAP-88CE02?style=for-the-badge&logo=greenstock&logoColor=white)](https://greenstock.com/) [![Sass](https://img.shields.io/badge/Sass-CC6699?style=for-the-badge&logo=sass&logoColor=white)](https://sass-lang.com/)
 ### 🔗 Quick Links
 - **🎥 [Demo Video](https://michaelgreenl.net/#projects?slug=algo-visualizer&autoplay=true)** 
 - **💼 [Portfolio Link](https://michaelgreenl.net/#projects?slug=algo-visualizer&autoplay=false)** 
 
-## 📖 Overview
-> A high-performance algorithm visualizer built with Nuxt 3 that demystifies complex data structures and algorithms through synchronized, controllable GSAP animations.
+## Overview
+AlgoVisualizer pairs a searchable algorithm/data-structure navigation shell with a working insertion-sort visualizer. The implemented visualizer uses Pinia stores and GSAP timelines to coordinate playback controls, timeline seeking, animation settings, array/pointer motion, and interactive explanatory text that tracks the current step.
 
-This application is a monolithic Nuxt 3 (Vue 3 + Vite) web application that uses Pinia for centralized state management and SCSS for a custom design system. The core architectural pattern involves a Dynamic Component Injection strategy where a generic page layout hydrates specific algorithm modules on-demand, all driven by a global GSAP timeline for frame-perfect playback control.
+The navigation lists additional algorithms and data structures as route targets. In the current codebase, `components/Algorithms/InsertionSort.vue` is the implemented visualizer; the other listed algorithm and data-structure component files are placeholders.
 
-## ⚡ Technical Highlights
-**Universal Timeline Control:** Implemented a centralized `timelineStore` that wraps a single `gsap.timeline()` instance, enabling VCR-like controls (seek, reverse, time-scale) across all diverse algorithm visualizations.
+## Technical Highlights
+**Insertion Sort Visualizer:** Animates an array through insertion sort with pointer movement, comparison indicators, swaps, index labels, and a description panel covering properties, complexity, and usage notes.
 
-**Optimization with `markRaw`:** Heavy GSAP timeline objects caused performance issues when wrapped in Vue's reactivity proxies. I utilized `markRaw` to exclude animation instances from the reactivity system, eliminating overhead and memory leaks.
+**Timeline Playback:** `stores/timeline.js` owns a `markRaw(gsap.timeline())` instance with current-step and current-explanation state, exposing `seek`, `goto`, and `restart` methods used by the playback controls.
 
-**Dynamic Algorithm Loading:** Utilizes Nuxt's dynamic routing (`[category]-[visualizer].vue`) combined with `defineAsyncComponent` and `shallowRef` to lazily load heavy algorithm components only when needed, keeping the initial bundle size minimal.
+**Synchronized Explanation Text:** `components/VisualizerDSA.vue` binds explanation entries to GSAP labels so the visible text and explanation sidebar follow play, pause, previous/next, and direct timeline jumps.
 
-**Explanation Synchronization:** Constructed a reactive system that binds text explanations to specific GSAP timeline labels, ensuring that the educational commentary updates in perfect sync with the visual steps, even when scrubbing backward or forward.
+**Configurable Animation Settings:** `components/VisualizerSettings.vue` renders toggle, range, number, and radio controls from Pinia state; settings that require restart are staged before replay.
 
-## 🏗️ Architecture & Design Decisions 
-**Component Injection Strategy:** Instead of creating 50+ separate page files for each algorithm, I implemented a single dynamic route `[category]-[visualizer]`. This significantly reduces codebase redundancy and makes adding new algorithms as simple as creating one component file, which the router automatically picks up.
+**Navigation/Search Shell:** `components/Sidebar.vue` and `components/VisualizerSidebar.vue` provide category dropdowns for algorithms/data structures, a theme toggle, and search results with highlighted matches.
 
-**Pinia for Animation State:** I used Pinia not just for user settings (theme, speed), but as the "single source of truth" for the animation's current step. This decouples the playback controls (in the wrapper) from the actual animation logic (in the inner component), preventing prop-drilling hell.
+**Route-Driven Component Loading:** `pages/[category]-[visualizer].vue` uses Nuxt dynamic routing with `defineAsyncComponent` and `shallowRef` to load the route-matched component.
 
-## 🛠️ Tech Stack
-- **Framework:** Vue 3 (Composition API), Nuxt
-- **Animation:** GSAP (GreenStock)
-- **State:** Pinia
+## Architecture & Design Decisions 
+**Client-Side Nuxt App:** `nuxt.config.js` sets `ssr: false` because the visualizer route imports components from route params.
 
+**Pinia for Shared UI State:** Pinia separates timeline state, visualizer settings, and persisted theme state across `stores/timeline.js`, `stores/visualizerSettings.js`, and `stores/theme.js`.
+
+## Tech Stack
+- **Framework:** Vue 3 (Composition API), Nuxt 3
+- **Animation:** GSAP and TextPlugin
+- **State:** Pinia, `@pinia/nuxt`, `pinia-plugin-persistedstate`
+- **Styling:** SCSS/Sass, local fonts, SVG imports through `vite-svg-loader`
+- **Tooling:** ESLint, Stylelint, Prettier
+
+## Run Locally
+```bash
+npm install
+npm run dev
+```
+
+Additional scripts: `npm run build`, `npm run generate`, `npm run preview`, `npm run lint`, `npm run lint:style`, `npm run format`.
