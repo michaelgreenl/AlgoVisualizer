@@ -7,11 +7,7 @@
 
 ## Demo Video
 
-<p align="center">
-  <a href="https://vimeo.com/1149531735">
-    <img src="https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2171069531-13239cab68329b06ef5c8b5ad766bb419e0d3dd71fea004088a172612be97413-d_1280%3Fregion%3Dus&amp;src1=http%3A%2F%2Ff.vimeocdn.com%2Fp%2Fimages%2Fcrawler_play.png" alt="Watch the AlgoVisualizer demo video" width="800">
-  </a>
-</p>
+https://github.com/user-attachments/assets/195965b4-9a04-44f0-8353-d9b2c232d80b
 
 ## Overview
 AlgoVisualizer pairs a searchable algorithm/data-structure navigation shell with a working insertion-sort visualizer. The implemented visualizer uses Pinia stores and GSAP timelines to coordinate playback controls, timeline seeking, animation settings, array/pointer motion, and interactive explanatory text that tracks the current step.
