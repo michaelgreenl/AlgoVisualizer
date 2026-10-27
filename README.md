@@ -3,8 +3,6 @@
 
 [![Vue](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D)](https://vuejs.org/) [![Nuxt](https://img.shields.io/badge/Nuxt-00DC82?style=for-the-badge&logo=nuxt&logoColor=white)](https://nuxt.com/) [![Pinia](https://img.shields.io/badge/Pinia-F1C40F?style=for-the-badge&logo=pinia&logoColor=black)](https://pinia.vuejs.org/) [![GSAP](https://img.shields.io/badge/GSAP-88CE02?style=for-the-badge&logo=greenstock&logoColor=white)](https://greenstock.com/) [![Sass](https://img.shields.io/badge/Sass-CC6699?style=for-the-badge&logo=sass&logoColor=white)](https://sass-lang.com/)
 ### 🔗 Quick Links
-- **🎥 [Demo Video](https://michaelgreenl.net/#projects?slug=algo-visualizer&autoplay=true)**
-- **💼 [Portfolio Link](https://michaelgreenl.net/#projects?slug=algo-visualizer&autoplay=false)** 
 
 ## Overview
 AlgoVisualizer pairs a searchable algorithm/data-structure navigation shell with a working insertion-sort visualizer. The implemented visualizer uses Pinia stores and GSAP timelines to coordinate playback controls, timeline seeking, animation settings, array/pointer motion, and interactive explanatory text that tracks the current step.
